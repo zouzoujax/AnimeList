@@ -20,7 +20,9 @@ import { ReadingStats } from '@/components/ReadingStats'
 import { EmptyState, Poster, RowScroller, Section } from '@/components/ui'
 import { rgba } from '@/lib/color'
 import { dayLabel, durationParts, hoursOf, minutesToHuman, monthLabel, num, startOfDay, titleOf } from '@/lib/format'
+import { useNow } from '@/lib/hooks'
 import { useApp } from '@/store/app'
+import { forecastBacklog, hoursLabel, spanLabel } from '@shared/backlog'
 import { BADGE_GROUPS, badgeTitle, useBadgeWall, type Badge } from '@/lib/badges'
 
 const DAY_MS = 86_400_000
@@ -89,6 +91,8 @@ export default function StatsPage(): React.JSX.Element {
   const defaultRuntime = useApp((s) => s.prefs.defaultRuntime)
 
   const { stats, badges } = useBadgeWall()
+  // À l'heure près : la fréquence se compte en jours.
+  const now = useNow(3_600_000)
 
   const years = useMemo(() => {
     const list = [...stats.perYear.keys()].sort((a, b) => b - a)
@@ -252,21 +256,11 @@ export default function StatsPage(): React.JSX.Element {
     }
 
     const total = watchingMin + plannedMin
-    // Le rythme vient de tes journées actives, pas d'une moyenne sur l'année :
-    // les jours sans rien regarder ne disent rien de ta vitesse.
-    const perActiveDay = stats.activeDays ? stats.livedMinutes / stats.activeDays : 0
-    return {
-      series,
-      watchingMin,
-      plannedMin,
-      total,
-      days: perActiveDay > 0 ? Math.ceil(total / perActiveDay) : null,
-      perActiveDay: Math.round(perActiveDay),
-      // Une moyenne sur trois journées n'est pas une vitesse de croisière. Le
-      // dire vaut mieux que d'annoncer un nombre de jours avec assurance.
-      thin: stats.activeDays > 0 && stats.activeDays < 7
-    }
-  }, [entries, mediaMap, watchedMap, defaultRuntime, stats.activeDays, stats.livedMinutes])
+    // Le rythme dit combien de journées de visionnage ; la fréquence, combien
+    // de temps au calendrier. Voir `shared/backlog.ts`.
+    const forecast = forecastBacklog(total, stats.livedMinutes, [...stats.perDay.keys()], now)
+    return { series, watchingMin, plannedMin, total, ...forecast, perActiveDay: Math.round(forecast.perActiveDay) }
+  }, [entries, mediaMap, watchedMap, defaultRuntime, stats.livedMinutes, stats.perDay, now])
 
   if (stats.episodes === 0) {
     return (
@@ -372,19 +366,21 @@ export default function StatsPage(): React.JSX.Element {
         <Section
           title="Ce qu'il te reste"
           subtitle={
-            backlog.days === null
-              ? `${minutesToHuman(backlog.total)} en attente`
-              : `${minutesToHuman(backlog.total)} en attente · environ ${backlog.days} jour${backlog.days > 1 ? 's' : ''} à ton rythme${backlog.thin ? ', sur trop peu de séances pour être fiable' : ''}`
+            backlog.viewingDays === null
+              ? `${hoursLabel(backlog.total)} en attente`
+              : `${hoursLabel(backlog.total)} en attente · environ ${num(backlog.viewingDays)} journée${backlog.viewingDays > 1 ? 's' : ''} de visionnage${
+                  backlog.calendarDays !== null ? `, soit ${spanLabel(backlog.calendarDays)} à ta fréquence` : ''
+                }${backlog.thin ? ' — mesuré sur trop peu de journées pour être fiable' : ''}`
           }
         >
           <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <StatTile label="En cours" value={minutesToHuman(backlog.watchingMin)} icon={<Hourglass size={15} />} />
-            <StatTile label="Dans la pile" value={minutesToHuman(backlog.plannedMin)} icon={<ListTodo size={15} />} />
+            <StatTile label="En cours" value={hoursLabel(backlog.watchingMin)} icon={<Hourglass size={15} />} />
+            <StatTile label="Dans la pile" value={hoursLabel(backlog.plannedMin)} icon={<ListTodo size={15} />} />
             <StatTile label="Séries concernées" value={num(backlog.series)} icon={<Layers size={15} />} />
             <StatTile
               label="Ton rythme"
               value={`${num(backlog.perActiveDay)} min`}
-              hint={`par journée où tu regardes · mesuré sur ${num(stats.activeDays)} journée${stats.activeDays > 1 ? 's' : ''}`}
+              hint={`par journée où tu regardes, ${backlog.perWeek.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} jour${backlog.perWeek >= 2 ? 's' : ''} sur 7 · mesuré sur ${num(stats.activeDays)} journée${stats.activeDays > 1 ? 's' : ''}`}
               icon={<Gauge size={15} />}
             />
           </div>
