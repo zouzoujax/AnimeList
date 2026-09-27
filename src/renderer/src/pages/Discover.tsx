@@ -319,8 +319,9 @@ export default function DiscoverPage({
 
       {/* Avant le catalogue : ce qui vient de ta bibliothèque passe devant ce
           qui vient du classement mondial. Absente en recherche, où l'on sait
-          déjà ce qu'on cherche. */}
-      {!searching && tab === 'trending' && rec && rec.picks.length > 0 && (
+          déjà ce qu'on cherche — et sous un tag, un genre ou un format, puisque
+          ses conseils ne sont pas filtrés et contrediraient la liste. */}
+      {!searching && !tag && !genre && !format && tab === 'trending' && rec && rec.picks.length > 0 && (
         <section className="mb-9">
           <div className="mb-3.5 px-1">
             <h2 className="title-xl text-[1.32rem] leading-tight">Pour toi</h2>
