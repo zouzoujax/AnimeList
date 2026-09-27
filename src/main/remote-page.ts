@@ -646,7 +646,8 @@ const SCRIPT = `
   var CACHE_MAX = 40
 
   function keepable(path) {
-    return path.indexOf('/api/player') !== 0 && path.indexOf('/api/discover') !== 0
+    return path.indexOf('/api/player') !== 0 && path.indexOf('/api/discover') !== 0 &&
+      path.indexOf('/api/finished') !== 0 && path.indexOf('/api/suggest') !== 0
   }
 
   function remember(path, data) {
@@ -1034,6 +1035,144 @@ const SCRIPT = `
     '</div>'
   }
 
+  // ------------------------------------------------------ fin d'une série
+
+  /**
+   * « Série terminée » : l'écran qui s'ouvre quand une série passe terminée.
+   *
+   * Le pendant de « Et maintenant ? » sur le PC, avec la même règle pour la
+   * suite. Le téléphone a la place d'en montrer davantage : l'arbre entier de
+   * la franchise sous les conseils, et, quand elle n'a plus rien à offrir,
+   * les suggestions de « Pour toi ». Tout se lance d'ici, sans se lever.
+   */
+  function findNode(t, id) {
+    if (!t || !t.trunk) return null
+    for (var i = 0; i < t.trunk.length; i++) {
+      var saison = t.trunk[i]
+      if (saison.id === id) return saison
+      for (var j = 0; j < (saison.branches || []).length; j++) {
+        var hit = saison.branches[j].nodes.filter(function (n) { return n.id === id })[0]
+        if (hit) return hit
+      }
+    }
+    return null
+  }
+
+  function finCover(cover) {
+    return cover ? '<img src="' + esc(cover) + '" alt="" loading="lazy">' : ''
+  }
+
+  /** Un conseil de la franchise : sa nature, son titre, et de quoi le lancer. */
+  function finRow(s) {
+    var n = findNode(fin.data.tree, s.id) || { seen: 0, total: 0, tracked: false }
+    var fini = n.total > 0 && n.seen >= n.total
+    var ep = fini || !n.seen ? 1 : n.seen + 1
+    return '<div class="tcard">' + finCover(s.cover) +
+        '<div class="tinfo"><span class="kind">' + esc(s.label) + '</span><b>' + esc(s.title) + '</b></div>' +
+      '</div>' +
+      '<div class="tacts">' +
+        btn('data-act="watch" data-id="' + s.id + '" data-ep="' + ep + '"', ep > 1 ? 'Reprendre ép. ' + ep : 'Regarder', 'play', 'primary') +
+        (n.tracked
+          ? '<span class="owned">Dans ta liste</span>'
+          : btn('data-act="add" data-id="' + s.id + '"', 'Ajouter', 'plus', '')) +
+      '</div>'
+  }
+
+  /** Une série d'ailleurs, choisie par le profil de goût. */
+  function pickRow(m) {
+    var meta = [m.year, m.episodes ? m.episodes + ' ép.' : '', m.score ? m.score + ' %' : ''].filter(Boolean).join(' · ')
+    return '<div class="tcard"' + colorStyle(m.color) + '>' + finCover(m.cover) +
+        '<div class="tinfo"><b>' + esc(m.title) + '</b>' +
+          (meta ? '<div class="tmeta">' + esc(meta) + '</div>' : '') +
+          (m.reason ? '<div class="tmeta">' + esc(m.reason) + '</div>' : '') +
+        '</div>' +
+      '</div>' +
+      '<div class="tacts">' +
+        btn('data-act="watch" data-id="' + m.id + '" data-ep="1"', 'Regarder', 'play', 'primary') +
+        (m.owned
+          ? '<span class="owned">Dans ta liste</span>'
+          : btn('data-act="add" data-id="' + m.id + '"', 'Ajouter', 'plus', '')) +
+        btn('data-act="open" data-id="' + m.id + '"', 'Fiche', 'info', '') +
+      '</div>'
+  }
+
+  function renderFin() {
+    sideEl.innerHTML = ''
+    countEl.textContent = 'Série terminée'
+    var d = fin.data
+    var close = '<button class="chip back" data-act="finclose">× Fermer</button>'
+    var head = '<article class="sheet"' + colorStyle(d ? d.color : null) + '>' +
+      '<div class="top">' + (d && d.cover ? '<img src="' + esc(d.cover) + '" alt="">' : '') +
+        '<div class="grow"><h2>' + esc((d && d.title) || 'Série terminée') + '</h2>' +
+          (d && d.title ? '<div class="meta">Tu viens de la finir</div>' : '') +
+        '</div>' +
+      '</div>'
+    if (!d) {
+      appEl.innerHTML = close + head + '<div class="tcard wait" aria-label="Lecture de la franchise"></div></article>'
+      return
+    }
+
+    var suite = d.next.length
+      ? '<div class="part"><h3>Pour continuer, dans l’ordre de la franchise</h3>' + d.next.map(finRow).join('') + '</div>'
+      : ''
+
+    var idees = ''
+    if (!d.next.length) {
+      var intro = d.tree ? 'Tu as tout vu de cette franchise.' : 'Aucune suite trouvée pour cette série.'
+      idees = '<div class="part"><h3>Et maintenant ?</h3><div class="note">' + intro + ' D’autres séries pour toi :</div>' +
+        (fin.pickErr
+          ? '<div class="note alerte">' + esc(fin.pickErr) + '</div>'
+          : fin.picks
+            ? (fin.picks.length ? fin.picks.map(pickRow).join('') : '<div class="note">Rien à proposer pour l’instant.</div>')
+            : '<div class="tcard wait" aria-label="Recherche de suggestions"></div>') +
+      '</div>'
+    }
+
+    appEl.innerHTML = close + head + suite + idees + (d.tree ? renderTree({ id: d.id }) : '') + '</article>'
+  }
+
+  /** Passé ce délai, une fin n'est plus une nouvelle : ouvrir la page le lendemain ne la rejoue pas. */
+  var FIN_FRESH_MS = 15 * 60 * 1000
+  var FIN_KEY = 'animelist-remote-finished'
+
+  async function openFin(id, at) {
+    fin = { id: id, at: at, data: null, picks: null, pickErr: '' }
+    tree = { id: 0, data: null }
+    sheet = 0
+    load()
+    if (!isWide()) window.scrollTo(0, 0)
+    var d
+    try {
+      d = await call('/api/after?id=' + id)
+    } catch (err) {
+      d = { id: id, title: null, cover: null, color: null, tree: null, next: [] }
+    }
+    if (!fin || fin.id !== id) return
+    fin.data = d
+    if (d.tree) tree = { id: id, data: d.tree }
+    load()
+    if (d.next.length) return
+    try {
+      fin.picks = (await call('/api/suggest')).items
+    } catch (err) {
+      fin.pickErr = err.message
+    }
+    if (fin && fin.id === id) load()
+  }
+
+  /** Guette la fin d'une série, où qu'elle ait été cochée, et ne l'annonce qu'une fois. */
+  async function watchFinished() {
+    var got
+    try { got = (await call('/api/finished')).finished } catch (err) { return }
+    if (!got || got.ago > FIN_FRESH_MS) return
+    var seen = 0
+    try { seen = Number(localStorage.getItem(FIN_KEY) || 0) } catch (err) { /* sans mémoire, on annonce */ }
+    if (got.at === seen || (fin && fin.at === got.at)) return
+    try { localStorage.setItem(FIN_KEY, String(got.at)) } catch (err) { /* idem */ }
+    say('Série terminée')
+    openFin(got.id, got.at)
+  }
+
   /** Les mots de l'app pour chaque statut, employés par la fiche et par les filtres. */
   var STATUS = {
     watching: 'En cours',
@@ -1215,6 +1354,8 @@ const SCRIPT = `
   /** Les jaquettes déjà reçues, et celle qu'on a touchée : sa fiche se dessine sans tout redemander. */
   var dItems = []
   var dpick = 0
+  /** L'écran « Série terminée », tant qu'il est ouvert. Voir renderFin. */
+  var fin = null
 
   var TABS = [
     { id: 'home', label: 'Accueil', icon: 'home' },
@@ -1619,9 +1760,11 @@ const SCRIPT = `
       return
     }
     if (action === 'back') { sheet = 0; tree = { id: 0, data: null }; return load() }
+    if (action === 'finclose') { fin = null; tree = { id: 0, data: null }; return load() }
 
     if (action === 'tab') {
       tab = el.getAttribute('data-tab')
+      if (fin) { fin = null; tree = { id: 0, data: null } }
       sheet = 0
       dpick = 0
       appEl.innerHTML = '<div class="skel"></div><div class="skel"></div>'
@@ -1833,7 +1976,9 @@ const SCRIPT = `
         if (tree.id && tree.data) {
           var relu = await call('/api/franchise?id=' + tree.id).catch(function () { return null })
           if (relu && tree.data) tree.data = relu
+          if (relu && fin && fin.data && fin.id === tree.id) fin.data.tree = relu
         }
+        if (fin && fin.picks) fin.picks.forEach(function (m) { if (m.id === id) m.owned = true })
         return load()
       }
       if (action === 'watch') {
@@ -1900,6 +2045,7 @@ const SCRIPT = `
     renderNav()
     layout()
     try {
+      if (fin) return renderFin()
       if (tab === 'library') return renderLibrary((await call('/api/library')).rows)
       if (tab === 'reading') return renderReading((await call('/api/reading')).rows)
       if (tab === 'calendar') {
@@ -1931,7 +2077,11 @@ const SCRIPT = `
   // et le second passe par une adresse légère. Le rafraîchissement de fond ne
   // touche que l'accueil sans fiche ouverte : reconstruire sous les doigts
   // ferait sauter le défilement et replierait la grille qu'on consultait.
-  setInterval(function () { if (tab === 'home' && !sheet) load() }, 20000)
+  setInterval(function () { if (tab === 'home' && !sheet && !fin) load() }, 20000)
+  // Deux nombres à chaque tour : c'est ce qui permet d'annoncer une fin de
+  // série quelques secondes après la dernière coche, quel que soit l'onglet.
+  watchFinished()
+  setInterval(watchFinished, 4000)
   setInterval(async function () {
     if (dragging || !playerEl.innerHTML) return
     try { renderPlayer((await call('/api/player')).player) } catch (err) { /* rien à dire */ }

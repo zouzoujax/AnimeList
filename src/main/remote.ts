@@ -49,8 +49,11 @@ import { searchTitles } from '@shared/titles'
 import { summarise, upcoming } from '@shared/summary'
 import { buildIcs } from '@shared/ics'
 import { episodeStrip } from '@shared/episode-strip'
+import { nextUp, type Suggestion } from '@shared/next-up'
 import { aimFor, resolve as resolveAnimeSama } from './animesama'
 import { franchiseTree } from './franchise'
+import { lastFinished, startFinishedWatch } from './finished'
+import { forYou } from './foryou'
 import { openTrailerWindow } from './trailer'
 import { openAnimeSamaEpisode, playerChoices, switchPlayer, watchWindow } from './watch-window'
 import { sessionAutoSkip, setSessionAutoSkip } from './binge'
@@ -283,6 +286,11 @@ export function localAddresses(): string[] {
  */
 const ICS_DAYS = 60
 
+/** Assez pour choisir, pas tant qu'on ne choisit plus. */
+const SUGGEST_MAX = 8
+
+let stopFinished: (() => void) | null = null
+
 async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> {
   const url = req.url ?? '/'
   const pathname = url.split('?')[0]
@@ -392,6 +400,71 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
     } catch (err) {
       return json(res, 502, { error: `Franchise illisible : ${(err as Error).message}` })
     }
+  }
+
+  /**
+   * La dernière série terminée, où qu'on l'ait cochée.
+   *
+   * Le téléphone la relit souvent et n'annonce qu'une fois chaque fin : une
+   * adresse qui ne renvoie que deux nombres, pour ne rien coûter à ce rythme.
+   */
+  if (route === 'finished') {
+    const last = lastFinished()
+    // L'âge plutôt que l'heure : l'horloge du téléphone n'est pas celle du PC.
+    return json(res, 200, { finished: last ? { ...last, ago: Date.now() - last.at } : null })
+  }
+
+  /**
+   * Après une série terminée : son arbre, et par où continuer.
+   *
+   * La suite est choisie par la même règle que « Et maintenant ? » sur le PC
+   * (`@shared/next-up`) : deux écrans qui conseilleraient différemment, on ne
+   * saurait plus lequel croire. Un arbre illisible n'empêche pas de répondre —
+   * le téléphone passe alors aux suggestions.
+   */
+  if (route === 'after') {
+    const id = Number(new URLSearchParams(url.slice(url.indexOf('?') + 1)).get('id'))
+    if (!Number.isInteger(id) || id <= 0) return json(res, 400, { error: 'Série inconnue.' })
+    const media = getMedia(id)
+    let tree: Awaited<ReturnType<typeof franchiseTree>> | null = null
+    let next: Suggestion[] = []
+    try {
+      tree = await franchiseTree(id)
+      next = nextUp(tree, id)
+    } catch {
+      // Rien à conseiller dans la franchise : les suggestions prennent le relais.
+    }
+    return json(res, 200, {
+      id,
+      title: media ? (media.title.english ?? media.title.romaji) : null,
+      cover: media?.cover.large ?? null,
+      color: media?.cover.color ?? null,
+      tree,
+      next
+    })
+  }
+
+  /**
+   * D'autres séries, quand la franchise n'a plus rien à offrir.
+   *
+   * Les recommandations de « Pour toi » sur le PC, classées par le profil de
+   * goût, sans rien de ce qui est déjà dans la liste.
+   */
+  if (route === 'suggest') {
+    const found = await forYou().catch((err: Error) => err)
+    if (found instanceof Error) return json(res, 502, { error: found.message })
+    return json(res, 200, {
+      items: found.picks.slice(0, SUGGEST_MAX).map((p) => ({
+        id: p.media.id,
+        title: p.media.title.english ?? p.media.title.romaji,
+        cover: p.media.cover.large,
+        color: p.media.cover.color,
+        year: p.media.seasonYear,
+        episodes: p.media.episodes,
+        score: p.media.averageScore,
+        reason: p.reasons[0] ?? (p.from[0] ? `Proche de ${p.from[0]}` : null)
+      }))
+    })
   }
 
   /**
@@ -798,6 +871,9 @@ export function startRemote(port = REMOTE_PORT): Promise<RemoteStatus> {
 
     next.listen(port, '0.0.0.0', () => {
       server = next
+      // Les fins de série ne comptent qu'à partir d'ici : sans téléphone, il
+      // n'y a personne à qui les annoncer.
+      stopFinished ??= startFinishedWatch()
       status = {
         on: true,
         url: remoteUrl(hosts[0], port, token),
@@ -814,6 +890,8 @@ export function startRemote(port = REMOTE_PORT): Promise<RemoteStatus> {
 export function stopRemote(): RemoteStatus {
   server?.close()
   server = null
+  stopFinished?.()
+  stopFinished = null
   // Le mot de passe meurt avec le serveur : le rallumage en tire un neuf, si
   // bien qu'une adresse notée hier ne rouvre rien aujourd'hui. À moins qu'il
   // n'ait été choisi dans les réglages — c'est justement ce qu'on demande

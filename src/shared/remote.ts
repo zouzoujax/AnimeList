@@ -128,6 +128,9 @@ export type RemoteRoute =
   | 'ics'
   | 'reading'
   | 'read'
+  | 'finished'
+  | 'after'
+  | 'suggest'
   | 'unknown'
 
 /**
@@ -180,6 +183,12 @@ export function routeOf(pathname: string): RemoteRoute {
       return 'reading'
     case '/api/read':
       return 'read'
+    case '/api/finished':
+      return 'finished'
+    case '/api/after':
+      return 'after'
+    case '/api/suggest':
+      return 'suggest'
     default:
       return 'unknown'
   }
