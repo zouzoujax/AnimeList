@@ -9,6 +9,13 @@ Un titre de niveau deux par version, puis des rubriques `### Ajouts`,
 changement, écrite pour quelqu'un qui utilise l'app, pas pour quelqu'un qui lit
 le code.
 
+## 0.13.2 — 27 septembre 2026
+
+### Corrections
+
+- Un tag choisi dans Découvrir ne ramène plus que les séries qu’il décrit vraiment : « Angels » proposait Lord of Mysteries, où il n’est qu’un détail caché de la fiche
+- La section « Pour toi » de Découvrir s’efface quand un tag, un genre ou un format est choisi : ses conseils ne suivaient pas le filtre
+
 ## 0.13.1 — 27 septembre 2026
 
 ### Ajouts
