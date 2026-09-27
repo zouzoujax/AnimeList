@@ -20,7 +20,7 @@
  * seul ce qui vit dans l'élément agrandi reste visible.
  */
 
-import { shouldAdvance, shouldTick, watchedRatio, type Playing } from '@shared/binge'
+import { followingEpisode, shouldAdvance, shouldTick, watchedRatio, type Playing } from '@shared/binge'
 import { canTick } from '@shared/airing'
 import {
   activeSkip,
@@ -326,6 +326,19 @@ async function endSoiree(): Promise<void> {
   still.close()
 }
 
+/** Le suivant dans la même série, s'il existe — voir `followingEpisode`. */
+function sameShowNext(animeId: number, episode: number): { animeId: number; episode: number; title: null } | null {
+  const next = followingEpisode(getMedia(animeId), episode)
+  return next === null ? null : { animeId, episode: next, title: null }
+}
+
+/** Y a-t-il une suite, dans la soirée ou dans la série ? */
+function hasFollowUp(animeId: number, episode: number): boolean {
+  const step = soireeNext(animeId, episode)
+  if (step.inSession) return true
+  return sameShowNext(animeId, episode) !== null
+}
+
 /** Ouvre une autre série dans la fenêtre de lecture. */
 async function openOther(animeId: number, episode: number): Promise<boolean> {
   const media = getMedia(animeId)
@@ -356,7 +369,10 @@ async function advanceUnlessRefused(animeId: number, episode: number, key: strin
     return
   }
 
-  const target = step.next ?? { animeId, episode: episode + 1, title: null }
+  const target = step.next ?? sameShowNext(animeId, episode)
+  // Dernier épisode de la saison, hors soirée : rien à annoncer. Le compte à
+  // rebours promettait un épisode qui n'existe pas.
+  if (!target) return
   const sameShow = target.animeId === animeId
   const label = sameShow ? `Épisode ${target.episode}` : `${target.title ?? 'Suite'} — épisode ${target.episode}`
 
@@ -403,7 +419,8 @@ async function goNext(animeId: number, episode: number): Promise<boolean> {
     return true
   }
 
-  const target = step.next ?? { animeId, episode: episode + 1, title: null }
+  const target = step.next ?? sameShowNext(animeId, episode)
+  if (!target) return false
   const opened =
     target.animeId === animeId ? await playNext(target.episode) : await openOther(target.animeId, target.episode)
 
@@ -446,7 +463,9 @@ async function offerSkip(animeId: number, episode: number, now: Playing, auto: b
    * rebours de l'enchaînement : une attente remplacée par une autre. Le bouton
    * annonce donc l'épisode suivant, et y va.
    */
-  const terminal = endsTheEpisode(active, now.duration)
+  // Au dernier épisode, l'ending n'a pas de suite à annoncer : il se passe
+  // comme un autre.
+  const terminal = endsTheEpisode(active, now.duration) && hasFollowUp(animeId, episode)
   const reste = active.end - now.position
 
   if (auto) {

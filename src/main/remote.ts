@@ -43,7 +43,7 @@ import {
 } from '@shared/remote'
 import { nextEpisode } from '@shared/resume'
 import { canComplete, canTick, isUnaired } from '@shared/airing'
-import { shouldOfferNext } from '@shared/binge'
+import { followingEpisode, shouldOfferNext } from '@shared/binge'
 import { playerIndex } from '@shared/as-players'
 import { searchTitles } from '@shared/titles'
 import { summarise, upcoming } from '@shared/summary'
@@ -232,12 +232,10 @@ function offerNext(state: PlayerState, launched: Launched): number | null {
   if (Date.now() - launched.at < SETTLE_MS) return null
   if (!shouldOfferNext({ position: state.position, duration: state.duration, playing: state.playing })) return null
 
-  const next = launched.episode + 1
-  // Le compte d'épisodes manque parfois — une série en cours de diffusion dont
-  // la fiche ne l'annonce pas. On propose alors : le site dira mieux que nous
-  // si le numéro existe, et le bouton ne coûte rien s'il n'existe pas.
-  const total = getMedia(launched.animeId)?.episodes ?? null
-  return total !== null && next > total ? null : next
+  // La règle est celle de l'enchaînement automatique : le total de la fiche,
+  // puis le dernier épisode sorti. Sans l'un ni l'autre, on propose — le site
+  // dira mieux que nous si le numéro existe.
+  return followingEpisode(getMedia(launched.animeId), launched.episode)
 }
 
 /** L'état du lecteur, complété par ce qu'on sait de la série lancée. */

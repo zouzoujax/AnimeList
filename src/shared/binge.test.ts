@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   MIN_DURATION_S,
+  followingEpisode,
   OFFER_RATIO,
   playable,
   SEEN_RATIO,
@@ -155,5 +156,26 @@ describe('shouldOfferNext', () => {
   it('ne propose rien sur ce qui n’est pas un épisode', () => {
     expect(shouldOfferNext(at(110, { duration: MIN_DURATION_S - 1 }))).toBe(false)
     expect(shouldOfferNext(at(0, { duration: 0 }))).toBe(false)
+  })
+})
+
+describe('followingEpisode', () => {
+  const NOW = 1_800_000_000_000
+
+  it('s’arrête au dernier épisode de la saison', () => {
+    // Jujutsu Kaisen, saison 1 : vingt-quatre épisodes, pas de vingt-cinquième.
+    expect(followingEpisode({ episodes: 24, nextAiring: null }, 24, NOW)).toBeNull()
+    expect(followingEpisode({ episodes: 24, nextAiring: null }, 23, NOW)).toBe(24)
+  })
+
+  it('s’arrête au dernier épisode sorti d’une série en diffusion', () => {
+    const airing = { episodes: 12, nextAiring: { episode: 8, airingAt: NOW / 1000 + 3600 } }
+    expect(followingEpisode(airing, 7, NOW)).toBeNull()
+    expect(followingEpisode(airing, 6, NOW)).toBe(7)
+  })
+
+  it('propose quand rien n’est connu', () => {
+    expect(followingEpisode(undefined, 5, NOW)).toBe(6)
+    expect(followingEpisode({ episodes: null, nextAiring: null }, 5, NOW)).toBe(6)
   })
 })

@@ -17,6 +17,8 @@
  *   ou trop tard sur l'autre.
  */
 
+import { isUnaired, type AiringOf } from './airing'
+
 /** Ce que le lecteur rapporte, réduit à ce qui sert ici. */
 export interface Playing {
   /** Secondes. */
@@ -107,4 +109,26 @@ export function shouldAdvance(now: Playing): boolean {
   const left = now.duration - now.position
   if (left > OVER_LEFT_S) return false
   return now.playing || left <= 1
+}
+
+/** Ce qu'il faut savoir d'une série pour dire si un épisode suit. */
+export interface NextOf extends AiringOf {
+  episodes: number | null
+}
+
+/**
+ * L'épisode qui suit dans la même série, ou `null` s'il n'y en a pas.
+ *
+ * Le compte à rebours partait sur `épisode + 1` sans rien vérifier : au bout
+ * de Jujutsu Kaisen, il annonçait un épisode 25 qui n'existe pas. Le total de
+ * la fiche tranche quand il est connu ; une série en cours de diffusion
+ * s'arrête au dernier épisode sorti. Sans total ni calendrier, on propose :
+ * leur menu dira mieux que nous si le numéro existe.
+ */
+export function followingEpisode(media: NextOf | undefined, episode: number, now: number = Date.now()): number | null {
+  const next = episode + 1
+  if (!media) return next
+  if (media.episodes !== null && media.episodes > 0 && next > media.episodes) return null
+  if (isUnaired(media, next, now)) return null
+  return next
 }
