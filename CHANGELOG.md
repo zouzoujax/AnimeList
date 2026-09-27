@@ -9,6 +9,20 @@ Un titre de niveau deux par version, puis des rubriques `### Ajouts`,
 changement, écrite pour quelqu'un qui utilise l'app, pas pour quelqu'un qui lit
 le code.
 
+## 0.13.0 — 27 septembre 2026
+
+### Ajouts
+
+- Sur le téléphone, quand tu finis une série, un écran « Série terminée » s’ouvre tout seul : la suite à regarder dans l’ordre de la franchise, puis l’arbre complet, le tout à lancer ou ajouter sans te lever. S’il n’y a plus rien après, il te propose d’autres séries de « Pour toi », avec la raison de chaque conseil
+
+### Modifications
+
+- Dans les statistiques, les durées se comptent en heures (156 h) plutôt qu’en jours et heures, qui se lisaient comme des jours de calendrier
+
+### Corrections
+
+- Au dernier épisode d’une saison — le 24ᵉ de Jujutsu Kaisen, par exemple —, le compte à rebours n’annonce plus un épisode suivant qui n’existe pas, et le bouton de l’ending passe simplement le générique. Pareil pour une série en diffusion arrivée à son dernier épisode sorti
+
 ## 0.12.0 — 26 septembre 2026
 
 ### Ajouts
