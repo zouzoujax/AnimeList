@@ -9,6 +9,12 @@ Un titre de niveau deux par version, puis des rubriques `### Ajouts`,
 changement, écrite pour quelqu'un qui utilise l'app, pas pour quelqu'un qui lit
 le code.
 
+## 0.13.1 — 27 septembre 2026
+
+### Ajouts
+
+- Sur la fiche d’un anime, cliquer sur un tag (« Magic », « Found Family »…) ouvre Découvrir avec les séries qui le portent. Le tag s’y combine avec les genres, les formats et les onglets, et se retire d’un clic
+
 ## 0.13.0 — 27 septembre 2026
 
 ### Ajouts
