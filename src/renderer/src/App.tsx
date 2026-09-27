@@ -234,7 +234,7 @@ export default function App(): React.JSX.Element {
                       ) : nd.discover ? (
                         <NdDiscoverPage initialSearch={route.search} />
                       ) : (
-                        <DiscoverPage initialSearch={route.search} />
+                        <DiscoverPage initialSearch={route.search} initialTag={route.tag} />
                       ))}
                     {route.name === 'library' &&
                       (xp ? (

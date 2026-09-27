@@ -22,7 +22,7 @@ import { airingLabel, titleOf } from '@/lib/format'
 
 export type Route =
   | { name: 'home' }
-  | { name: 'discover'; search?: string }
+  | { name: 'discover'; search?: string; tag?: string }
   | { name: 'library'; genre?: string; list?: string }
   | { name: 'manga' }
   | { name: 'calendar' }
@@ -44,6 +44,10 @@ export function routeKeyOf(route: Route): string {
       return `anime-${route.id}`
     case 'studio':
       return `studio-${route.studio}`
+    // Un tag ouvre une page neuve : ses filtres partent du tag, pas de
+    // ceux qu'on avait laissés.
+    case 'discover':
+      return route.tag ? `discover-tag-${route.tag}` : 'discover'
     case 'library':
       return `library-${route.genre ?? ''}-${route.list ?? ''}`
     default:

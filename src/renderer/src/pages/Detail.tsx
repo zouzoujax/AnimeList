@@ -1095,9 +1095,14 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
         {detail && detail.tags.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5">
             {detail.tags.map((tag) => (
-              <span key={tag} className="chip !h-6 !cursor-default !text-[0.65rem]">
+              <button
+                key={tag}
+                className="chip !h-6 !text-[0.65rem]"
+                title={`Découvrir les séries « ${tag} »`}
+                onClick={() => navigate({ name: 'discover', tag })}
+              >
                 {tag}
-              </span>
+              </button>
             ))}
           </div>
         )}

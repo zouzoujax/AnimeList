@@ -8,6 +8,7 @@ import {
   Search,
   Sparkles,
   Star,
+  Tag,
   TrendingUp,
   X
 } from 'lucide-react'
@@ -107,7 +108,13 @@ function UpcomingSchedule({ items }: { items: Media[] }): React.JSX.Element {
   )
 }
 
-export default function DiscoverPage({ initialSearch }: { initialSearch?: string }): React.JSX.Element {
+export default function DiscoverPage({
+  initialSearch,
+  initialTag
+}: {
+  initialSearch?: string
+  initialTag?: string
+}): React.JSX.Element {
   const entries = useApp((s) => s.entries)
   const navigate = useApp((s) => s.navigate)
   const [tab, setTab] = useState<BrowseKind>('trending')
@@ -116,6 +123,9 @@ export default function DiscoverPage({ initialSearch }: { initialSearch?: string
   // qu'on ait à l'écraser dans un effet.
   const [typed, setTyped] = useState({ from: initialSearch ?? '', text: initialSearch ?? '' })
   const [genre, setGenre] = useState<string | null>(null)
+  // Arrive d'un tag cliqué sur une fiche ; il n'a pas de rangée à lui, seulement
+  // une puce qu'on retire.
+  const [tag, setTag] = useState<string | null>(initialTag ?? null)
   const [format, setFormat] = useState<MediaFormat | null>(null)
   const opened = initialSearch ?? ''
   const search = typed.from === opened ? typed.text : opened
@@ -126,10 +136,10 @@ export default function DiscoverPage({ initialSearch }: { initialSearch?: string
   const showSchedule = !searching && tab === 'upcoming'
 
   const query = useMemo<BrowseQuery>(() => {
-    const filters = { genre: genre ?? undefined, format: format ?? undefined }
+    const filters = { genre: genre ?? undefined, tag: tag ?? undefined, format: format ?? undefined }
     if (searching) return { kind: 'search', search: debounced, perPage: 30, ...filters }
     return { kind: tab, perPage: showSchedule ? 50 : 30, ...filters }
-  }, [debounced, searching, tab, genre, format, showSchedule])
+  }, [debounced, searching, tab, genre, tag, format, showSchedule])
 
   const { items, loading, loadingMore, error, stale, staleAt, hasMore, loadMore, retry } = useBrowse(query)
   const sentinel = useInView(loadMore)
@@ -193,13 +203,14 @@ export default function DiscoverPage({ initialSearch }: { initialSearch?: string
   }, [])
 
   const scheduleItems = useMemo(() => {
-    if (!showSchedule) return items
+    // Les reprises n'ont pas leurs tags : sous un tag, on ne saurait pas les trier.
+    if (!showSchedule || tag) return items
     const seen = new Set(items.map((m) => m.id))
     const extra = returning.filter(
       (m) => !seen.has(m.id) && (!genre || m.genres.includes(genre)) && (!format || m.format === format)
     )
     return [...extra, ...items]
-  }, [showSchedule, items, returning, genre, format])
+  }, [showSchedule, items, returning, genre, tag, format])
 
   return (
     <div className="page">
@@ -209,7 +220,9 @@ export default function DiscoverPage({ initialSearch }: { initialSearch?: string
           ? `Résultats pour « ${debounced} »`
           : showSchedule
             ? 'Calendrier des sorties, du plus proche au plus lointain. Les titres sans date annoncée ne sont pas listés.'
-            : 'Tout le catalogue AniList — sans compte, sans pub.'}
+            : tag
+              ? `Les séries marquées « ${tag} ».`
+              : 'Tout le catalogue AniList — sans compte, sans pub.'}
       </p>
 
       <div className="glass sticky top-0 z-20 mb-7 rounded-[20px] p-3 backdrop-blur-xl">
@@ -261,6 +274,16 @@ export default function DiscoverPage({ initialSearch }: { initialSearch?: string
         </div>
 
         <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+          {tag && (
+            <>
+              <button data-on className="chip" onClick={() => setTag(null)} title="Retirer ce tag">
+                <Tag size={12} />
+                {tag}
+                <X size={12} />
+              </button>
+              <span className="mx-1 h-4 w-px" style={{ background: 'var(--line-2)' }} />
+            </>
+          )}
           <button data-on={!genre} className="chip" onClick={() => setGenre(null)}>
             Tous genres
           </button>

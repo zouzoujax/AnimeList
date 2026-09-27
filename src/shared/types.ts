@@ -717,6 +717,8 @@ export interface BrowseQuery {
   perPage?: number
   search?: string
   genre?: string
+  /** Un tag AniList (« Magic », « Found Family ») : plus fin qu'un genre. */
+  tag?: string
   format?: MediaFormat
   season?: SeasonName
   seasonYear?: number

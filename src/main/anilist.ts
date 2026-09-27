@@ -79,12 +79,12 @@ const MEDIA_FIELDS = `
 
 const LIST_QUERY = `
 query List($page: Int, $perPage: Int, $sort: [MediaSort], $search: String, $season: MediaSeason,
-           $seasonYear: Int, $genre: String, $format: MediaFormat, $status: MediaStatus,
+           $seasonYear: Int, $genre: String, $tag: String, $format: MediaFormat, $status: MediaStatus,
            $after: FuzzyDateInt, $isAdult: Boolean) {
   Page(page: $page, perPage: $perPage) {
     pageInfo { currentPage hasNextPage total }
     media(type: ANIME, sort: $sort, search: $search, season: $season, seasonYear: $seasonYear,
-          genre: $genre, format: $format, status: $status, startDate_greater: $after,
+          genre: $genre, tag: $tag, format: $format, status: $status, startDate_greater: $after,
           isAdult: $isAdult) { ${MEDIA_FIELDS} }
   }
 }`
@@ -797,6 +797,7 @@ export async function browse(q: BrowseQuery, showAdult: boolean, lane: Lane = 'i
   // from 5000 matches to 0). Absent filters must be left out of the variables.
   const vars: Record<string, unknown> = { page, perPage }
   if (q.genre) vars.genre = q.genre
+  if (q.tag) vars.tag = q.tag
   if (q.format) vars.format = q.format
   if (!showAdult) vars.isAdult = false
 
