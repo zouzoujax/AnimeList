@@ -78,6 +78,21 @@ export const PAGE_MOTION: Experience['motion'] = {
 }
 
 /*
+ * L'arrivée sur une fiche : elle sort du flou en se posant, là où les autres
+ * pages glissent. Passer d'une fiche à une autre (une suite, une reco) se lit
+ * alors comme un changement de sujet, pas comme un défilement.
+ *
+ * `filter` retombe à `none` une fois posé : un flou nul reste un filtre, et un
+ * filtre sur la page crée un bloc conteneur qui piège les `position: fixed`.
+ */
+export const FICHE_MOTION: Experience['motion'] = {
+  initial: { opacity: 0, scale: 0.985, filter: 'blur(10px)' },
+  animate: { opacity: 1, scale: 1, filter: 'blur(0px)', transitionEnd: { filter: 'none' } },
+  exit: { opacity: 0, scale: 1.01, filter: 'blur(6px)' },
+  transition: { duration: 0.3, ease: [0.22, 0.8, 0.24, 1] }
+}
+
+/*
  * Chargées à la demande.
  *
  * Les cinq expériences pèsent plusieurs centaines de kilo-octets et la plupart

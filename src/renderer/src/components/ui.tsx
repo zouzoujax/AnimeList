@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight, LoaderCircle, TriangleAlert } from 'lucide-react'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, animate, motion } from 'motion/react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 
@@ -108,8 +108,14 @@ export function Poster({
   )
 }
 
-export function Skeleton({ className = '' }: { className?: string }): React.JSX.Element {
-  return <div className={`skeleton rounded-[14px] ${className}`} />
+export function Skeleton({
+  className = '',
+  style
+}: {
+  className?: string
+  style?: React.CSSProperties
+}): React.JSX.Element {
+  return <div className={`skeleton rounded-[14px] ${className}`} style={style} />
 }
 
 export function PosterSkeletons({ count = 8 }: { count?: number }): React.JSX.Element {
@@ -122,6 +128,63 @@ export function PosterSkeletons({ count = 8 }: { count?: number }): React.JSX.El
           <Skeleton className="mt-1.5 h-2.5 w-1/2 rounded-md" />
         </div>
       ))}
+    </div>
+  )
+}
+
+/**
+ * La fiche d'un anime avant ses données : la bannière, l'affiche, le titre, la
+ * grille d'épisodes et la colonne de droite, aux places qu'ils prendront. La
+ * page se remplit au lieu de sauter d'un bloc gris à une mise en page entière.
+ */
+export function FicheSkeleton({ children }: { children?: ReactNode }): React.JSX.Element {
+  return (
+    <div className="fiche-skeleton pb-14" aria-busy="true" aria-label="Chargement de la fiche">
+      <div className="relative">
+        {children && <div className="absolute inset-x-0 top-0 z-10 mx-auto max-w-[1400px] px-7 pt-5">{children}</div>}
+        <div className="skeleton absolute inset-x-0 top-0 h-[330px] !rounded-none opacity-60" />
+        <div
+          className="absolute inset-x-0 top-0 h-[330px]"
+          style={{ background: 'linear-gradient(180deg, transparent 30%, var(--bg) 100%)' }}
+        />
+        <div className="relative mx-auto flex max-w-[1400px] gap-7 px-7 pt-[168px]">
+          <Skeleton className="hidden h-[286px] w-[194px] shrink-0 !rounded-[18px] md:block" />
+          <div className="min-w-0 flex-1 pt-[92px]">
+            <div className="mb-3 flex gap-2">
+              <Skeleton className="h-6 w-14 !rounded-full" />
+              <Skeleton className="h-6 w-28 !rounded-full" />
+            </div>
+            <Skeleton className="h-9 w-[min(520px,80%)] !rounded-lg" />
+            <Skeleton className="mt-2.5 h-3.5 w-[min(300px,50%)] !rounded-md" />
+            <div className="mt-6 flex gap-2">
+              <Skeleton className="h-[38px] w-44 !rounded-xl" />
+              <Skeleton className="h-[38px] w-24 !rounded-xl" />
+              <Skeleton className="h-[38px] w-[38px] !rounded-xl" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="mx-auto mt-9 grid max-w-[1400px] gap-7 px-7 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div>
+          <Skeleton className="h-5 w-32 !rounded-md" />
+          <div className="mt-4 space-y-2">
+            {[100, 96, 98, 72].map((w, i) => (
+              <Skeleton key={i} className="h-3 !rounded-md" style={{ width: `${w}%` }} />
+            ))}
+          </div>
+          <Skeleton className="mt-10 h-5 w-28 !rounded-md" />
+          <div className="mt-4 flex flex-wrap gap-1.5">
+            {Array.from({ length: 24 }, (_, i) => (
+              <Skeleton key={i} className="h-[38px] w-[42px] !rounded-[10px]" />
+            ))}
+          </div>
+        </div>
+        <aside className="flex flex-col gap-4">
+          <Skeleton className="h-[100px] w-full !rounded-[20px]" />
+          <Skeleton className="h-[150px] w-full !rounded-[20px]" />
+          <Skeleton className="h-[220px] w-full !rounded-[20px]" />
+        </aside>
+      </div>
     </div>
   )
 }
@@ -178,6 +241,29 @@ export function EmptyState({
   )
 }
 
+/**
+ * Un nombre qui défile jusqu'à sa valeur plutôt que d'y sauter. Écrit dans le
+ * DOM à chaque image, sans repasser par React.
+ */
+export function CountUp({ value, suffix = '' }: { value: number; suffix?: string }): React.JSX.Element {
+  const ref = useRef<HTMLSpanElement>(null)
+  const from = useRef(0)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const controls = animate(from.current, value, {
+      duration: document.body.classList.contains('reduce-motion') ? 0 : 0.9,
+      ease: [0.2, 0.8, 0.2, 1],
+      onUpdate: (v) => {
+        from.current = v
+        el.textContent = `${Math.round(v)}${suffix}`
+      }
+    })
+    return () => controls.stop()
+  }, [value, suffix])
+  return <span ref={ref}>{`0${suffix}`}</span>
+}
+
 export function ProgressRing({
   value,
   size = 44,
@@ -202,7 +288,9 @@ export function ProgressRing({
           </linearGradient>
         </defs>
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,.12)" strokeWidth={stroke} />
-        <circle
+        {/* Part de zéro à l'affichage : l'anneau se remplit jusqu'où on en est,
+            puis suit chaque épisode coché. */}
+        <motion.circle
           cx={size / 2}
           cy={size / 2}
           r={r}
@@ -211,8 +299,9 @@ export function ProgressRing({
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={c}
-          strokeDashoffset={c * (1 - Math.max(0, Math.min(1, value)))}
-          style={{ transition: 'stroke-dashoffset .55s cubic-bezier(.2,.8,.2,1)' }}
+          initial={{ strokeDashoffset: c }}
+          animate={{ strokeDashoffset: c * (1 - Math.max(0, Math.min(1, value))) }}
+          transition={{ duration: 0.9, ease: [0.2, 0.8, 0.2, 1] }}
         />
       </svg>
       <div className="absolute inset-0 grid place-items-center">{children}</div>

@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, MotionConfig, motion } from 'motion/react'
 import { Suspense, lazy, useCallback, useEffect } from 'react'
 import { Intro } from '@/components/Intro'
 import { NextUp } from '@/components/NextUp'
@@ -6,9 +6,9 @@ import { CommandPalette } from '@/components/CommandPalette'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import Shortcuts, { useShortcutsKey } from '@/components/Shortcuts'
 import { Aurora, NAV, Sidebar, TitleBar } from '@/components/Shell'
-import { PAGE_MOTION, useExperienceState } from '@/experiences'
+import { FICHE_MOTION, PAGE_MOTION, useExperienceState } from '@/experiences'
 import { Toasts } from '@/components/Toasts'
-import { Spinner } from '@/components/ui'
+import { FicheSkeleton, Spinner } from '@/components/ui'
 import HomePage from '@/pages/Home'
 import { useNewDesign } from '@/lib/nd'
 import { restoreScroll } from '@/lib/scroll'
@@ -90,6 +90,7 @@ export default function App(): React.JSX.Element {
   const toast = useApp((s) => s.toast)
   const setPalette = useApp((s) => s.setPalette)
   const paletteOpen = useApp((s) => s.paletteOpen)
+  const reduceMotion = useApp((s) => s.prefs.reduceMotion)
   const nd = {
     home: useNewDesign('home'),
     library: useNewDesign('library'),
@@ -198,81 +199,89 @@ export default function App(): React.JSX.Element {
   const routeKey = routeKeyOf(route)
 
   return (
-    <div className="flex h-full flex-col">
-      {/* Par-dessus tout, et démonté ensuite : l'app se charge derrière, si
+    // « Réduire les animations » coupait les animations CSS (`.reduce-motion`)
+    // mais laissait courir celles de Motion : elles s'y plient désormais aussi.
+    <MotionConfig reducedMotion={reduceMotion ? 'always' : 'user'}>
+      <div className="flex h-full flex-col">
+        {/* Par-dessus tout, et démonté ensuite : l'app se charge derrière, si
           bien que l'ouverture couvre un travail qui avait lieu de toute façon
           plutôt que de s'y ajouter. */}
-      <Intro />
-      {/* Au-dessus des pages : une série se termine depuis n'importe quel écran. */}
-      <NextUp />
-      {/* Au-dessus des pages aussi : un badge tombe pendant qu'on coche, où qu'on soit. */}
-      <Suspense fallback={null}>
-        <BadgeUnlocked />
-      </Suspense>
-      <Aurora />
-      <TitleBar />
+        <Intro />
+        {/* Au-dessus des pages : une série se termine depuis n'importe quel écran. */}
+        <NextUp />
+        {/* Au-dessus des pages aussi : un badge tombe pendant qu'on coche, où qu'on soit. */}
+        <Suspense fallback={null}>
+          <BadgeUnlocked />
+        </Suspense>
+        <Aurora />
+        <TitleBar />
 
-      {!ready || xpPending ? (
-        <Boot />
-      ) : (
-        <div className={xp ? 'xp-frame relative flex min-h-0 flex-1' : 'flex min-h-0 flex-1'}>
-          {/* First thing Tab reaches, so the whole navigation can be skipped. */}
-          <a href="#contenu" className="skip-link">
-            Aller au contenu
-          </a>
-          {xp ? <xp.Nav /> : <Sidebar />}
-          <main id="contenu" className="scroll-y relative flex-1" tabIndex={-1}>
-            <AnimatePresence mode="wait">
-              <motion.div key={routeKey} {...(xp?.motion ?? PAGE_MOTION)}>
-                <ScrollOnArrival routeKey={routeKey} />
-                <ErrorBoundary resetKey={routeKey} onGoHome={() => navigate({ name: 'home' })}>
-                  <Suspense fallback={<Spinner label="Chargement de la page…" />}>
-                    {route.name === 'home' && (xp ? <xp.Home /> : nd.home ? <NdHomePage /> : <HomePage />)}
-                    {route.name === 'discover' &&
-                      (xp?.Discover ? (
-                        <xp.Discover initialSearch={route.search} />
-                      ) : nd.discover ? (
-                        <NdDiscoverPage initialSearch={route.search} />
-                      ) : (
-                        <DiscoverPage initialSearch={route.search} initialTag={route.tag} />
-                      ))}
-                    {route.name === 'library' &&
-                      (xp ? (
-                        <xp.Library />
-                      ) : nd.library ? (
-                        <NdLibraryPage initialGenre={route.genre} />
-                      ) : (
-                        <LibraryPage initialGenre={route.genre} initialList={route.list} />
-                      ))}
-                    {route.name === 'studio' &&
-                      (nd.studio ? <NdStudioPage studio={route.studio} /> : <StudioPage studio={route.studio} />)}
-                    {route.name === 'person' &&
-                      (nd.person ? (
-                        <NdPersonPage kind={route.kind} id={route.id} />
-                      ) : (
-                        <PersonPage kind={route.kind} id={route.id} />
-                      ))}
-                    {route.name === 'manga' && (xp?.Manga ? <xp.Manga /> : nd.manga ? <NdMangaPage /> : <MangaPage />)}
-                    {route.name === 'calendar' &&
-                      (xp?.Calendar ? <xp.Calendar /> : nd.calendar ? <NdCalendarPage /> : <CalendarPage />)}
-                    {route.name === 'stats' && (xp?.Stats ? <xp.Stats /> : nd.stats ? <NdStatsPage /> : <StatsPage />)}
-                    {route.name === 'badges' &&
-                      (xp?.Badges ? <xp.Badges /> : nd.stats ? <NdStatsPage focus="badges" /> : <StatsPage />)}
-                    {route.name === 'settings' && <SettingsPage />}
-                    {route.name === 'season' && (nd.season ? <NdSeasonPage /> : <SeasonPage />)}
-                    {route.name === 'journal' && (nd.journal ? <NdJournalPage /> : <JournalPage />)}
-                    {route.name === 'anime' && <DetailPage id={route.id} />}
-                  </Suspense>
-                </ErrorBoundary>
-              </motion.div>
-            </AnimatePresence>
-          </main>
-        </div>
-      )}
+        {!ready || xpPending ? (
+          <Boot />
+        ) : (
+          <div className={xp ? 'xp-frame relative flex min-h-0 flex-1' : 'flex min-h-0 flex-1'}>
+            {/* First thing Tab reaches, so the whole navigation can be skipped. */}
+            <a href="#contenu" className="skip-link">
+              Aller au contenu
+            </a>
+            {xp ? <xp.Nav /> : <Sidebar />}
+            <main id="contenu" className="scroll-y relative flex-1" tabIndex={-1}>
+              <AnimatePresence mode="wait">
+                <motion.div key={routeKey} {...(xp?.motion ?? (route.name === 'anime' ? FICHE_MOTION : PAGE_MOTION))}>
+                  <ScrollOnArrival routeKey={routeKey} />
+                  <ErrorBoundary resetKey={routeKey} onGoHome={() => navigate({ name: 'home' })}>
+                    <Suspense
+                      fallback={route.name === 'anime' ? <FicheSkeleton /> : <Spinner label="Chargement de la page…" />}
+                    >
+                      {route.name === 'home' && (xp ? <xp.Home /> : nd.home ? <NdHomePage /> : <HomePage />)}
+                      {route.name === 'discover' &&
+                        (xp?.Discover ? (
+                          <xp.Discover initialSearch={route.search} />
+                        ) : nd.discover ? (
+                          <NdDiscoverPage initialSearch={route.search} />
+                        ) : (
+                          <DiscoverPage initialSearch={route.search} initialTag={route.tag} />
+                        ))}
+                      {route.name === 'library' &&
+                        (xp ? (
+                          <xp.Library />
+                        ) : nd.library ? (
+                          <NdLibraryPage initialGenre={route.genre} />
+                        ) : (
+                          <LibraryPage initialGenre={route.genre} initialList={route.list} />
+                        ))}
+                      {route.name === 'studio' &&
+                        (nd.studio ? <NdStudioPage studio={route.studio} /> : <StudioPage studio={route.studio} />)}
+                      {route.name === 'person' &&
+                        (nd.person ? (
+                          <NdPersonPage kind={route.kind} id={route.id} />
+                        ) : (
+                          <PersonPage kind={route.kind} id={route.id} />
+                        ))}
+                      {route.name === 'manga' &&
+                        (xp?.Manga ? <xp.Manga /> : nd.manga ? <NdMangaPage /> : <MangaPage />)}
+                      {route.name === 'calendar' &&
+                        (xp?.Calendar ? <xp.Calendar /> : nd.calendar ? <NdCalendarPage /> : <CalendarPage />)}
+                      {route.name === 'stats' &&
+                        (xp?.Stats ? <xp.Stats /> : nd.stats ? <NdStatsPage /> : <StatsPage />)}
+                      {route.name === 'badges' &&
+                        (xp?.Badges ? <xp.Badges /> : nd.stats ? <NdStatsPage focus="badges" /> : <StatsPage />)}
+                      {route.name === 'settings' && <SettingsPage />}
+                      {route.name === 'season' && (nd.season ? <NdSeasonPage /> : <SeasonPage />)}
+                      {route.name === 'journal' && (nd.journal ? <NdJournalPage /> : <JournalPage />)}
+                      {route.name === 'anime' && <DetailPage id={route.id} />}
+                    </Suspense>
+                  </ErrorBoundary>
+                </motion.div>
+              </AnimatePresence>
+            </main>
+          </div>
+        )}
 
-      <CommandPalette />
-      <Shortcuts open={helpOpen} onClose={() => setHelp(false)} />
-      <Toasts />
-    </div>
+        <CommandPalette />
+        <Shortcuts open={helpOpen} onClose={() => setHelp(false)} />
+        <Toasts />
+      </div>
+    </MotionConfig>
   )
 }

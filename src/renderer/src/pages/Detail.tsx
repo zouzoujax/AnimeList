@@ -40,7 +40,18 @@ import EpisodeEditor from '@/components/EpisodeEditor'
 import ListPicker from '@/components/ListPicker'
 import LocalFiles from '@/components/LocalFiles'
 import { MangaSheet } from '@/components/MangaSheet'
-import { ErrorBox, Modal, Poster, ProgressRing, RowScroller, Section, Skeleton, Spinner } from '@/components/ui'
+import {
+  CountUp,
+  ErrorBox,
+  FicheSkeleton,
+  Modal,
+  Poster,
+  ProgressRing,
+  RowScroller,
+  Section,
+  Skeleton,
+  Spinner
+} from '@/components/ui'
 import { StaleNote } from '@/components/StaleNote'
 import { Franchise } from '@/components/Franchise'
 import { LANG_LABELS, langUrl, type Lang } from '@shared/langs'
@@ -135,6 +146,13 @@ function EpisodeGrid({
   const progress = useApp((st) => st.progress)
   const [hovered, setHovered] = useState<number | null>(null)
   const [editing, setEditing] = useState<number | null>(null)
+  /**
+   * Les cases qui viennent d'être cochées, pour leur donner un éclat.
+   *
+   * Tenu au clic plutôt que déduit des coches : à l'ouverture, toutes les cases
+   * déjà vues s'allumeraient d'un coup. `round` rejoue l'effet si l'on recoche.
+   */
+  const [burst, setBurst] = useState<{ from: number; to: number; round: number } | null>(null)
   const [hideFiller, setHideFiller] = useState(false)
   const fillerInfo = useFiller(detail.idMal)
 
@@ -296,6 +314,8 @@ function EpisodeGrid({
           // décocher enferme la coche qui a réussi à passer. La porte doit
           // s'ouvrir dans les deux sens.
           const locked = notOut && !watched
+          const fresh = watched && burst !== null && ep.number >= burst.from && ep.number <= burst.to
+          const freshDelay = fresh ? `${Math.min(ep.number - burst.from, 24) * 22}ms` : undefined
           /**
            * L'épisode en train d'être lu, et où il en est.
            *
@@ -321,11 +341,16 @@ function EpisodeGrid({
               disabled={locked}
               onMouseEnter={() => setHovered(ep.number)}
               onMouseLeave={() => setHovered(null)}
-              onClick={(e) =>
-                e.shiftKey && !notOut
-                  ? markUpTo(detail.id, ep.number, detail)
-                  : toggleEpisode(detail.id, ep.number, detail)
-              }
+              onClick={(e) => {
+                const upTo = e.shiftKey && !notOut
+                if (upTo || !watched)
+                  setBurst((b) => ({
+                    from: upTo ? (next ?? ep.number) : ep.number,
+                    to: ep.number,
+                    round: (b?.round ?? 0) + 1
+                  }))
+                void (upTo ? markUpTo(detail.id, ep.number, detail) : toggleEpisode(detail.id, ep.number, detail))
+              }}
               onContextMenu={(e) => {
                 e.preventDefault()
                 if (!notOut) setEditing(ep.number)
@@ -373,7 +398,21 @@ function EpisodeGrid({
                   style={{ width: `${lecture * 100}%`, background: rgba(glow, 0.34) }}
                 />
               )}
-              <span className="relative">{watched ? <Check size={14} strokeWidth={3} /> : ep.number}</span>
+              {fresh && (
+                <span
+                  key={burst.round}
+                  aria-hidden
+                  className="ep-burst pointer-events-none absolute inset-0 rounded-[10px]"
+                  style={{ '--tone': glow, animationDelay: freshDelay } as React.CSSProperties}
+                />
+              )}
+              <span
+                key={fresh ? `vu-${burst.round}` : watched ? 'vu' : 'num'}
+                className={`relative ${fresh ? 'ep-check' : ''}`}
+                style={{ animationDelay: freshDelay }}
+              >
+                {watched ? <Check size={14} strokeWidth={3} /> : ep.number}
+              </span>
               {(annotated.has(ep.number) || pinned.has(ep.number)) && (
                 <span
                   className="absolute right-1 top-1 h-[5px] w-[5px] rounded-full"
@@ -708,6 +747,17 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
     await patch({ emotions: current.includes(emotion) ? current.filter((e) => e !== emotion) : [...current, emotion] })
   }
 
+  if (!media && !error) {
+    return (
+      <FicheSkeleton>
+        <button className="btn !h-8" onClick={back}>
+          <ArrowLeft size={14} />
+          Retour
+        </button>
+      </FicheSkeleton>
+    )
+  }
+
   if (!media) {
     return (
       <div className="mx-auto max-w-[1400px] px-7 py-7">
@@ -737,9 +787,7 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
             }
             onRetry={retry}
           />
-        ) : (
-          <Skeleton className="h-[380px] w-full rounded-[26px]" />
-        )}
+        ) : null}
       </div>
     )
   }
@@ -991,12 +1039,32 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
     progress: (
       <div className="glass rounded-[20px] p-4">
         <div className="flex items-center gap-4">
-          <ProgressRing value={ratio} size={68} stroke={5}>
-            <span className="text-[0.78rem] font-bold tabular-nums">{Math.round(ratio * 100)}%</span>
-          </ProgressRing>
+          {/* Un halo repart à chaque épisode coché : la clé change avec le
+              compte, ce qui remonte l'élément et rejoue son animation. */}
+          <div className="relative">
+            <span
+              key={seenCount}
+              aria-hidden
+              className="progress-halo pointer-events-none absolute inset-0 rounded-full"
+              style={{ '--tone': glow } as React.CSSProperties}
+            />
+            <ProgressRing value={ratio} size={68} stroke={5}>
+              <span className="text-[0.78rem] font-bold tabular-nums">
+                <CountUp value={Math.round(ratio * 100)} suffix="%" />
+              </span>
+            </ProgressRing>
+          </div>
           <div className="min-w-0">
             <p className="stat-num text-[1.5rem] leading-none">
-              {seenCount}
+              <motion.span
+                key={seenCount}
+                className="inline-block"
+                initial={{ y: -10, opacity: 0, scale: 1.25 }}
+                animate={{ y: 0, opacity: 1, scale: 1 }}
+                transition={{ type: 'spring', stiffness: 420, damping: 22 }}
+              >
+                {seenCount}
+              </motion.span>
               <span className="text-[0.9rem] text-faint"> / {total ?? '?'}</span>
             </p>
             <p className="mt-1.5 text-[0.74rem] text-faint">{minutesToHuman(watchedMinutes)} de visionnage</p>
@@ -1267,11 +1335,20 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
           </div>
 
           <div className="absolute inset-x-0 top-0 h-[330px] overflow-hidden">
-            {media.banner ? (
-              <img src={media.banner} alt="" className="h-full w-full object-cover" />
-            ) : (
-              <img src={media.cover.xl} alt="" className="h-full w-full scale-110 object-cover blur-2xl" />
-            )}
+            {/* La bannière arrive un peu grossie et se pose, le temps que la
+                page sorte du flou. */}
+            <motion.div
+              className="h-full w-full"
+              initial={{ scale: 1.08, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {media.banner ? (
+                <img src={media.banner} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <img src={media.cover.xl} alt="" className="h-full w-full scale-110 object-cover blur-2xl" />
+              )}
+            </motion.div>
             <div
               className="absolute inset-0"
               style={{
@@ -1290,7 +1367,12 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
               <Poster src={media.cover.xl} alt="" className="h-[286px] w-[194px]" rounded="rounded-[18px]" />
             </motion.div>
 
-            <div className="min-w-0 flex-1 pb-1">
+            <motion.div
+              className="min-w-0 flex-1 pb-1"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.08, type: 'spring', stiffness: 220, damping: 26 }}
+            >
               <div className="mb-2 flex flex-wrap items-center gap-2 text-[0.74rem] text-muted">
                 <span
                   className="chip !cursor-default !h-6"
@@ -1415,7 +1497,7 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
                   ))}
                 </div>
               )}
-            </div>
+            </motion.div>
           </div>
         </div>
       )}

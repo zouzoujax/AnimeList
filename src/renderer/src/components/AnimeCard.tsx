@@ -138,7 +138,7 @@ export function AnimeCard({
                 <div className="mx-2 mb-2 flex items-center gap-2">
                   <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/20">
                     <div
-                      className="h-full rounded-full transition-[width] duration-500"
+                      className="bar-grow h-full rounded-full transition-[width] duration-500"
                       style={{
                         width: `${ratio * 100}%`,
                         background: `linear-gradient(90deg, ${glow}, var(--accent-2))`
@@ -253,7 +253,7 @@ export function ContinueCard({
               </div>
               <div className="h-1.5 overflow-hidden rounded-full bg-white/15">
                 <div
-                  className="h-full rounded-full"
+                  className="h-full rounded-full bar-grow transition-[width] duration-500"
                   style={{
                     width: `${ratio * 100}%`,
                     background: `linear-gradient(90deg, ${glow}, var(--accent-2))`,
