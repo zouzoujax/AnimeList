@@ -77,7 +77,10 @@ interface Row extends WatchTarget {
 // 5 : films, OVA et spéciaux ont leur section — ils ouvraient la saison 1.
 // 6 : un film titré autrement chez eux se retrouve par sa place de sortie.
 // 7 : alignement autour des films reconnus par leur nom — Shippuden décalait.
-const RULE_VERSION = 7
+// 8 : les crossovers (lien « Personnage ») ne comptent plus parmi les films.
+// 9 : un lien « Alternative » donne la série mère à défaut d'autre — les films
+//     de Dragon Ball n'en avaient aucune.
+const RULE_VERSION = 9
 
 let cache = new Map<number, Row>()
 let file = ''
@@ -224,6 +227,10 @@ async function carrierOf(animeId: number): Promise<number | null> {
   return (
     own.find((e) => e.relationType === 'PARENT' && seasonal(e.format))?.id ??
     own.find((e) => ['PREQUEL', 'SEQUEL', 'SIDE_STORY'].includes(e.relationType) && seasonal(e.format))?.id ??
+    // Les films de Dragon Ball ne sont liés à la série que par « Alternative » :
+    // ils en racontent un arc autrement. Sans ce repli, aucun n'avait de série
+    // mère, donc aucun alignement, et aucun n'était visé dans leur menu.
+    own.find((e) => e.relationType === 'ALTERNATIVE' && seasonal(e.format))?.id ??
     // Sans fiche à lui — l'API coupée ne la ramènera pas —, une saison gardée
     // qui le cite suffit : celle de Naruto cite ses trois films.
     cachedParentOf(animeId)
@@ -253,13 +260,18 @@ async function carrierSlug(animeId: number): Promise<string | null> {
  *
  * Les titres servent de repères pour aligner les deux listes : le romaji des
  * liens, et l'anglais quand la fiche de ce film est gardée.
+ *
+ * Un lien « Personnage » n'en fait pas partie : c'est un crossover, qui
+ * partage des personnages sans être un film de la série. Dragon Ball en a un
+ * — « Dr. Slump: Arale-chan » — et ce cinquième film, absent de leur menu de
+ * quatre, empêchait tout alignement : aucun film n'était visé.
  */
 async function releaseSiblings(animeId: number, format: string): Promise<Sibling[] | null> {
   const parent = await carrierOf(animeId)
   if (parent === null) return null
 
   const siblings = (await relationsOf(parent).catch(() => []))
-    .filter((e) => e.relationType !== 'SUMMARY' && sameKind(format, e.format))
+    .filter((e) => e.relationType !== 'SUMMARY' && e.relationType !== 'CHARACTER' && sameKind(format, e.format))
     .map((e) => {
       const known = cachedMedia(e.id)?.title
       const titles = [e.title, known?.english, known?.romaji].filter((t): t is string => !!t)
