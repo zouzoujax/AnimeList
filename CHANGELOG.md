@@ -9,6 +9,21 @@ Un titre de niveau deux par version, puis des rubriques `### Ajouts`,
 changement, écrite pour quelqu'un qui utilise l'app, pas pour quelqu'un qui lit
 le code.
 
+## 0.13.3 — 30 septembre 2026
+
+### Ajouts
+
+- En chantier (Réglages › Lecture, éteint par défaut) : les épisodes regardés sur ADN, FrAnime ou Anime-Sama dans Chrome, Edge, Opera ou Firefox se cochent tout seuls aux neuf dixièmes, films et OAV d’Anime-Sama compris. Quand l’épisode ne peut pas être reconnu avec certitude, l’app le dit au lieu de deviner. Crunchyroll n’est pas encore pris en charge
+- En revenant dans l’app, une fenêtre montre ce qui a été coché depuis le navigateur — un clic décoche — et propose d’ajouter les séries regardées qui ne sont pas dans ta bibliothèque
+
+### Modifications
+
+- Les fiches s’animent : elles arrivent en sortant du flou, l’anneau de progression se remplit, la case cochée reçoit un éclat de la couleur de la série, et un squelette calqué sur la fiche s’affiche pendant le chargement. « Réduire les animations » s’y applique aussi
+
+### Corrections
+
+- Sur la fiche d’un film Dragon Ball, « Regarder » ouvre enfin le bon film chez Anime-Sama au lieu de laisser choisir dans leur liste
+
 ## 0.13.2 — 27 septembre 2026
 
 ### Corrections
