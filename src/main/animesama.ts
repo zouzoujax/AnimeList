@@ -215,6 +215,29 @@ export function slugOf(url: string): string | null {
 }
 
 /**
+ * Le slug que l'app a déjà trouvé pour une série, sans rien demander au site.
+ *
+ * Sert au suivi du navigateur : le stockage d'Anime-Sama est rangé par slug,
+ * et le leur ne se déduit pas toujours du titre.
+ */
+export function knownSlug(animeId: number): string | null {
+  const override = overrideFor(animeId)
+  const url = override && 'animeSama' in override ? override.animeSama : cache.get(animeId)?.url
+  return url ? slugOf(url) : null
+}
+
+/**
+ * Où l'app a déjà situé un film ou un OAV chez Anime-Sama : l'adresse de la
+ * section et l'entrée visée, sans rien demander au site. `null` tant qu'elle
+ * ne l'a pas résolu, ou avec une règle d'avant.
+ */
+export function cachedSideTarget(animeId: number): { url: string; entry: Entry } | null {
+  const hit = cache.get(animeId)
+  if (!hit || hit.v !== RULE_VERSION || !hit.entry) return null
+  return { url: hit.url, entry: hit.entry }
+}
+
+/**
  * La série qui porte un film ou un OAV.
  *
  * Celle vers laquelle pointe un lien PARENT — sinon une préquelle ou une suite

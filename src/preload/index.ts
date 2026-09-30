@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 import type { RestoreMode, RestorePreview } from '@shared/restore'
 import type { PhonePushStatus } from '@shared/phone-push'
 import type { DiscordStatus, LocalWatching } from '@shared/discord'
+import type { BrowserReviewBatch } from '@shared/browser-watch'
 import type { Slot } from '@shared/soiree'
 import type { Tree } from '@shared/franchise'
 import type { Lang } from '@shared/langs'
@@ -354,6 +355,16 @@ const api = {
   discord: {
     /** Ce qui est demandé, ce qui est vrai, et pourquoi si ça diffère. */
     status: (): Promise<DiscordStatus> => ipcRenderer.invoke('discord:status')
+  },
+  browserWatch: {
+    /** Ce que le navigateur a coché, et les séries inconnues regardées, pas encore montrés ; tout se vide. */
+    takeReview: (): Promise<BrowserReviewBatch> => ipcRenderer.invoke('browser-watch:take-review'),
+    /** Prévenu à chaque coche venue du navigateur. */
+    onTicked: (cb: () => void): (() => void) => {
+      const handler = (): void => cb()
+      ipcRenderer.on('browser-watch:ticked', handler)
+      return () => ipcRenderer.off('browser-watch:ticked', handler)
+    }
   },
 
   app: {

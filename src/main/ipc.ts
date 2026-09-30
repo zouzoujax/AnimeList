@@ -32,6 +32,7 @@ import { closeTrailerWindow, openTrailerWindow, trailerUrl } from './trailer'
 import { fillerFor } from './filler'
 import { chooseFolder, forgetFolder, forgetPosition, openInSystemPlayer, rememberPosition, scanFolder } from './videos'
 import { openAnimeSamaEpisode } from './watch-window'
+import { applyBrowserWatch, takeReview } from './browser-watch'
 import { cleanOrphans, health, removeStray } from './health'
 import { saveCard, type CardRect } from './card'
 import { sweepSequels } from './sequels'
@@ -155,6 +156,7 @@ export function registerIpc(): void {
     if (patch.discord !== undefined || patch.discordAppId !== undefined || patch.discordHideTitle !== undefined) {
       applyDiscord()
     }
+    if (patch.browserWatch !== undefined) applyBrowserWatch()
     return prefs
   })
 
@@ -343,6 +345,7 @@ export function registerIpc(): void {
 
   // ---- statut Discord --------------------------------------------------
   ipcMain.handle('discord:status', () => discordStatus())
+  ipcMain.handle('browser-watch:take-review', () => takeReview())
 
   // ---- app -----------------------------------------------------------
   ipcMain.handle('app:info', () => ({

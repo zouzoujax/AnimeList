@@ -13,6 +13,7 @@ import HomePage from '@/pages/Home'
 import { useNewDesign } from '@/lib/nd'
 import { restoreScroll } from '@/lib/scroll'
 import { routeKeyOf, useApp } from '@/store/app'
+import { BrowserReview } from '@/components/BrowserReview'
 
 /**
  * Only the home page is in the entry bundle — it is what the window opens on.
@@ -213,6 +214,8 @@ export default function App(): React.JSX.Element {
         <Suspense fallback={null}>
           <BadgeUnlocked />
         </Suspense>
+        {/* Où qu'on soit : au retour dans l'app, ce que le navigateur a coché entre-temps. */}
+        <BrowserReview />
         <Aurora />
         <TitleBar />
 

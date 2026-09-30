@@ -16,7 +16,8 @@ export const SETTINGS_SECTIONS = [
   {
     id: 'lecture',
     title: 'Lecture',
-    keywords: 'lecteur coche automatique enchaîner épisode suivant anime-sama opening générique'
+    keywords:
+      'lecteur coche automatique enchaîner épisode suivant anime-sama opening générique navigateur chrome firefox edge adn franime'
   },
   { id: 'suites', title: 'Suites', keywords: 'saison suivante ajout automatique franchise' },
   {

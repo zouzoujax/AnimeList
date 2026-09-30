@@ -948,6 +948,16 @@ export default function SettingsBody(): React.JSX.Element {
           <Toggle on={prefs.autoNext} onChange={(autoNext) => setPrefs({ autoNext })} />
         </Row>
 
+        {/* Éteint par défaut : pour Anime-Sama, l'app lit dans les profils des
+            navigateurs, et cela ne se fait pas sans qu'on l'ait demandé. */}
+        <Row
+          badge="WIP"
+          label="Cocher aussi dans mon navigateur"
+          hint="Quand tu regardes un épisode sur ADN, FrAnime ou Anime-Sama dans Chrome, Edge, Opera ou Firefox, il est coché aux neuf dixièmes, comme dans le lecteur de l’app — pour une série de ta bibliothèque. L’app lit ce que Windows sait de la lecture en cours. Quand le site tait l’épisode, elle le cherche dans l’adresse de l’onglet (FrAnime) ou dans le stockage que le site laisse dans ton navigateur (Anime-Sama), et rien d’autre ; si elle ne le trouve pas, elle le dit au lieu de deviner. Crunchyroll n’est pas encore pris en charge."
+        >
+          <Toggle on={prefs.browserWatch} onChange={(browserWatch) => setPrefs({ browserWatch })} />
+        </Row>
+
         <Row
           badge="WIP"
           label="Proposer de passer les génériques"

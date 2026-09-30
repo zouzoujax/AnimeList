@@ -16,6 +16,7 @@ import { openTargetFrom, refreshJumpList, releaseMediaKeys } from './taskbar'
 import { quickTick, tickTargetFrom } from './quick-tick'
 import { startUpdateWatcher } from './updater'
 import { startBinge } from './binge'
+import { applyBrowserWatch, stopBrowserWatch } from './browser-watch'
 import { backupOnLaunch } from './autobackup'
 import { useDevProfile } from './profile'
 
@@ -249,6 +250,8 @@ void app.whenReady().then(() => {
   stopSequelWatcher = startSequelWatcher(mainWindow)
   stopMangaWatcher = startMangaWatcher(mainWindow)
   stopBinge = startBinge()
+  // Le suivi des navigateurs, si les réglages le demandent.
+  applyBrowserWatch()
   // La copie datée du jour, dans le dossier choisi s'il y en a un.
   backupOnLaunch()
 
@@ -292,6 +295,7 @@ app.on('before-quit', async (event) => {
   stopMangaWatcher = null
   stopBinge?.()
   stopBinge = null
+  stopBrowserWatch()
   stopFollows?.()
   stopFollows = null
   // Une touche multimédia retenue après la sortie resterait prise pour toute

@@ -587,6 +587,12 @@ export interface Prefs {
   /** N'annoncer que « Un anime » : ni titre, ni jaquette, ni épisode. */
   discordHideTitle: boolean
   /**
+   * Cocher ce qu'on regarde dans son propre navigateur : ADN, FrAnime,
+   * Anime-Sama. Éteint par défaut : pour Anime-Sama, l'app lit dans les
+   * profils des navigateurs. Voir `src/main/browser-watch.ts`.
+   */
+  browserWatch: boolean
+  /**
    * Le mot de passe de la télécommande, quand on préfère le choisir.
    *
    * Vide, c'est le comportement d'origine : un mot de passe tiré au hasard à
@@ -1176,6 +1182,7 @@ export const DEFAULT_PREFS: Prefs = {
   discord: false,
   discordAppId: '1544850319878656161',
   discordHideTitle: false,
+  browserWatch: false,
   // Vide : le tirage au sort reste ce qui se passe quand on ne demande rien.
   remotePassword: '',
   tvtimeOverrides: {},
