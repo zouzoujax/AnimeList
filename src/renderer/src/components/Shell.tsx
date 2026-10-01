@@ -255,6 +255,15 @@ export function Sidebar(): React.JSX.Element {
 
       <div className="nav-widget mt-auto">
         <div className="hairline mb-3.5" />
+        {/* Seulement sous `npm run dev` : qu'on ne confonde jamais l'essai et la vraie app. */}
+        {import.meta.env.DEV && (
+          <div
+            className="mb-2 rounded-lg px-2.5 py-1 text-center text-[0.68rem] font-semibold tracking-wide uppercase"
+            style={{ background: 'linear-gradient(90deg, #facc15, #f97316)', color: '#1c1917' }}
+          >
+            Mode développeur
+          </div>
+        )}
         <div className="glass rounded-2xl px-3.5 py-3">
           <p className="label mb-2">Ces 7 jours</p>
           <div className="flex items-baseline gap-1.5">
