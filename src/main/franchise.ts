@@ -28,6 +28,12 @@ import {
 import { knownStart, relationsOfMany, seasonChain } from './anilist'
 import { getMedia, isTracked, watchedCount } from './store'
 
+/**
+ * Monte quand la façon de bâtir le tronc change. Avant 3, une saison à
+ * plusieurs suites n’en gardait qu’une : Dragon Ball s’arrêtait à GT ; en 2, Kai comptait pour une saison.
+ */
+const SHAPE = 3
+
 /** Assez pour Naruto ou Gundam, assez peu pour ne pas figer la fenêtre. */
 const MAX_SEASONS = 24
 
@@ -74,6 +80,8 @@ function progressOf(id: number): Progress {
  * sinon les chiffres du jour où il a été lu.
  */
 interface Kept {
+  /** La forme du tronc ; un arbre d'une autre forme est relu. */
+  v?: number
   /** Quand la structure a été lue chez AniList. */
   at: number
   /** Quand on l'a servie pour la dernière fois — c'est ce qui décide des oublis. */
@@ -100,7 +108,8 @@ function load(): Record<string, Kept> {
     // zéro plutôt que de dessiner un arbre à partir de n'importe quoi. Il se
     // reconstruit tout seul, c'est un cache.
     for (const [id, row] of Object.entries(raw)) {
-      if (Array.isArray(row?.spine) && Array.isArray(row?.edges) && typeof row?.at === 'number') kept[id] = row
+      if (Array.isArray(row?.spine) && Array.isArray(row?.edges) && typeof row?.at === 'number' && row.v === SHAPE)
+        kept[id] = row
     }
   } catch (err) {
     console.error('[franchise] cache illisible, on repart de zéro', err)
@@ -241,5 +250,5 @@ async function fetchStructure(id: number): Promise<Kept> {
   }
 
   const now = Date.now()
-  return { at: now, usedAt: now, spine, edges: [...edges.entries()], partial }
+  return { v: SHAPE, at: now, usedAt: now, spine, edges: [...edges.entries()], partial }
 }

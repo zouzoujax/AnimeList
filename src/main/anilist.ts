@@ -1664,6 +1664,22 @@ const neighbour = (node: RawChainNode, kind: 'PREQUEL' | 'SEQUEL'): number | nul
   return (season ?? edges[0])?.node?.id ?? null
 }
 
+/**
+ * Les suites à suivre : toutes celles qui sont des saisons, sinon la première
+ * venue, pour traverser l'OVA qui relie parfois deux saisons (voir `neighbour`).
+ */
+const sequels = (node: RawChainNode): number[] => {
+  const edges = (node.relations?.edges ?? []).filter((e) => e.relationType === 'SEQUEL' && e.node?.type === 'ANIME')
+  const seasons = edges.filter((e) => CHAIN_FORMATS.has(e.node?.format ?? ''))
+  return (seasons.length ? seasons : edges.slice(0, 1)).map((e) => e.node?.id).filter((id): id is number => !!id)
+}
+
+/** Une date triable ; sans date, en dernier. */
+const startKey = (node: RawChainNode): number => {
+  const d = node.startDate
+  return d?.year ? d.year * 10_000 + (d.month ?? 12) * 100 + (d.day ?? 31) : Number.MAX_SAFE_INTEGER
+}
+
 /** Seuls ces formats méritent un numéro de saison. */
 const isSeason = (node: RawChainNode): boolean => CHAIN_FORMATS.has(node.format ?? '')
 
@@ -1702,7 +1718,7 @@ function numberSeasons(nodes: RawChainNode[]): SeasonEntry[] {
  * chaque ouverture de fiche, et la bande mettait plusieurs secondes à paraître.
  */
 export async function seasonChain(id: number): Promise<SeasonEntry[]> {
-  const hit = cache.get(`chain:${id}`)
+  const hit = cache.get(`chain3:${id}`)
   if (hit && Date.now() - hit.at < TTL.chain) return hit.data as SeasonEntry[]
 
   const chain = await walkChain(id)
@@ -1711,9 +1727,9 @@ export async function seasonChain(id: number): Promise<SeasonEntry[]> {
   if (!chain) return []
 
   const at = Date.now()
-  for (const season of chain) cache.set(`chain:${season.id}`, { at, ttl: TTL.chain, data: chain })
+  for (const season of chain) cache.set(`chain3:${season.id}`, { at, ttl: TTL.chain, data: chain })
   // Une chaîne vide n'a qu'une clé à retenir, sinon on remarcherait pour rien.
-  if (!chain.length) cache.set(`chain:${id}`, { at, ttl: TTL.chain, data: chain })
+  if (!chain.length) cache.set(`chain3:${id}`, { at, ttl: TTL.chain, data: chain })
   persistCache()
 
   return chain
@@ -1737,21 +1753,38 @@ async function walkChain(id: number): Promise<SeasonEntry[] | null> {
   }
 
   // Then forward, collecting the seasons and stepping over the rest.
+  //
+  // Toutes les suites, pas seulement la première : Dragon Ball Z en a quatre
+  // (GT, Super, DAIMA, Beerus), et ne suivre que GT laissait Super hors de la
+  // bande. AniList ne dit pas laquelle est « la vraie » ; on les garde toutes,
+  // rangées par date de sortie, plutôt que d'en cacher.
   const found: RawChainNode[] = isSeason(root) ? [root] : []
   const seen = new Set([root.id])
-  let current = root
-  for (let i = 0; i < CHAIN_MAX; i += 1) {
-    const next = neighbour(current, 'SEQUEL')
-    if (!next || seen.has(next)) break
-    const node = await chainNode(next)
-    if (!node) break
-    seen.add(node.id)
-    if (isSeason(node)) found.push(node)
-    current = node
+  const queue = [root]
+  for (let steps = 0; queue.length && steps < CHAIN_MAX;) {
+    const current = queue.shift() as RawChainNode
+    for (const next of sequels(current)) {
+      if (seen.has(next) || steps >= CHAIN_MAX) continue
+      seen.add(next)
+      steps += 1
+      const node = await chainNode(next)
+      if (!node) continue
+      if (isSeason(node)) found.push(node)
+      queue.push(node)
+    }
   }
+  found.sort((a, b) => (a === root ? -1 : b === root ? 1 : startKey(a) - startKey(b)))
+
+  // Un remontage n'est pas une saison de plus : AniList donne Dragon Ball Kai
+  // pour suite de Dragon Ball, à côté de Z dont il est la version ALTERNATIVE.
+  // On écarte la saison qui se dit l'autre version d'une saison déjà sortie.
+  const kept = found.filter((node, i) => {
+    const earlier = new Set(found.slice(0, i).map((n) => n.id))
+    return !(node.relations?.edges ?? []).some((e) => e.relationType === 'ALTERNATIVE' && earlier.has(e.node?.id ?? 0))
+  })
 
   // A single entry is not a season strip.
-  return found.length > 1 ? numberSeasons(found) : []
+  return kept.length > 1 ? numberSeasons(kept) : []
 }
 
 // ---------------------------------------------------------------- sequels
