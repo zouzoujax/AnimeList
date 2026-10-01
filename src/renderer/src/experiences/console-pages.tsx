@@ -202,7 +202,7 @@ export function ConsoleCalendar(): React.JSX.Element {
                     <img src={slot.media.cover.large} alt="" className="h-full w-full object-cover" />
                   </span>
                   <span className="mt-1 block text-center text-[0.72rem] font-semibold">
-                    {formatTime(slot.airingAt * 1000)} {tr('· ép.')} {slot.episode}
+                    {formatTime(slot.airingAt * 1000)} {tr('· ép. {n}', { n: slot.episode })}
                   </span>
                 </motion.button>
               ))}
@@ -256,7 +256,11 @@ export function ConsoleManga(): React.JSX.Element {
           >
             <span className="xc-tile relative block aspect-square overflow-hidden">
               <img src={manga.cover.large} alt="" className="h-full w-full object-cover" loading="lazy" />
-              {manga.chapters && <span className="xc-trophy">{manga.chapters} ch.</span>}
+              {manga.chapters && (
+                <span className="xc-trophy">
+                  {manga.chapters} {tr('ch.')}
+                </span>
+              )}
             </span>
             <span className="clamp-2 mt-2 block text-[0.86rem] font-medium">
               {manga.title.english ?? manga.title.romaji}
@@ -326,7 +330,7 @@ export function ConsoleDetailHero(props: DetailHeroProps): React.JSX.Element {
           <div className="mt-6 flex flex-wrap items-center gap-3">
             {next !== null && (
               <button className="xc-primary" onClick={props.onMark}>
-                <Play size={20} fill="currentColor" strokeWidth={0} /> {tr('Épisode')} {next}
+                <Play size={20} fill="currentColor" strokeWidth={0} /> {tr('Épisode {n}', { n: next })}
               </button>
             )}
             {!entry && (

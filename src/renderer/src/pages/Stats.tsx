@@ -19,7 +19,17 @@ import { ActivityHeatmap, MonthlyColumns, RankedBars, StatTile, type DayCount } 
 import { ReadingStats } from '@/components/ReadingStats'
 import { EmptyState, Poster, RowScroller, Section } from '@/components/ui'
 import { rgba } from '@/lib/color'
-import { dayLabel, durationParts, hoursOf, minutesToHuman, monthLabel, num, startOfDay, titleOf } from '@/lib/format'
+import {
+  dayLabel,
+  durationParts,
+  hoursOf,
+  minutesToHuman,
+  monthLabel,
+  num,
+  startOfDay,
+  titleOf,
+  dec
+} from '@/lib/format'
 import { useApp } from '@/store/app'
 import { hoursLabel } from '@shared/backlog'
 import { BADGE_GROUPS, badgeTitle, useBadgeWall, type Badge } from '@/lib/badges'
@@ -331,7 +341,7 @@ export default function StatsPage(): React.JSX.Element {
           ))}
         </p>
         <p className="mt-3 text-[0.85rem] text-muted">
-          {num(stats.episodes)} {tr('épisodes · soit')} {(stats.minutes / 1440).toFixed(1).replace('.', ',')}{' '}
+          {num(stats.episodes)} {tr('épisodes · soit')} {dec(stats.minutes / 1440)}{' '}
           {tr("jours complets devant l'écran.")}
         </p>
         {stats.importedCount > 0 && (
@@ -360,13 +370,13 @@ export default function StatsPage(): React.JSX.Element {
         />
         <StatTile
           label={tr('Ma note moyenne')}
-          value={stats.meanScore ? `${stats.meanScore.toFixed(1).replace('.', ',')}/10` : '—'}
+          value={stats.meanScore ? `${dec(stats.meanScore)}/10` : '—'}
           hint={tr('{v0} titres notés', { v0: num(stats.scoredCount) })}
           icon={<Star size={22} />}
         />
         <StatTile
           label={tr('Meilleure journée')}
-          value={`${num(stats.bestDay)} ép.`}
+          value={tr('{n} ép.', { n: num(stats.bestDay) })}
           hint={
             stats.importedCount > 0
               ? tr('{v0} jours actifs · hors import', { v0: num(stats.activeDays) })
@@ -556,8 +566,8 @@ export default function StatsPage(): React.JSX.Element {
           <RankedBars
             rows={stats.genres
               .slice(0, 8)
-              .map(([g, n]) => ({ key: g, label: GENRE_LABELS[g] ?? g, value: n, detail: 'ép.' }))}
-            suffix="ép."
+              .map(([g, n]) => ({ key: g, label: GENRE_LABELS[g] ?? g, value: n, detail: tr('ép.') }))}
+            suffix={tr('ép.')}
             onSelect={(g) => navigate({ name: 'library', genre: g })}
           />
         </div>
@@ -565,8 +575,8 @@ export default function StatsPage(): React.JSX.Element {
           <h2 className="title-xl text-[1.05rem]">{tr('Studios les plus vus')}</h2>
           <p className="mb-3.5 mt-0.5 text-[0.75rem] text-faint">{tr('Clique pour voir tout son catalogue')}</p>
           <RankedBars
-            rows={stats.studios.map(([s, n]) => ({ key: s, label: s, value: n, detail: 'ép.' }))}
-            suffix="ép."
+            rows={stats.studios.map(([s, n]) => ({ key: s, label: s, value: n, detail: tr('ép.') }))}
+            suffix={tr('ép.')}
             onSelect={(s) => navigate({ name: 'studio', studio: s })}
           />
         </div>

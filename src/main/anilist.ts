@@ -30,7 +30,7 @@ import type {
   SeasonEntry,
   SeasonName
 } from '@shared/types'
-import { t as tr, lazy } from '@shared/i18n'
+import { t as tr, lazy, tx } from '@shared/i18n'
 
 const ENDPOINT = 'https://graphql.anilist.co'
 const MIN_GAP_MS = 700
@@ -890,8 +890,8 @@ interface RawDetail extends RawMedia {
 }
 
 const RELATION_LABELS: Record<string, string> = lazy(() => ({
-  SEQUEL: tr('Suite'),
-  PREQUEL: tr('Précédent'),
+  SEQUEL: tx('relation', 'Suite'),
+  PREQUEL: tx('relation', 'Précédent'),
   SIDE_STORY: 'Spin-off',
   ALTERNATIVE: tr('Alternative'),
   SUMMARY: tr('Résumé'),

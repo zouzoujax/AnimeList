@@ -18,7 +18,7 @@ type Props = { media: Media; parts: DetailParts }
 
 const TITLES: Record<DetailPartKey, string> = {
   synopsis: tr('Synopsis'),
-  trailer: 'Bande-annonce',
+  trailer: tr('Bande-annonce'),
   language: tr('Langue'),
   franchise: tr('Franchise'),
   episodes: tr('Épisodes'),

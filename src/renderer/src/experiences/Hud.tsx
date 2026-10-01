@@ -44,7 +44,7 @@ function Nav(): React.JSX.Element {
         {new Date(now).toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
       </p>
       <button className="xh-cmd mt-5" onClick={() => setPalette(true)}>
-        <Search size={13} /> RECHERCHE
+        <Search size={13} /> {tr('RECHERCHE')}
       </button>
       <div className="mt-5 flex flex-col gap-1">
         {NAV.map(({ route: target, code, label }) => (
@@ -146,7 +146,7 @@ function Target({ media }: { media: Media }): React.JSX.Element {
               state.toast(tr('Épisode {next} coché · {v1}', { next, v1: titleOf(media, lang) }))
             }}
           >
-            {tr('▶ ENGAGER ÉP.')} {next}
+            {tr('▶ ENGAGER ÉP. {n}', { n: next })}
           </button>
         )}
       </div>
@@ -181,7 +181,7 @@ function Home(): React.JSX.Element {
           {[
             [tr('TEMPS TOTAL'), minutesToHuman(totals.minutes)],
             [tr('ÉPISODES'), String(totals.episodes)],
-            [tr('7 DERNIERS JOURS'), `${totals.week} ép.`],
+            [tr('7 DERNIERS JOURS'), tr('{n} ép.', { n: totals.week })],
             [tr('TERMINÉES'), `${totals.completed}/${done}`]
           ].map(([k, v]) => (
             <div key={k} className="xh-readout">
@@ -491,8 +491,8 @@ export const hud: Experience = {
   Badges: HudBadges,
   DetailBody: HudDetailBody,
   motion: {
-    initial: { opacity: 0, clipPath: tr('inset(0 0 100% 0)') },
-    animate: { opacity: 1, clipPath: tr('inset(0 0 0% 0)') },
+    initial: { opacity: 0, clipPath: 'inset(0 0 100% 0)' },
+    animate: { opacity: 1, clipPath: 'inset(0 0 0% 0)' },
     exit: { opacity: 0 },
     transition: { duration: 0.45, ease: [0.65, 0, 0.35, 1] }
   }

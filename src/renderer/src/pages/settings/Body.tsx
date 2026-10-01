@@ -59,12 +59,12 @@ import QrCode from '@/components/QrCode'
 import TvTimeImport from '@/components/TvTimeImport'
 import UpdatePanel from '@/components/UpdatePanel'
 import { ACCENT_PRESETS } from '@/lib/color'
-import { minutesToHuman, pluralize, relativeDay } from '@/lib/format'
+import { minutesToHuman, pluralize, relativeDay, dec } from '@/lib/format'
 import Health from '@/components/Health'
 import RestoreBackup from '@/components/RestoreBackup'
 import { SETTINGS_SECTIONS, type SettingsSection } from '@/lib/settings-sections'
 import { useApp } from '@/store/app'
-import { t as tr, locale, UI_LANGS } from '@shared/i18n'
+import { t as tr, locale, UI_LANGS, tx } from '@shared/i18n'
 
 /**
  * Une section : son nom en grand, et rien autour.
@@ -201,7 +201,7 @@ function CacheRow(): React.JSX.Element {
     }
   }, [])
 
-  const weight = stats ? tr('{v0} Mo', { v0: (stats.bytes / 1048576).toFixed(1).replace('.', ',') }) : '—'
+  const weight = stats ? tr('{v0} Mo', { v0: dec(stats.bytes / 1048576) }) : '—'
   const hint = stats
     ? tr("{entries} réponses d'AniList gardées hors ligne, {weight}. Les plus vieilles partent d'elles-mêmes.", {
         entries: stats.entries,
@@ -987,7 +987,7 @@ export default function SettingsBody(): React.JSX.Element {
         </Row>
       </Card>
 
-      <Card id="lecture" title={tr('Lecture')} icon={<PlayCircle size={17} />}>
+      <Card id="lecture" title={tx('lecteur', 'Lecture')} icon={<PlayCircle size={17} />}>
         <Row
           label={tr('Cocher l’épisode fini')}
           hint={tr(

@@ -1,3 +1,4 @@
+import { locale } from './i18n'
 /**
  * « Ce qu'il te reste » : les durées en heures.
  *
@@ -8,5 +9,5 @@
 /** Des minutes en heures rondes : « 156 h » plutôt que « 6 j 12 h ». */
 export function hoursLabel(minutes: number): string {
   if (minutes < 60) return `${Math.round(minutes)} min`
-  return `${Math.round(minutes / 60).toLocaleString('fr-FR')} h`
+  return `${Math.round(minutes / 60).toLocaleString(locale())} h`
 }

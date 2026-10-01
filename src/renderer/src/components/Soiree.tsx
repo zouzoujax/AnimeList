@@ -317,7 +317,7 @@ export function Soiree(): React.JSX.Element | null {
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[0.84rem] font-medium">{slot.title}</p>
                     <p className="text-[0.74rem] text-faint">
-                      {t('Épisode')} {slot.episode} · {slot.minutes} {t('min ·')} {REASONS[slot.reason]}
+                      {t('Épisode {n}', { n: slot.episode })} · {slot.minutes} {t('min ·')} {REASONS[slot.reason]}
                     </p>
                   </div>
 

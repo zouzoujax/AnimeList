@@ -81,7 +81,7 @@ function Polaroid({ media, index }: { media: Media; index: number }): React.JSX.
       <img src={media.cover.large} alt="" className="aspect-[3/4] w-full object-cover" />
       <span className="xk-hand mt-2 block clamp-2">{titleOf(media, state.prefs.titleLang)}</span>
       <span className="xk-note block">
-        {t('ép.')} {seen}/{media.episodes ?? '?'}
+        {t('ép. {n}', { n: seen })}/{media.episodes ?? '?'}
         {next ? t(' · prochain : {next}', { next }) : ''}
       </span>
     </motion.button>

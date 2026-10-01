@@ -159,8 +159,8 @@ export function TitleBar(): React.JSX.Element {
       <div className="flex select-none items-center gap-2 pl-0.5">
         <Logo />
         <span className="title-xl text-[0.92rem] tracking-tight">
-          {t('Anime')}
-          <span className="text-muted">{t('List')}</span>
+          Anime
+          <span className="text-muted">List</span>
         </span>
       </div>
 

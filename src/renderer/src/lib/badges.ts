@@ -685,7 +685,7 @@ export function useBadgeWall(): { stats: BadgeStats; badges: Badge[] } {
       {
         group: t('Assiduité'),
         id: 'morning',
-        label: 'Lève-tôt',
+        label: t('Lève-tôt'),
         hint: t('50 épisodes entre 5 h et 9 h'),
         icon: Sunrise,
         progress: stats.morning / 50
@@ -979,7 +979,7 @@ export function useBadgeWall(): { stats: BadgeStats; badges: Badge[] } {
       {
         group: t('Curiosité'),
         id: 'genres5',
-        label: 'Touche-à-tout',
+        label: t('Touche-à-tout'),
         hint: t('5 genres différents'),
         icon: Dices,
         progress: stats.genres.length / 5
@@ -1093,7 +1093,7 @@ export function useBadgeWall(): { stats: BadgeStats; badges: Badge[] } {
       {
         group: t('Critique'),
         id: 'perfect',
-        label: 'Chef-d’œuvre',
+        label: t('Chef-d’œuvre'),
         hint: t('mettre un 10/10'),
         icon: Crown,
         progress: stats.perfect

@@ -273,7 +273,7 @@ export default function Player({
               className="icon-btn !h-8 !w-8"
               onClick={popOut}
               title={t('Détacher dans une fenêtre flottante')}
-              aria-label="Mini-lecteur"
+              aria-label={t('Mini-lecteur')}
             >
               <PictureInPicture2 size={15} />
             </button>
@@ -343,7 +343,7 @@ export default function Player({
               className="h-full w-full max-w-[1280px] rounded-[14px] object-contain"
             >
               {file.subtitleUrl && (
-                <track kind="subtitles" srcLang="fr" label="Sous-titres" src={file.subtitleUrl} default />
+                <track kind="subtitles" srcLang="fr" label={t('Sous-titres')} src={file.subtitleUrl} default />
               )}
             </video>
           )}

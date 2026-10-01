@@ -5,7 +5,7 @@ import { ActivityHeatmap, MonthlyColumns, RankedBars, type DayCount } from '@/co
 import { NdTabs, plural, spokenDuration } from '@/components/nd'
 import { EmptyState, Poster, RowScroller } from '@/components/ui'
 import { toneAccent } from '@/lib/color'
-import { dayLabel, hoursOf, minutesToHuman, monthLabel, num, startOfDay, titleOf } from '@/lib/format'
+import { dayLabel, hoursOf, minutesToHuman, monthLabel, num, startOfDay, titleOf, dec } from '@/lib/format'
 import { BADGE_GROUPS, badgeTitle, useBadgeWall, type Badge } from '@/lib/badges'
 import { useApp } from '@/store/app'
 import { t as tr, locale } from '@shared/i18n'
@@ -281,10 +281,7 @@ export default function NdStatsPage({ focus }: { focus?: 'badges' }): React.JSX.
     [tr('Record de jours d’affilée'), dayLabel(stats.streaks.best)],
     [tr('Meilleure journée'), plural(stats.bestDay, 'épisode')],
     [tr('Journées où tu as regardé'), num(stats.activeDays)],
-    [
-      tr('Note moyenne'),
-      stats.meanScore ? tr('{v0} sur 10', { v0: stats.meanScore.toFixed(1).replace('.', ',') }) : tr('Aucune note')
-    ]
+    [tr('Note moyenne'), stats.meanScore ? tr('{v0} sur 10', { v0: dec(stats.meanScore) }) : tr('Aucune note')]
   ]
 
   return (
@@ -389,7 +386,7 @@ export default function NdStatsPage({ focus }: { focus?: 'badges' }): React.JSX.
             style={{ '--tone': toneAccent(accent) } as React.CSSProperties}
           >
             <p className="title-xl text-[1.7rem] leading-tight">
-              {activeYear} : {spokenDuration(yearCard.minutes)} d’anime.
+              {activeYear} : {spokenDuration(yearCard.minutes)} {tr('d’anime.')}
             </p>
             <p className="mt-1.5 text-[0.86rem] text-muted">
               {plural(yearCard.episodes, 'épisode')}, {plural(yearCard.series, 'série')},{' '}
@@ -425,8 +422,8 @@ export default function NdStatsPage({ focus }: { focus?: 'badges' }): React.JSX.
             <RankedBars
               rows={stats.genres
                 .slice(0, 8)
-                .map(([g, n]) => ({ key: g, label: GENRE_LABELS[g] ?? g, value: n, detail: 'ép.' }))}
-              suffix="ép."
+                .map(([g, n]) => ({ key: g, label: GENRE_LABELS[g] ?? g, value: n, detail: tr('ép.') }))}
+              suffix={tr('ép.')}
               onSelect={(g) => navigate({ name: 'library', genre: g })}
             />
           </div>
@@ -440,8 +437,8 @@ export default function NdStatsPage({ focus }: { focus?: 'badges' }): React.JSX.
           </p>
           <div className="nd-panel">
             <RankedBars
-              rows={stats.studios.map(([s, n]) => ({ key: s, label: s, value: n, detail: 'ép.' }))}
-              suffix="ép."
+              rows={stats.studios.map(([s, n]) => ({ key: s, label: s, value: n, detail: tr('ép.') }))}
+              suffix={tr('ép.')}
               onSelect={(s) => navigate({ name: 'studio', studio: s })}
             />
           </div>
@@ -451,7 +448,9 @@ export default function NdStatsPage({ focus }: { focus?: 'badges' }): React.JSX.
       {timeline.length > 0 && (
         <Part
           title={tr('Mois par mois')}
-          sub={tr('{v0} de visionnage, du plus récent au plus ancien.', { v0: plural(timeline.length, 'mois') })}
+          sub={tr('{v0} de visionnage, du plus récent au plus ancien.', {
+            v0: plural(timeline.length, 'mois', 'mois')
+          })}
         >
           <ol className="nd-timeline">
             {timeline.map((month) => (

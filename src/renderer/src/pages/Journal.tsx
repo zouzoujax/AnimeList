@@ -187,9 +187,7 @@ export default function JournalPage(): React.JSX.Element {
                               </span>
                             </div>
                             <p className="mt-0.5 flex items-center gap-1.5 text-[0.75rem] text-muted">
-                              <span>
-                                {t('Épisode')} {event.episode}
-                              </span>
+                              <span>{t('Épisode {n}', { n: event.episode })}</span>
                               {pass > 0 && (
                                 <span
                                   className="rounded-full px-1.5 py-px text-[0.66rem] text-faint"

@@ -50,10 +50,10 @@ export interface AnimeSamaTarget {
 }
 
 export const WATCH_BADGE: Record<WatchKind, { label: string; color: string }> = {
-  direct: { label: 'direct', color: 'var(--accent-2)' },
+  direct: { label: t('direct'), color: 'var(--accent-2)' },
   guess: { label: t('déduit'), color: '#ffb038' },
-  search: { label: 'recherche', color: 'var(--color-faint)' },
-  absent: { label: 'absent', color: '#6b7392' },
+  search: { label: t('recherche'), color: 'var(--color-faint)' },
+  absent: { label: t('absent'), color: '#6b7392' },
   unreleased: { label: t('pas sorti'), color: '#6b7392' }
 }
 

@@ -544,7 +544,7 @@ function Trailer({
             </span>
           </span>
           <span className="absolute bottom-3 left-4 text-[0.8rem] font-semibold">
-            {loading ? t('Chargement…') : 'Bande-annonce'}
+            {loading ? t('Chargement…') : t('Bande-annonce')}
           </span>
         </button>
       )}
@@ -1214,9 +1214,7 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
           >
             <Play size={14} fill="currentColor" strokeWidth={0} style={{ color: rgba(glow, 1) }} />
             <span className="min-w-0 flex-1">
-              <span className="block text-[0.8rem] font-semibold">
-                {t('Épisode')} {nextLink.number}
-              </span>
+              <span className="block text-[0.8rem] font-semibold">{t('Épisode {n}', { n: nextLink.number })}</span>
               {nextLink.title && <span className="block truncate text-[0.68rem] text-faint">{nextLink.title}</span>}
             </span>
             <ExternalLink size={13} className="shrink-0 text-faint" />
@@ -1426,7 +1424,7 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
                   className="mt-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-[0.76rem] font-semibold"
                   style={{ background: rgba(glow, 0.18), color: rgba(glow, 1) }}
                 >
-                  {t('Épisode')} {media.nextAiring.episode} {countdown(media.nextAiring.airingAt)}
+                  {t('Épisode {n}', { n: media.nextAiring.episode })} {countdown(media.nextAiring.airingAt)}
                 </p>
               )}
 
@@ -1440,7 +1438,7 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
                     }}
                   >
                     <Play size={14} fill="currentColor" strokeWidth={0} />
-                    {t("Marquer l'épisode")} {next}
+                    {t("Marquer l'épisode {n}", { n: next })}
                   </button>
                 )}
 

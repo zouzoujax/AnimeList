@@ -86,7 +86,7 @@ function NextUp({ limit }: { limit: number }): React.JSX.Element | null {
         <Row
           key={m.id}
           media={m}
-          detail={`Ép. ${episode}${behind > 1 ? t(' · {behind} en retard', { behind }) : ''}`}
+          detail={t('Ép. {n}', { n: episode }) + (behind > 1 ? t(' · {behind} en retard', { behind }) : '')}
           onClick={() => navigate({ name: 'anime', id: m.id })}
         />
       ))}

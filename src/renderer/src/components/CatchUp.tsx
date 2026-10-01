@@ -30,7 +30,7 @@ export function dayName(i: number, day: number, today = t("Aujourd'hui")): strin
 /** « Ép. 14 », « Ép. 14–16 ». */
 const episodesLabel = (episodes: number[]): string =>
   episodes.length === 1
-    ? `Ép. ${episodes[0]}`
+    ? t('Ép. {n}', { n: episodes[0] })
     : t('Ép. {v0}–{v1}', { v0: episodes[0], v1: episodes[episodes.length - 1] })
 
 /**
@@ -90,7 +90,7 @@ export function planSentence(plan: CatchUpPlan, now: number): string {
   const n = plan.behind.episodes
   const late = t('Sur les séries en diffusion, {v0} {v1} ({v2})', {
     v0: plural(n, 'épisode'),
-    v1: n > 1 ? "t'attendent" : "t'attend",
+    v1: n > 1 ? t("t'attendent") : t("t'attend"),
     v2: minutesToHuman(plan.behind.minutes)
   })
   const pace = t("à ton rythme d'environ {v0} par soir", { v0: minutesToHuman(plan.budget) })
@@ -106,7 +106,7 @@ export function planSentence(plan: CatchUpPlan, now: number): string {
     i === 0
       ? t('dès ce soir')
       : i === 1
-        ? 'demain'
+        ? t('demain')
         : new Date(plan.doneOn).toLocaleDateString(locale(), { weekday: 'long' })
   return t('{late}. {v1}{v2}, tu es à jour {when}, sorties de la semaine comprises.', {
     late,

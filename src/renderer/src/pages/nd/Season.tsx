@@ -20,7 +20,7 @@ const GROUPS: { id: Group; label: string }[] = [
 
 /** Ce que chaque groupe est, dit en une phrase sous les onglets. */
 const LINES: Record<Group, string> = {
-  sort: 'Ni suivies, ni prévues, ni écartées : celles sur lesquelles tu ne t’es pas encore prononcé.',
+  sort: t('Ni suivies, ni prévues, ni écartées : celles sur lesquelles tu ne t’es pas encore prononcé.'),
   watching: t('Les séries de la saison déjà dans ta bibliothèque, et où tu en es.'),
   planned: t('Mises de côté pour plus tard. Elles t’attendent dans « À voir ».'),
   skipped: t('Abandonnées, ou écartées d’un « pas pour moi ». Rien n’a été ajouté à ta bibliothèque.')

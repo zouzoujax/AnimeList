@@ -89,7 +89,7 @@ function Nav(): React.JSX.Element {
               {totals.week} {tr('ép. cette semaine')}
             </span>
             <span className="text-faint">
-              {tr('série de')} {totals.streak} j
+              {tr('série de')} {tr('{n} j', { n: totals.streak })}
             </span>
           </span>
         </div>
@@ -215,7 +215,7 @@ function Home(): React.JSX.Element {
                     }}
                   >
                     <Play size={20} fill="currentColor" strokeWidth={0} />
-                    {tr('Épisode')} {next}
+                    {tr('Épisode {n}', { n: next })}
                   </button>
                 ) : (
                   <button className="xc-primary" onClick={() => state.navigate({ name: 'anime', id: media.id })}>

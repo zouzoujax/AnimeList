@@ -11,7 +11,7 @@ import { StreamingCalendar, StreamingDetailHero, StreamingDiscover, StreamingMan
 import { StreamingBadges } from './badges-pages'
 import { StreamingDetailBody } from './detail-bodies'
 import type { Experience } from '.'
-import { t as tr, locale } from '@shared/i18n'
+import { t as tr, locale, tx } from '@shared/i18n'
 
 /*
  * STREAMING — la grammaire des plateformes : une bannière qui occupe l'écran et
@@ -73,7 +73,7 @@ function Nav(): React.JSX.Element {
 /** Lecture ou fiche : le bouton blanc fait toujours la chose la plus probable. */
 function usePlay(media: Media | undefined): { label: string; run: () => void } {
   const state = useApp()
-  if (!media) return { label: tr('Lecture'), run: () => {} }
+  if (!media) return { label: tx('lecteur', 'Lecture'), run: () => {} }
   const tracked = state.entries.get(media.id)?.status === 'watching'
   const next = tracked ? nextEpisodeOf(state, media.id, media.episodes) : null
   if (next !== null && !isUnaired(media, next)) {

@@ -212,9 +212,7 @@ export default function EpisodeEditor({
       )}
       <div className="flex items-start gap-3 border-b px-5 py-4" style={{ borderColor: 'var(--line)' }}>
         <div className="min-w-0 flex-1">
-          <p className="text-[0.95rem] font-semibold">
-            {t('Épisode')} {episode}
-          </p>
+          <p className="text-[0.95rem] font-semibold">{t('Épisode {n}', { n: episode })}</p>
           {title && <p className="mt-0.5 text-[0.8rem] text-muted">{title}</p>}
         </div>
         {/* Le lien vise l'épisode lui-même, pas la série : c'est AniList qui le

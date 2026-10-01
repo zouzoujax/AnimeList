@@ -129,7 +129,7 @@ function Spotlight({ media, resumeAt }: { media: Media; resumeAt: number | null 
                 style={{ background: rgba(glow, 0.16), borderColor: rgba(glow, 0.4), color: rgba(glow, 1) }}
               >
                 <Clock size={14} />
-                {t('Prochain épisode')} {media.nextAiring.episode} · {airingLabel(media.nextAiring.airingAt)}
+                {t('Prochain épisode {n}', { n: media.nextAiring.episode })} · {airingLabel(media.nextAiring.airingAt)}
               </span>
             ) : resumeAt ? (
               <button
@@ -140,7 +140,7 @@ function Spotlight({ media, resumeAt }: { media: Media; resumeAt: number | null 
                 }}
               >
                 <Play size={14} fill="currentColor" strokeWidth={0} />
-                {t("Marquer l'épisode")} {resumeAt}
+                {t("Marquer l'épisode {n}", { n: resumeAt })}
               </button>
             ) : (
               <button className="btn btn-primary" onClick={() => navigate({ name: 'anime', id: media.id })}>
@@ -193,7 +193,7 @@ function UpcomingCard({
         </p>
         <p className="clamp-2 mt-0.5 text-[0.79rem] font-semibold leading-snug">{titleOf(media, lang)}</p>
         <p className="mt-1 text-[0.7rem] text-faint">
-          {t('Épisode')} {airing.episode} · {countdown(airing.airingAt)}
+          {t('Épisode {n}', { n: airing.episode })} · {countdown(airing.airingAt)}
         </p>
       </div>
     </motion.button>

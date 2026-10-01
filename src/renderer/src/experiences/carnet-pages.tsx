@@ -203,9 +203,7 @@ export function CarnetCalendar(): React.JSX.Element {
                       />
                       <span className="xk-note shrink-0">{formatTime(slot.airingAt * 1000)}</span>
                       <span className="xk-hand truncate !text-[1rem]">{titleOf(slot.media, lang)}</span>
-                      <span className="xk-note shrink-0">
-                        {tr('ép.')} {slot.episode}
-                      </span>
+                      <span className="xk-note shrink-0">{tr('ép. {n}', { n: slot.episode })}</span>
                     </button>
                   </li>
                 ))}
@@ -349,7 +347,7 @@ export function CarnetDetailHero(props: DetailHeroProps): React.JSX.Element {
                   whileHover={{ y: -3 }}
                   onClick={props.onMark}
                 >
-                  {tr('✓ cocher l’épisode')} {next}
+                  {tr('✓ cocher l’épisode {n}', { n: next })}
                 </motion.button>
               )}
               {!entry && (

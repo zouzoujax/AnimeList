@@ -30,7 +30,7 @@ export const BRANCHES: Branch[] = ['film', 'ova', 'spinoff', 'alternative', 'res
 export const BRANCH_LABELS: Record<Branch, string> = lazy(() => ({
   film: t('Films'),
   ova: t('OVA et spéciaux'),
-  spinoff: 'Spin-off',
+  spinoff: t('Spin-off'),
   alternative: t('Versions alternatives'),
   resume: t('Résumés')
 }))

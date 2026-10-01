@@ -47,14 +47,19 @@ export function num(value: number): string {
   return nf.format(Math.round(value))
 }
 
+/** « 4,3 » en français, « 4.3 » en anglais : une décimale, dans la langue choisie. */
+export function dec(value: number, minDigits = 1): string {
+  return new Intl.NumberFormat(locale(), { minimumFractionDigits: minDigits, maximumFractionDigits: 1 }).format(value)
+}
+
 /** 1 486 min → "24 h 46". Used everywhere a watch time is shown. */
 export function minutesToHuman(minutes: number): string {
   const h = Math.floor(minutes / 60)
   const m = Math.round(minutes % 60)
-  if (h === 0) return `${m} min`
-  if (h < 24) return `${h} h ${String(m).padStart(2, '0')}`
+  if (h === 0) return t('{m} min', { m })
+  if (h < 24) return t('{h} h {m}', { h, m: String(m).padStart(2, '0') })
   const d = Math.floor(h / 24)
-  return `${num(d)} j ${h % 24} h`
+  return t('{d} j {h} h', { d: num(d), h: h % 24 })
 }
 
 /**
@@ -65,21 +70,21 @@ export function minutesToHuman(minutes: number): string {
 export function durationParts(minutes: number): { value: string; unit: string }[] {
   const total = Math.max(0, Math.round(minutes))
   const h = Math.floor(total / 60)
-  if (h === 0) return [{ value: String(total), unit: 'min' }]
+  if (h === 0) return [{ value: String(total), unit: t('min') }]
   if (h < 24)
     return [
-      { value: String(h), unit: 'h' },
-      { value: String(total % 60).padStart(2, '0'), unit: 'min' }
+      { value: String(h), unit: t('h') },
+      { value: String(total % 60).padStart(2, '0'), unit: t('min') }
     ]
   const d = Math.floor(h / 24)
   return [
-    { value: num(d), unit: d > 1 ? 'jours' : 'jour' },
-    { value: String(h % 24), unit: 'h' }
+    { value: num(d), unit: d > 1 ? t('jours') : t('jour') },
+    { value: String(h % 24), unit: t('h') }
   ]
 }
 
 export function dayLabel(count: number): string {
-  return `${num(count)} ${count > 1 ? 'jours' : 'jour'}`
+  return `${num(count)} ${count > 1 ? t('jours') : t('jour')}`
 }
 
 export function hoursOf(minutes: number): number {
@@ -142,7 +147,7 @@ export function airingLabel(airingAtSeconds: number): string {
 }
 
 export function scoreLabel(score: number | null): string {
-  return score === null ? '—' : score.toFixed(1).replace('.', ',').replace(/,0$/, '')
+  return score === null ? '—' : dec(score, 0)
 }
 
 export function startOfDay(ts: number): number {

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import type { RestoreMode, RestorePreview, SeriesChange } from '@shared/restore'
 import { STATUS_LABELS, type BackupCopy } from '@shared/types'
 import { Modal, Spinner } from '@/components/ui'
-import { pluralize, relativeDay } from '@/lib/format'
+import { pluralize, relativeDay, dec } from '@/lib/format'
 import { useApp } from '@/store/app'
 import { t, locale } from '@shared/i18n'
 
@@ -23,7 +23,7 @@ function hour(at: number, all: BackupCopy[]): string {
 
 function kilo(bytes: number): string {
   return bytes >= 1024 * 1024
-    ? t('{v0} Mo', { v0: (bytes / 1024 / 1024).toFixed(1).replace('.', ',') })
+    ? t('{v0} Mo', { v0: dec(bytes / 1024 / 1024) })
     : t('{v0} Ko', { v0: Math.max(1, Math.round(bytes / 1024)) })
 }
 

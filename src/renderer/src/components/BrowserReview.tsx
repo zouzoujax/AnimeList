@@ -40,7 +40,7 @@ function whenLabel(at: number): string {
 }
 
 /** « Ép. 3 », « Ép. 3, 4 ». */
-const episodesLabel = (episodes: number[]): string => `Ép. ${episodes.join(', ')}`
+const episodesLabel = (episodes: number[]): string => tr('Ép. {list}', { list: episodes.join(', ') })
 
 /** Regroupe par série, épisodes dans l'ordre. */
 function bySeries<T extends { episode: number }>(items: T[], idOf: (t: T) => number): { id: number; items: T[] }[] {
@@ -184,7 +184,7 @@ export function BrowserReview(): React.JSX.Element {
                                 onClick={() => toggleTick(t)}
                               >
                                 {on && <Check size={13} />}
-                                {tr('Ép.')} {t.episode}
+                                {tr('Ép. {n}', { n: t.episode })}
                               </button>
                             )
                           })}

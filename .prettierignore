@@ -9,3 +9,5 @@ package-lock.json
 .claude/
 .impeccable/
 PRODUCT.md
+# Une ligne par texte : reformatée, la table passerait à plus de dix mille lignes
+src/shared/locales/translations.json

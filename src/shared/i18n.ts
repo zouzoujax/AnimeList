@@ -79,8 +79,24 @@ export function lazy<T extends object>(build: () => T): T {
  * les langues : l'ordre des mots change d'une langue à l'autre, pas les noms.
  */
 export function t(fr: string, vars?: Record<string, string | number | null | undefined>): string {
+  return fill(lookup(fr, fr), vars)
+}
+
+/**
+ * Comme `t`, pour un mot français qui a plusieurs sens : « Précédent » est un
+ * bouton, mais aussi une relation AniList (« Prequel »). La clé devient
+ * `contexte|texte` ; le français, lui, s'affiche tel quel.
+ */
+export function tx(context: string, fr: string, vars?: Record<string, string | number | null | undefined>): string {
+  return fill(lookup(`${context}|${fr}`, fr), vars)
+}
+
+function lookup(key: string, fr: string): string {
   const column = COLUMNS.indexOf(current)
-  const text = column < 0 ? fr : table[fr]?.[column] || fr
+  return column < 0 ? fr : table[key]?.[column] || fr
+}
+
+function fill(text: string, vars?: Record<string, string | number | null | undefined>): string {
   if (!vars) return text
   return text.replace(/\{(\w+)\}/g, (whole, name: string) => (name in vars ? String(vars[name] ?? '') : whole))
 }

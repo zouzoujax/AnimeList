@@ -15,7 +15,7 @@ import { statusBlocked } from '@/lib/status'
 import { useApp } from '@/store/app'
 import { useCatalogue, useForYou, useMangaList, useWeek } from './pages-data'
 import type { DetailHeroProps } from '.'
-import { t as tr, locale } from '@shared/i18n'
+import { t as tr, locale, tx } from '@shared/i18n'
 
 /*
  * MAGAZINE — les rubriques du numéro : les critiques, le programme télé de la
@@ -207,9 +207,7 @@ export function MagazineCalendar(): React.JSX.Element {
                 <span className="xm-listing-time">{formatTime(slot.airingAt * 1000)}</span>
                 <span className="xm-leader" />
                 <span className="font-semibold">{titleOf(slot.media, lang)}</span>
-                <span className="xm-caption whitespace-nowrap">
-                  {tr('ép.')} {slot.episode}
-                </span>
+                <span className="xm-caption whitespace-nowrap">{tr('ép. {n}', { n: slot.episode })}</span>
               </button>
             ))}
             {day.items.length === 0 && !week.loading && <p className="xm-caption">{tr('Relâche.')}</p>}
@@ -329,7 +327,7 @@ export function MagazineDetailHero(props: DetailHeroProps): React.JSX.Element {
           <p className="xm-kicker">{tr('Fiche technique')}</p>
           <dl className="mt-2 text-[0.9rem]">
             {[
-              [tr('Note'), stars(media.averageScore)],
+              [tx('score', 'Note'), stars(media.averageScore)],
               [tr('Épisodes'), total ? String(total) : '—'],
               [tr('Studio'), media.studios[0] ?? '—'],
               [tr('Statut'), entry ? STATUS_LABELS[entry.status] : tr('Pas dans ta bibliothèque')]
@@ -354,7 +352,7 @@ export function MagazineDetailHero(props: DetailHeroProps): React.JSX.Element {
           <div className="mt-3 flex flex-col items-start gap-2">
             {next !== null && (
               <button className="xm-more" onClick={props.onMark}>
-                {tr('Cocher l’épisode')} {next} →
+                {tr('Cocher l’épisode {n}', { n: next })} →
               </button>
             )}
             {!entry && (

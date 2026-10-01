@@ -62,7 +62,7 @@ function DormantCard({ row }: { row: DormantRow }): React.JSX.Element {
               {t('Terminée')}
             </button>
           ) : (
-            <button className="btn !h-7 !px-2.5 text-[0.74rem]" onClick={() => settle('watching', 'reprise')}>
+            <button className="btn !h-7 !px-2.5 text-[0.74rem]" onClick={() => settle('watching', t('reprise'))}>
               <Play size={13} />
               {t('Reprendre')}
             </button>

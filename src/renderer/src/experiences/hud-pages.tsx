@@ -10,7 +10,7 @@ import { statusBlocked } from '@/lib/status'
 import { useApp } from '@/store/app'
 import { useCatalogue, useForYou, useMangaList, useWeek } from './pages-data'
 import type { DetailHeroProps } from '.'
-import { t } from '@shared/i18n'
+import { t, tx } from '@shared/i18n'
 
 /*
  * COCKPIT — les autres postes du vaisseau : un scanner de catalogue, une carte
@@ -60,7 +60,7 @@ export function HudDiscover({ initialSearch }: { initialSearch?: string }): Reac
     <div className="xh-screen grid grid-cols-12 gap-3 p-5">
       <Box code="S-00" title={t('Scanner du catalogue')} className="col-span-12">
         <label className="xh-prompt">
-          <span className="xh-hot">SCAN &gt;</span>
+          <span className="xh-hot">{t('SCAN >')}</span>
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -101,7 +101,9 @@ export function HudDiscover({ initialSearch }: { initialSearch?: string }): Reac
                 <span className="xh-meter mt-1.5 !w-full">
                   <span style={{ width: `${media.averageScore ?? 0}%` }} />
                 </span>
-                <span className="xh-code">SIGNAL {media.averageScore ?? '—'}%</span>
+                <span className="xh-code">
+                  {t('SIGNAL')} {media.averageScore ?? '—'}%
+                </span>
               </span>
             </motion.button>
           ))}
@@ -153,10 +155,10 @@ export function HudCalendar(): React.JSX.Element {
       <Box code="O-00" title={t('Carte des orbites')} className="col-span-12">
         <div className="mb-4 flex flex-wrap gap-2">
           <button className="xh-cmd" data-on={scope === 'library'} onClick={() => setScope('library')}>
-            [SUIVIS]
+            {t('[SUIVIS]')}
           </button>
           <button className="xh-cmd" data-on={scope === 'all'} onClick={() => setScope('all')}>
-            [TOUS]
+            {t('[TOUS]')}
           </button>
           <span className="ml-auto flex gap-2">
             <button className="xh-cmd" onClick={() => setOffset((o) => o - 1)}>
@@ -251,7 +253,7 @@ export function HudManga(): React.JSX.Element {
     <div className="xh-screen p-5">
       <Box code="A-00" title={t('Archives manga · {length}', { length: items.length })}>
         <label className="xh-prompt mb-3">
-          <span className="xh-hot">ARCH &gt;</span>
+          <span className="xh-hot">{t('ARCH >')}</span>
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('titre…')} />
         </label>
         <div className="mb-3 flex gap-2">
@@ -267,8 +269,8 @@ export function HudManga(): React.JSX.Element {
               <th>ID</th>
               <th>{t('Titre')}</th>
               <th>{t('Origine')}</th>
-              <th>Chap.</th>
-              <th>{t('Note')}</th>
+              <th>{t('Chap.')}</th>
+              <th>{tx('score', 'Note')}</th>
             </tr>
           </thead>
           <tbody>
@@ -332,7 +334,7 @@ export function HudDetailHero(props: DetailHeroProps): React.JSX.Element {
     <div className="xh-screen grid grid-cols-12 gap-3 p-5">
       <Box code={`D-${String(media.id).padStart(6, '0')}`} title={t('Dossier cible')} className="col-span-12">
         <button className="xh-cmd mb-4" onClick={props.onBack}>
-          <ArrowLeft size={13} /> RETOUR
+          <ArrowLeft size={13} /> {t('RETOUR')}
         </button>
         <div className="flex gap-6">
           <img src={media.cover.xl} alt="" className="xh-frame h-[270px] w-[184px] shrink-0 object-cover" />
@@ -350,7 +352,7 @@ export function HudDetailHero(props: DetailHeroProps): React.JSX.Element {
             <div className="mt-5 flex flex-wrap gap-2">
               {next !== null && (
                 <button className="xh-cmd xh-cmd-hot" onClick={props.onMark}>
-                  {t('▶ ENGAGER ÉP.')} {next}
+                  {t('▶ ENGAGER ÉP. {n}', { n: next })}
                 </button>
               )}
               {!entry && (

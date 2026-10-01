@@ -14,11 +14,11 @@ import { ORIGIN_HINTS, ORIGIN_LABELS } from '@shared/origin'
 import { Poster } from '@/components/ui'
 import { rgba, toneAccent } from '@/lib/color'
 import { useApp } from '@/store/app'
-import { t } from '@shared/i18n'
+import { t, tx } from '@shared/i18n'
 
 export const MANGA_STATUS: Record<string, string> = {
-  FINISHED: t('Terminé'),
-  RELEASING: t('En cours'),
+  FINISHED: tx('parution', 'Terminé'),
+  RELEASING: tx('parution', 'En cours'),
   NOT_YET_RELEASED: t('À paraître'),
   CANCELLED: t('Annulé'),
   HIATUS: t('En pause')

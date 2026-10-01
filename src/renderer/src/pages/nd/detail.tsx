@@ -105,7 +105,7 @@ export function NdDetailHero(props: DetailHeroProps): React.JSX.Element {
                 next !== null && (
                   <button className="btn btn-primary" onClick={props.onMark}>
                     <Check size={15} />
-                    {t('Cocher l’épisode')} {next}
+                    {t('Cocher l’épisode {n}', { n: next })}
                   </button>
                 )
               )}
@@ -154,7 +154,7 @@ const MAIN: { key: DetailPartKey; label: string }[] = [
   { key: 'language', label: t('Langue') },
   { key: 'files', label: t('Fichiers') },
   { key: 'synopsis', label: t('Synopsis') },
-  { key: 'trailer', label: 'Bande-annonce' },
+  { key: 'trailer', label: t('Bande-annonce') },
   { key: 'cast', label: t('Personnages') },
   { key: 'franchise', label: t('Franchise') },
   { key: 'relations', label: t('Même série') },

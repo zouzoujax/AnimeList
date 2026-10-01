@@ -184,7 +184,7 @@ export default function NdJournalPage(): React.JSX.Element {
                             </span>
                             <span className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.78rem] text-muted">
                               <span>
-                                {t('Épisode')} {event.episode}
+                                {t('Épisode {n}', { n: event.episode })}
                                 {pass > 0 && `, ${passLabel(pass).toLowerCase()}`}
                               </span>
                               {event.pinned && (

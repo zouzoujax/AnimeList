@@ -154,7 +154,7 @@ export function StreamingCalendar(): React.JSX.Element {
                   />
                   <span className="block p-2">
                     <span className="text-[0.7rem] font-bold text-[var(--accent)]">
-                      {formatTime(slot.airingAt * 1000)} {tr('· ÉP.')} {slot.episode}
+                      {formatTime(slot.airingAt * 1000)} {tr('· ÉP. {n}', { n: slot.episode })}
                     </span>
                     <span className="clamp-2 block text-[0.78rem] font-semibold">{titleOf(slot.media, lang)}</span>
                   </span>
@@ -304,7 +304,7 @@ export function StreamingDetailHero(props: DetailHeroProps): React.JSX.Element {
         <div className="mt-6 flex flex-wrap items-center gap-3">
           {next !== null ? (
             <button className="xs-play" onClick={props.onMark}>
-              <Play size={20} fill="currentColor" strokeWidth={0} /> {tr('Épisode')} {next}
+              <Play size={20} fill="currentColor" strokeWidth={0} /> {tr('Épisode {n}', { n: next })}
             </button>
           ) : null}
           {!entry ? (

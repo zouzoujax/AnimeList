@@ -12,12 +12,11 @@ import type { HealthReport } from '@shared/types'
 import { Modal } from './ui'
 import { useApp } from '@/store/app'
 import { t } from '@shared/i18n'
+import { dec } from '@/lib/format'
 
 function weight(bytes: number): string {
   const ko = bytes / 1024
-  return ko >= 1024
-    ? t('{v0} Mo', { v0: (ko / 1024).toFixed(1).replace('.', ',') })
-    : t('{v0} Ko', { v0: Math.round(ko) })
+  return ko >= 1024 ? t('{v0} Mo', { v0: dec(ko / 1024) }) : t('{v0} Ko', { v0: Math.round(ko) })
 }
 
 function Finding({
@@ -185,7 +184,7 @@ export default function Health({ open, onClose }: { open: boolean; onClose: () =
                   {file.name}
                 </span>
                 <span className="shrink-0 text-[0.7rem] tabular-nums text-faint">
-                  {weight(file.bytes)} · {file.age} j
+                  {weight(file.bytes)} · {t('{n} j', { n: file.age })}
                 </span>
                 <button
                   className="btn !h-7 shrink-0 !px-2 text-[0.7rem]"

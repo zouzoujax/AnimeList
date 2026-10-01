@@ -1132,7 +1132,7 @@ export const GENRE_LABELS: Record<string, string> = lazy(() => ({
   Mystery: tr('Mystère'),
   Psychological: tr('Psychologique'),
   Romance: tr('Romance'),
-  'Sci-Fi': 'Science-fiction',
+  'Sci-Fi': tr('Science-fiction'),
   'Slice of Life': tr('Tranche de vie'),
   Sports: tr('Sport'),
   Supernatural: tr('Surnaturel'),

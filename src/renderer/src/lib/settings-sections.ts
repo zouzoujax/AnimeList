@@ -1,4 +1,4 @@
-import { t } from '@shared/i18n'
+import { t, tx } from '@shared/i18n'
 /**
  * Les sections des Réglages, dans leur ordre.
  *
@@ -16,7 +16,7 @@ export const SETTINGS_SECTIONS = [
   { id: 'notifications', title: t('Notifications'), keywords: t('rappel alerte diffusion délai sortie épisode') },
   {
     id: 'lecture',
-    title: t('Lecture'),
+    title: tx('lecteur', 'Lecture'),
     keywords: t(
       'lecteur coche automatique enchaîner épisode suivant anime-sama opening générique navigateur chrome firefox edge adn franime'
     )

@@ -58,7 +58,7 @@ const BRANCH_ORDER: Exclude<Branch, 'resume'>[] = ['film', 'ova', 'spinoff', 'al
 const KIND_LABELS: Record<Exclude<Branch, 'resume'>, string> = lazy(() => ({
   film: t('Film'),
   ova: t('OVA ou spécial'),
-  spinoff: 'Spin-off',
+  spinoff: t('Spin-off'),
   alternative: t('Version alternative')
 }))
 

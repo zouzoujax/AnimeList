@@ -28,6 +28,7 @@ App de bureau Windows pour suivre ses animes. Electron + electron-vite, React 19
 ## Conventions
 
 - Français partout : interface, commentaires, messages de commit
+- Texte affiché : toujours `t('…')` de `@shared/i18n` (le français sert de clé ; `tx(contexte, …)` pour un mot à deux sens), avec sa ligne en/es/ja/de dans `src/shared/locales/translations.json` — `i18n.test.ts` vérifie la table. Nombre dans la phrase (`t('Épisode {n}', { n })`), jamais collé à côté. Un texte figé au chargement d'un module du processus principal passe par `lazy()`
 - Un commit par changement cohérent ; ne pousser que sur demande
 - Après chaque modification : build, fermer l'app proprement, relancer `npm run dev`
 - Thèmes : couleurs en jetons CSS (`:root[data-theme]`) ; l'accent teinte les fonds et contours, jamais le texte ; un thème clair a besoin de `.on-art` pour le texte posé sur une jaquette

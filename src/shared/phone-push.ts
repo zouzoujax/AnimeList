@@ -62,7 +62,7 @@ export function checkServer(raw: string): ServerCheck {
     return { ok: false, error: 'Adresse illisible : elle commence par https://' }
   }
   if (url.search || url.hash || (url.pathname && url.pathname !== '/')) {
-    return { ok: false, error: 'Juste l’adresse du serveur, sans chemin : https://ntfy.sh' }
+    return { ok: false, error: t('Juste l’adresse du serveur, sans chemin : https://ntfy.sh') }
   }
   const privateHost = /^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(url.hostname)
   if (url.protocol === 'https:' || (url.protocol === 'http:' && privateHost)) {

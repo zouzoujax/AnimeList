@@ -127,7 +127,7 @@ function Spotlight({ media, resumeAt }: { media: Media; resumeAt: number | null 
                 }}
               >
                 <Check size={15} />
-                {t("Cocher l'épisode")} {resumeAt}
+                {t("Cocher l'épisode {n}", { n: resumeAt })}
               </button>
             )}
             <button

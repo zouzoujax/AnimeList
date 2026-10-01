@@ -15,12 +15,11 @@ import { Section } from './ui'
 import { rgba } from '@/lib/color'
 import { useApp } from '@/store/app'
 import { t } from '@shared/i18n'
+import { dec } from '@/lib/format'
 
 function weight(bytes: number): string {
   const mo = bytes / 1024 / 1024
-  return mo >= 1024
-    ? t('{v0} Go', { v0: (mo / 1024).toFixed(1).replace('.', ',') })
-    : t('{v0} Mo', { v0: Math.round(mo) })
+  return mo >= 1024 ? t('{v0} Go', { v0: dec(mo / 1024) }) : t('{v0} Mo', { v0: Math.round(mo) })
 }
 
 export default function LocalFiles({

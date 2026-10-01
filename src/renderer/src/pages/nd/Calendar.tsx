@@ -24,7 +24,7 @@ type Scope = 'library' | 'all'
  */
 const BANDS = [
   { id: 'morning', label: t('Matin'), hint: t('5 h à midi'), from: 5, to: 12 },
-  { id: 'afternoon', label: 'Après-midi', hint: t('midi à 18 h'), from: 12, to: 18 },
+  { id: 'afternoon', label: t('Après-midi'), hint: t('midi à 18 h'), from: 12, to: 18 },
   { id: 'evening', label: t('Soirée'), hint: t('18 h à minuit'), from: 18, to: 24 },
   { id: 'night', label: t('Nuit'), hint: t('minuit à 5 h'), from: 0, to: 5 }
 ] as const
@@ -52,7 +52,7 @@ function Slot({ item, scope, now }: { item: AiringEntry; scope: Scope; now: numb
       <span className="min-w-0">
         <span className="clamp-2 text-[0.74rem] font-semibold leading-snug">{titleOf(item.media, lang)}</span>
         <span className="mt-0.5 block text-[0.68rem] text-muted">
-          {t('Ép.')} {item.episode} {t('à')} {formatTime(item.airingAt * 1000)}
+          {t('Ép. {n}', { n: item.episode })} {t('à')} {formatTime(item.airingAt * 1000)}
         </span>
       </span>
     </button>
