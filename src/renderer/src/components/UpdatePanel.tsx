@@ -29,12 +29,14 @@ import { Modal } from './ui'
 import { useApp } from '../store/app'
 import { t } from '@shared/i18n'
 
-const KIND: Record<NoteKind, { icon: typeof Plus; color: string }> = {
-  add: { icon: Plus, color: 'var(--accent-2)' },
-  change: { icon: Pencil, color: 'var(--accent)' },
-  fix: { icon: Wrench, color: '#ffb038' },
-  remove: { icon: Trash2, color: '#ff8080' },
-  other: { icon: Sparkles, color: 'var(--color-faint)' }
+// L'intitulé est traduit ici : `release-notes` le donne en français, car le
+// script de publication le charge sous Node, hors de la fenêtre.
+const KIND: Record<NoteKind, { icon: typeof Plus; color: string; label: string }> = {
+  add: { icon: Plus, color: 'var(--accent-2)', label: t('Ajouts') },
+  change: { icon: Pencil, color: 'var(--accent)', label: t('Modifications') },
+  fix: { icon: Wrench, color: '#ffb038', label: t('Corrections') },
+  remove: { icon: Trash2, color: '#ff8080', label: t('Suppressions') },
+  other: { icon: Sparkles, color: 'var(--color-faint)', label: t('Notes') }
 }
 
 function NotesModal({
@@ -68,12 +70,12 @@ function NotesModal({
               </p>
             )}
             {note.sections.map((section) => {
-              const { icon: Icon, color } = KIND[section.kind]
+              const { icon: Icon, color, label } = KIND[section.kind]
               return (
                 <div key={section.kind} className="mb-3 last:mb-0">
                   <p className="mb-1.5 flex items-center gap-1.5 text-[0.78rem] font-semibold" style={{ color }}>
                     <Icon size={13} />
-                    {section.label}
+                    {label}
                   </p>
                   <ul className="flex flex-col gap-1">
                     {section.items.map((item, i) => (
