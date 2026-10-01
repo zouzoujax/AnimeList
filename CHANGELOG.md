@@ -9,6 +9,17 @@ Un titre de niveau deux par version, puis des rubriques `### Ajouts`,
 changement, écrite pour quelqu'un qui utilise l'app, pas pour quelqu'un qui lit
 le code.
 
+## 0.13.4 — 1er octobre 2026
+
+### Ajouts
+
+- L’app parle maintenant anglais, espagnol, japonais et allemand : Réglages › Affichage › Langue de l’app. Boutons, menus, pages, badges, notifications et dates suivent la langue choisie ; la fenêtre se recharge pour l’appliquer
+
+### Corrections
+
+- Une saison suivie de plusieurs suites les montre toutes, rangées par date de sortie : sur Dragon Ball, la bande des saisons et l’arbre de la franchise s’arrêtaient à GT, sans Super, DAIMA ni Beerus
+- La fenêtre de lecture Anime-Sama est mieux isolée de l’app : la page du site n’a plus accès à son code
+
 ## 0.13.3 — 30 septembre 2026
 
 ### Ajouts
