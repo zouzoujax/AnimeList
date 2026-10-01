@@ -13,6 +13,7 @@ import { getPrefs, importSnapshot, setPrefs } from '../store'
 import { EXPECTED_FILES, locateExport } from './folder'
 import { parseExport } from './read'
 import { runImport } from './run'
+import { t } from '@shared/i18n'
 
 /** Only one import at a time; a second would fight the first over the queue. */
 let running = false
@@ -36,10 +37,10 @@ function empty(message: string, over: Partial<TvTimeReport> = {}): TvTimeReport 
 /** Asks for a folder, defaulting to the last one used. */
 async function pickFolder(win: BrowserWindow): Promise<string | null> {
   const res = await dialog.showOpenDialog(win, {
-    title: 'Choisir le dossier de l’export TV Time / OpenTV',
+    title: t('Choisir le dossier de l’export TV Time / OpenTV'),
     defaultPath: getPrefs().tvtimeFolder ?? undefined,
     properties: ['openDirectory'],
-    buttonLabel: 'Analyser ce dossier'
+    buttonLabel: t('Analyser ce dossier')
   })
   return res.canceled ? null : (res.filePaths[0] ?? null)
 }
@@ -49,10 +50,10 @@ export function cancelImport(): void {
 }
 
 export async function importTvTime(win: BrowserWindow, folderArg?: string | null): Promise<TvTimeReport> {
-  if (running) return empty('Un import est déjà en cours.')
+  if (running) return empty(t('Un import est déjà en cours.'))
 
   const root = folderArg ?? (await pickFolder(win))
-  if (!root) return empty('Import annulé')
+  if (!root) return empty(t('Import annulé'))
 
   running = true
   cancelled = false
@@ -64,14 +65,14 @@ export async function importTvTime(win: BrowserWindow, folderArg?: string | null
     const found = await locateExport(root)
     if (!found) {
       return empty(
-        `Aucun export trouvé dans ce dossier. Il doit contenir ${EXPECTED_FILES.join(' et ')}, ` +
-          'à la racine ou dans un sous-dossier.'
+        t('Aucun export trouvé dans ce dossier. Il doit contenir {v0}, ', { v0: EXPECTED_FILES.join(' et ') }) +
+          t('à la racine ou dans un sous-dossier.')
       )
     }
 
     const shows = parseExport(found)
     if (!shows.length) {
-      return empty('Export lisible, mais il ne contient aucune série suivie.', { folder: found.folder })
+      return empty(t('Export lisible, mais il ne contient aucune série suivie.'), { folder: found.folder })
     }
 
     const outcome = await runImport(shows, {
@@ -93,13 +94,19 @@ export async function importTvTime(win: BrowserWindow, folderArg?: string | null
 
     const unmatched = outcome.shows.filter((s) => s.status === 'unmatched').length
     const partial = outcome.shows.filter((s) => s.status === 'partial').length
-    const parts = [`${outcome.entries.length} fiches et ${outcome.history.length} épisodes importés`]
-    if (unmatched) parts.push(`${unmatched} série${unmatched > 1 ? 's' : ''} sans correspondance`)
-    if (partial) parts.push(`${partial} partiellement placée${partial > 1 ? 's' : ''}`)
+    const parts = [
+      t('{length} fiches et {length1} épisodes importés', {
+        length: outcome.entries.length,
+        length1: outcome.history.length
+      })
+    ]
+    if (unmatched)
+      parts.push(t('{unmatched} série{v1} sans correspondance', { unmatched, v1: unmatched > 1 ? 's' : '' }))
+    if (partial) parts.push(t('{partial} partiellement placée{v1}', { partial, v1: partial > 1 ? 's' : '' }))
 
     return {
       ok: true,
-      message: cancelled ? `Import interrompu — ${parts.join(', ')}.` : `${parts.join(', ')}.`,
+      message: cancelled ? t('Import interrompu — {v0}.', { v0: parts.join(', ') }) : `${parts.join(', ')}.`,
       added: outcome.entries.length,
       updated: 0,
       episodes: outcome.history.length,
@@ -109,7 +116,7 @@ export async function importTvTime(win: BrowserWindow, folderArg?: string | null
       cancelled
     }
   } catch (err) {
-    return empty(`Import interrompu : ${(err as Error).message}`)
+    return empty(t('Import interrompu : {message}', { message: (err as Error).message }))
   } finally {
     running = false
     cancelled = false

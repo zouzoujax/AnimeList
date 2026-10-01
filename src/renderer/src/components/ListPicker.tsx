@@ -16,6 +16,7 @@ import { Check, Minus, Pencil, Trash2 } from 'lucide-react'
 import type { CustomList } from '@shared/types'
 import { useApp } from '../store/app'
 import { Modal } from './ui'
+import { t } from '@shared/i18n'
 
 /** Enough to tell one list from another at a glance, short enough to scan. */
 const EMOJIS = ['📁', '⭐', '🔥', '🌸', '🎬', '🍿', '💤', '🏆', '🎯', '❤️', '🌙', '🧊']
@@ -36,7 +37,7 @@ function Editor({ list, onDone }: { list: CustomList; onDone: () => void }): Rea
 
   const drop = async (): Promise<void> => {
     await deleteList(list.id)
-    toast(`Liste « ${list.name} » supprimée`, 'info')
+    toast(t('Liste « {name} » supprimée', { name: list.name }), 'info')
     onDone()
   }
 
@@ -49,7 +50,7 @@ function Editor({ list, onDone }: { list: CustomList; onDone: () => void }): Rea
             data-on={emoji === e}
             className="chip !h-8 !w-8 !justify-center !px-0 !text-[0.95rem]"
             onClick={() => setEmoji(e)}
-            aria-label={`Emoji ${e}`}
+            aria-label={t('Emoji {e}', { e })}
           >
             <span aria-hidden>{e}</span>
           </button>
@@ -64,28 +65,28 @@ function Editor({ list, onDone }: { list: CustomList; onDone: () => void }): Rea
           onKeyDown={(ev) => {
             if (ev.key === 'Enter') void save()
           }}
-          aria-label="Nom de la liste"
+          aria-label={t('Nom de la liste')}
         />
         <button className="btn btn-primary" disabled={!name.trim()} onClick={() => void save()}>
-          Enregistrer
+          {t('Enregistrer')}
         </button>
       </div>
 
       <div className="mt-2.5 flex items-center justify-between gap-2">
         <button className="btn !h-7 text-[0.74rem]" onClick={onDone}>
-          Annuler
+          {t('Annuler')}
         </button>
         {confirming ? (
           <span className="flex items-center gap-1.5">
             {/* Une liste est du rangement fait à la main : elle ne part pas sur
                 un clic malheureux, comme le retrait groupé d'animes. */}
-            <span className="text-[0.74rem] text-muted">Supprimer pour de bon ?</span>
+            <span className="text-[0.74rem] text-muted">{t('Supprimer pour de bon ?')}</span>
             <button
               className="btn !h-7 text-[0.74rem]"
               style={{ color: '#ff8080', borderColor: 'rgba(255,128,128,.3)' }}
               onClick={() => void drop()}
             >
-              Confirmer
+              {t('Confirmer')}
             </button>
           </span>
         ) : (
@@ -95,7 +96,7 @@ function Editor({ list, onDone }: { list: CustomList; onDone: () => void }): Rea
             onClick={() => setConfirming(true)}
           >
             <Trash2 size={12} />
-            Supprimer
+            {t('Supprimer')}
           </button>
         )}
       </div>
@@ -140,7 +141,7 @@ export default function ListPicker({
     if (!list) return
     setName('')
     if (picking) await setListMembership(list.id, animeIds, true)
-    toast(`Liste « ${list.name} » créée`, 'ok')
+    toast(t('Liste « {name} » créée', { name: list.name }), 'ok')
   }
 
   const plural = total > 1 ? 's' : ''
@@ -148,11 +149,15 @@ export default function ListPicker({
   return (
     <Modal open={open} onClose={close} width={440}>
       <div className="border-b px-5 py-4" style={{ borderColor: 'var(--line)' }}>
-        <p className="text-[0.95rem] font-semibold">{picking ? 'Listes' : 'Gérer les listes'}</p>
+        <p className="text-[0.95rem] font-semibold">{picking ? t('Listes') : t('Gérer les listes')}</p>
         <p className="mt-0.5 text-[0.78rem] text-muted">
           {picking
-            ? `${total} anime${plural} sélectionné${plural} — clique une liste pour l'y mettre ou l'en sortir`
-            : 'Renomme, change l’emoji ou supprime une liste.'}
+            ? t("{total} anime{plural} sélectionné{plural2} — clique une liste pour l'y mettre ou l'en sortir", {
+                total,
+                plural,
+                plural2: plural
+              })
+            : t('Renomme, change l’emoji ou supprime une liste.')}
         </p>
       </div>
 
@@ -191,7 +196,7 @@ export default function ListPicker({
                   <button
                     className="icon-btn mr-3 !h-8 !w-8"
                     onClick={() => setEditing(editing === list.id ? null : list.id)}
-                    aria-label={`Modifier ${list.name}`}
+                    aria-label={t('Modifier {name}', { name: list.name })}
                   >
                     <Pencil size={13} />
                   </button>
@@ -204,11 +209,11 @@ export default function ListPicker({
       )}
 
       <div className="border-t px-5 py-4" style={{ borderColor: 'var(--line)' }}>
-        <span className="label mb-1.5 block">Nouvelle liste</span>
+        <span className="label mb-1.5 block">{t('Nouvelle liste')}</span>
         <div className="flex gap-1.5">
           <input
             className="field flex-1"
-            placeholder="À rattraper cet été…"
+            placeholder={t('À rattraper cet été…')}
             value={name}
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => {
@@ -216,7 +221,7 @@ export default function ListPicker({
             }}
           />
           <button className="btn btn-primary" disabled={!name.trim()} onClick={() => void create()}>
-            Créer
+            {t('Créer')}
           </button>
         </div>
       </div>

@@ -13,13 +13,14 @@ import { airingLabel, countdown, isUnaired, relativeDay, titleOf } from '@/lib/f
 import { useBrowse, useNow } from '@/lib/hooks'
 import { setLume } from '@/lib/lume'
 import { nextEpisodeOf, useApp } from '@/store/app'
+import { t, locale } from '@shared/i18n'
 
 function greeting(): string {
   const h = new Date().getHours()
-  if (h < 6) return 'Bonne nuit'
-  if (h < 12) return 'Bonjour'
-  if (h < 18) return 'Bon après-midi'
-  return 'Bonsoir'
+  if (h < 6) return t('Bonne nuit')
+  if (h < 12) return t('Bonjour')
+  if (h < 18) return t('Bon après-midi')
+  return t('Bonsoir')
 }
 
 function Spotlight({ media, resumeAt }: { media: Media; resumeAt: number | null }): React.JSX.Element {
@@ -88,7 +89,7 @@ function Spotlight({ media, resumeAt }: { media: Media; resumeAt: number | null 
 
         <div className="sp-plane sp-mid min-w-0 flex-1 pb-1">
           <p className="label mb-2" style={{ color: rgba(glow, 1) }}>
-            {resumeAt ? (pending ? 'En attente' : 'Reprendre') : 'À la une'}
+            {resumeAt ? (pending ? t('En attente') : t('Reprendre')) : t('À la une')}
           </p>
           <h1 className="title-xl clamp-2 max-w-2xl text-[2.1rem] leading-[1.08]">{titleOf(media, lang)}</h1>
 
@@ -96,11 +97,16 @@ function Spotlight({ media, resumeAt }: { media: Media; resumeAt: number | null 
             {[
               media.averageScore !== null ? (
                 <span className="font-semibold" style={{ color: rgba(glow, 1) }}>
-                  {media.averageScore}% d'appréciation
+                  {media.averageScore}
+                  {t("% d'appréciation")}
                 </span>
               ) : null,
               media.studios[0] ? <span>{media.studios[0]}</span> : null,
-              media.episodes ? <span>{media.episodes} épisodes</span> : null,
+              media.episodes ? (
+                <span>
+                  {media.episodes} {t('épisodes')}
+                </span>
+              ) : null,
               media.seasonYear ? <span>{media.seasonYear}</span> : null
             ]
               .filter((node): node is React.JSX.Element => node !== null)
@@ -123,27 +129,27 @@ function Spotlight({ media, resumeAt }: { media: Media; resumeAt: number | null 
                 style={{ background: rgba(glow, 0.16), borderColor: rgba(glow, 0.4), color: rgba(glow, 1) }}
               >
                 <Clock size={14} />
-                Prochain épisode {media.nextAiring.episode} · {airingLabel(media.nextAiring.airingAt)}
+                {t('Prochain épisode')} {media.nextAiring.episode} · {airingLabel(media.nextAiring.airingAt)}
               </span>
             ) : resumeAt ? (
               <button
                 className="btn btn-primary"
                 onClick={async () => {
                   await toggleEpisode(media.id, resumeAt)
-                  toast(`Épisode ${resumeAt} coché · ${titleOf(media, lang)}`)
+                  toast(t('Épisode {resumeAt} coché · {v1}', { resumeAt, v1: titleOf(media, lang) }))
                 }}
               >
                 <Play size={14} fill="currentColor" strokeWidth={0} />
-                Marquer l'épisode {resumeAt}
+                {t("Marquer l'épisode")} {resumeAt}
               </button>
             ) : (
               <button className="btn btn-primary" onClick={() => navigate({ name: 'anime', id: media.id })}>
                 <Sparkles size={14} />
-                Découvrir
+                {t('Découvrir')}
               </button>
             )}
             <button className="btn" onClick={() => navigate({ name: 'anime', id: media.id })}>
-              Voir la fiche
+              {t('Voir la fiche')}
               <ArrowUpRight size={14} />
             </button>
           </div>
@@ -187,7 +193,7 @@ function UpcomingCard({
         </p>
         <p className="clamp-2 mt-0.5 text-[0.79rem] font-semibold leading-snug">{titleOf(media, lang)}</p>
         <p className="mt-1 text-[0.7rem] text-faint">
-          Épisode {airing.episode} · {countdown(airing.airingAt)}
+          {t('Épisode')} {airing.episode} · {countdown(airing.airingAt)}
         </p>
       </div>
     </motion.button>
@@ -336,7 +342,7 @@ export default function HomePage(): React.JSX.Element {
   return (
     <div className="page">
       <p className="label mb-1.5">
-        {greeting()} · {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+        {greeting()} · {new Date().toLocaleDateString(locale(), { weekday: 'long', day: 'numeric', month: 'long' })}
       </p>
 
       <div className="page-flow">
@@ -352,15 +358,17 @@ export default function HomePage(): React.JSX.Element {
           <div className="span-all mb-9">
             <EmptyState
               icon={<Compass size={24} />}
-              title="Ta bibliothèque est vide"
-              hint="Cherche un anime avec Ctrl+K, ou pioche dans les tendances ci-dessous. Tu peux aussi importer ta liste MyAnimeList depuis les réglages."
+              title={t('Ta bibliothèque est vide')}
+              hint={t(
+                'Cherche un anime avec Ctrl+K, ou pioche dans les tendances ci-dessous. Tu peux aussi importer ta liste MyAnimeList depuis les réglages.'
+              )}
               action={
                 <div className="mt-1 flex gap-2">
                   <button className="btn btn-primary" onClick={() => navigate({ name: 'discover' })}>
-                    Explorer
+                    {t('Explorer')}
                   </button>
                   <button className="btn" onClick={() => navigate({ name: 'settings' })}>
-                    Importer ma liste
+                    {t('Importer ma liste')}
                   </button>
                 </div>
               }
@@ -370,16 +378,16 @@ export default function HomePage(): React.JSX.Element {
 
         {news.length > 0 && (
           <Section
-            title="Chez ceux que tu suis"
+            title={t('Chez ceux que tu suis')}
             subtitle={
               newsTotal > 1
-                ? `${newsTotal} nouveautés depuis ta dernière visite`
-                : 'Une nouveauté depuis ta dernière visite'
+                ? t('{newsTotal} nouveautés depuis ta dernière visite', { newsTotal })
+                : t('Une nouveauté depuis ta dernière visite')
             }
             action={
               <button
                 className="chip shrink-0"
-                title="Ne plus les faire remonter ici"
+                title={t('Ne plus les faire remonter ici')}
                 onClick={() => {
                   // Vidé tout de suite à l'écran : attendre la réponse ferait
                   // rester la rangée une seconde de trop après le clic.
@@ -388,7 +396,7 @@ export default function HomePage(): React.JSX.Element {
                 }}
               >
                 <Check size={13} />
-                J’ai vu
+                {t('J’ai vu')}
               </button>
             }
           >
@@ -411,13 +419,18 @@ export default function HomePage(): React.JSX.Element {
 
         {behindList.length > 0 && (
           <Section
-            title="À rattraper"
-            subtitle={`${behindTotal} épisode${behindTotal > 1 ? 's' : ''} déjà sorti${behindTotal > 1 ? 's' : ''} que tu n'as pas vu${behindTotal > 1 ? 's' : ''}`}
+            title={t('À rattraper')}
+            subtitle={t("{behindTotal} épisode{v1} déjà sorti{v2} que tu n'as pas vu{v3}", {
+              behindTotal,
+              v1: behindTotal > 1 ? 's' : '',
+              v2: behindTotal > 1 ? 's' : '',
+              v3: behindTotal > 1 ? 's' : ''
+            })}
             action={
               behindList.length > 1 ? (
                 <button
                   className="chip shrink-0"
-                  title="Ouvre une série au hasard parmi celles-ci"
+                  title={t('Ouvre une série au hasard parmi celles-ci')}
                   onClick={() => {
                     // Choisir est un travail aussi : trente-trois séries en
                     // retard, ce sont trente-trois décisions avant de regarder.
@@ -426,7 +439,7 @@ export default function HomePage(): React.JSX.Element {
                   }}
                 >
                   <Dices size={13} />
-                  Au hasard
+                  {t('Au hasard')}
                 </button>
               ) : undefined
             }
@@ -437,7 +450,7 @@ export default function HomePage(): React.JSX.Element {
                   key={row.media.id}
                   media={row.media}
                   index={i}
-                  note={`${row.behind} en retard`}
+                  note={t('{behind} en retard', { behind: row.behind })}
                   onHover={lightUp}
                 />
               ))}
@@ -448,7 +461,7 @@ export default function HomePage(): React.JSX.Element {
         {/* « À rattraper » dit quoi ; le plan dit quand. Seulement pour ce
             qui est encore en diffusion : c'est là qu'être à jour a un sens. */}
         {plan.behind.episodes >= MIN_BEHIND && (
-          <Section title="Pour être à jour" subtitle={planSentence(plan, now)}>
+          <Section title={t('Pour être à jour')} subtitle={planSentence(plan, now)}>
             <PlanGrid plan={plan} now={now} onHover={lightUp} />
           </Section>
         )}
@@ -459,15 +472,15 @@ export default function HomePage(): React.JSX.Element {
 
         {pinned.length > 0 && (
           <Section
-            title="À revoir"
-            subtitle="Les épisodes que tu as mis de côté"
+            title={t('À revoir')}
+            subtitle={t('Les épisodes que tu as mis de côté')}
             action={
               <button
                 className="chip shrink-0"
-                title="Tout ce que tu as regardé, avec tes notes"
+                title={t('Tout ce que tu as regardé, avec tes notes')}
                 onClick={() => navigate({ name: 'journal' })}
               >
-                Le journal
+                {t('Le journal')}
               </button>
             }
           >
@@ -478,7 +491,7 @@ export default function HomePage(): React.JSX.Element {
                   id={row.media.id}
                   title={titleOf(row.media, lang)}
                   cover={row.media.cover.large}
-                  caption={`Épisode ${row.ev.episode}`}
+                  caption={t('Épisode {episode}', { episode: row.ev.episode })}
                   index={i}
                 />
               ))}
@@ -487,7 +500,7 @@ export default function HomePage(): React.JSX.Element {
         )}
 
         {continueList.length > 0 && (
-          <Section title="Continuer" subtitle={`${continueList.length} séries en cours`}>
+          <Section title={t('Continuer')} subtitle={t('{length} séries en cours', { length: continueList.length })}>
             <RowScroller>
               {continueList.map((media, i) => (
                 <ContinueCard key={media.id} media={media} index={i} onHover={lightUp} />
@@ -498,11 +511,11 @@ export default function HomePage(): React.JSX.Element {
 
         {upcoming.length > 0 && (
           <Section
-            title="Bientôt"
-            subtitle="Les prochains épisodes de tes séries"
+            title={t('Bientôt')}
+            subtitle={t('Les prochains épisodes de tes séries')}
             action={
               <button className="btn btn-ghost" onClick={() => navigate({ name: 'calendar' })}>
-                Calendrier <ArrowUpRight size={14} />
+                {t('Calendrier')} <ArrowUpRight size={14} />
               </button>
             }
           >
@@ -515,11 +528,11 @@ export default function HomePage(): React.JSX.Element {
         )}
 
         <Section
-          title="Tendances"
-          subtitle="Ce que tout le monde regarde en ce moment"
+          title={t('Tendances')}
+          subtitle={t('Ce que tout le monde regarde en ce moment')}
           action={
             <button className="btn btn-ghost" onClick={() => navigate({ name: 'discover' })}>
-              Tout voir <ArrowUpRight size={14} />
+              {t('Tout voir')} <ArrowUpRight size={14} />
             </button>
           }
         >
@@ -536,7 +549,7 @@ export default function HomePage(): React.JSX.Element {
           )}
         </Section>
 
-        <Section title="La saison en cours" subtitle="Les sorties du moment">
+        <Section title={t('La saison en cours')} subtitle={t('Les sorties du moment')}>
           {season.loading ? (
             <PosterSkeletons />
           ) : season.error ? (

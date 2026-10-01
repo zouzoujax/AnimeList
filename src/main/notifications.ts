@@ -20,6 +20,7 @@ import { airing, onApiRecovered } from './anilist'
 import { pushEpisode, phonePushStatus } from './phone-push'
 import { quickTick } from './quick-tick'
 import { getPrefs, setPrefs, snapshot } from './store'
+import { t } from '@shared/i18n'
 
 const MAX_TOASTS = 4
 /** Beyond this a setTimeout is pointless — the sweep will pick it up instead. */
@@ -114,7 +115,13 @@ async function sweep(win: BrowserWindow): Promise<void> {
   for (const item of fresh.slice(0, MAX_TOASTS)) {
     const media = byId.get(item.mediaId)
     if (!media) continue
-    toast(win, item.mediaId, `Épisode ${item.episode} disponible`, titleFor(media, prefs.titleLang), item.episode)
+    toast(
+      win,
+      item.mediaId,
+      t('Épisode {episode} disponible', { episode: item.episode }),
+      titleFor(media, prefs.titleLang),
+      item.episode
+    )
   }
 
   if (fresh.length > MAX_TOASTS) {
@@ -181,11 +188,18 @@ export function planUpcoming(win: BrowserWindow): void {
 
     if (desktop) {
       arm(`${media.id}:${episode}`, airsAt - lead, () => {
-        const body = lead > 0 ? `${title()} — épisode ${episode} dans ${prefs.notifyLeadMinutes} min` : title()
+        const body =
+          lead > 0
+            ? t('{v0} — épisode {episode} dans {notifyLeadMinutes} min', {
+                v0: title(),
+                episode,
+                notifyLeadMinutes: prefs.notifyLeadMinutes
+              })
+            : title()
         toast(
           win,
           media.id,
-          lead > 0 ? 'Bientôt' : `Épisode ${episode} disponible`,
+          lead > 0 ? t('Bientôt') : t('Épisode {episode} disponible', { episode }),
           body,
           lead > 0 ? undefined : episode
         )

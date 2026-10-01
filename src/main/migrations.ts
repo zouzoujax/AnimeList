@@ -1,3 +1,4 @@
+import { t, lazy } from '@shared/i18n'
 /**
  * Schema migrations for the on-disk store.
  *
@@ -40,10 +41,10 @@ interface Migration {
 
 const DEFAULT_RUNTIME = 24
 
-const migrations: Migration[] = [
+const migrations: Migration[] = lazy(() => [
   {
     to: 2,
-    describe: 'Complète les champs absents des entrées et de l’historique',
+    describe: t('Complète les champs absents des entrées et de l’historique'),
     run(db) {
       const now = Date.now()
 
@@ -77,7 +78,7 @@ const migrations: Migration[] = [
   },
   {
     to: 3,
-    describe: 'Purge les fiches en cache qui ne sont plus référencées',
+    describe: t('Purge les fiches en cache qui ne sont plus référencées'),
     run(db) {
       // Media is a cache: anything not backing an entry or a watched episode can
       // be refetched from AniList, so it is safe to drop.
@@ -91,7 +92,7 @@ const migrations: Migration[] = [
   },
   {
     to: 4,
-    describe: 'Ajoute les listes personnalisées',
+    describe: t('Ajoute les listes personnalisées'),
     run(db) {
       if (!Array.isArray(db.lists)) {
         db.lists = []
@@ -126,7 +127,7 @@ const migrations: Migration[] = [
   },
   {
     to: 5,
-    describe: 'Dédoublonne l’historique par visionnage',
+    describe: t('Dédoublonne l’historique par visionnage'),
     run(db) {
       // From v5 the history lives in an append-only journal
       // (`animelist-history.jsonl`), which is what this version number is really
@@ -150,7 +151,7 @@ const migrations: Migration[] = [
       })
     }
   }
-]
+])
 
 /**
  * Brings `db` up to SCHEMA_VERSION in place. A file from a newer build is left

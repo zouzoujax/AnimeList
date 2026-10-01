@@ -19,6 +19,7 @@ import {
 import { secondaryFor } from '@/lib/color'
 import { rememberScroll } from '@/lib/scroll'
 import { airingLabel, titleOf } from '@/lib/format'
+import { t as tr } from '@shared/i18n'
 
 export type Route =
   | { name: 'home' }
@@ -214,7 +215,13 @@ function caughtUpNotice(state: AppState, animeId: number, media: Media | undefin
   for (let ep = 1; ep < next.episode; ep += 1) if (!seen?.has(ep)) return null
   const when = airingLabel(next.airingAt)
   const warned = state.prefs.notifications && state.entries.get(animeId)?.notify !== false
-  return `À jour sur ${titleOf(media, state.prefs.titleLang)}. Épisode ${next.episode} ${when.charAt(0).toLowerCase()}${when.slice(1)}${warned ? ' : tu seras prévenu.' : '.'}`
+  return tr('À jour sur {v0}. Épisode {episode} {v2}{v3}{v4}', {
+    v0: titleOf(media, state.prefs.titleLang),
+    episode: next.episode,
+    v2: when.charAt(0).toLowerCase(),
+    v3: when.slice(1),
+    v4: warned ? tr(' : tu seras prévenu.') : '.'
+  })
 }
 
 let toastSeq = 0
@@ -278,8 +285,8 @@ export const useApp = create<AppState>((set, get) => ({
       if (!added.length) return
       get().toast(
         added.length === 1
-          ? `Nouvelle saison ajoutée : ${added[0].title.romaji}`
-          : `${added.length} nouvelles saisons ajoutées à ta bibliothèque`,
+          ? tr('Nouvelle saison ajoutée : {romaji}', { romaji: added[0].title.romaji })
+          : tr('{length} nouvelles saisons ajoutées à ta bibliothèque', { length: added.length }),
         'ok'
       )
     })
@@ -345,10 +352,10 @@ export const useApp = create<AppState>((set, get) => ({
   offerUndo: (message, held) => {
     set({ undoable: held })
     get().toast(message, 'ok', {
-      label: 'Annuler',
+      label: tr('Annuler'),
       run: () => {
         // Un geste plus récent a pris la place : ce bouton ne défait plus rien.
-        if (get().undoable !== held) return get().toast('Plus rien à annuler ici.', 'info')
+        if (get().undoable !== held) return get().toast(tr('Plus rien à annuler ici.'), 'info')
         void get().runUndo()
       }
     })
@@ -369,12 +376,12 @@ export const useApp = create<AppState>((set, get) => ({
   runUndo: async () => {
     const held = get().undoable
     if (!held) {
-      get().toast('Rien à annuler.', 'info')
+      get().toast(tr('Rien à annuler.'), 'info')
       return
     }
     set({ undoable: null })
     await held.run()
-    get().toast(`Annulé : ${held.label}`, 'ok')
+    get().toast(tr('Annulé : {label}', { label: held.label }), 'ok')
   },
 
   // Optimistic: ticking an episode must feel instant, the echo reconciles it.
@@ -388,7 +395,7 @@ export const useApp = create<AppState>((set, get) => ({
     set({
       watched,
       undoable: {
-        label: next ? `épisode ${episode} coché` : `épisode ${episode} décoché`,
+        label: next ? tr('épisode {episode} coché', { episode }) : tr('épisode {episode} décoché', { episode }),
         run: async () => {
           await get().toggleEpisode(animeId, episode)
           // Défaire ne doit pas devenir l'action à défaire.
@@ -418,7 +425,11 @@ export const useApp = create<AppState>((set, get) => ({
       set0.add(ep)
     }
     watched.set(animeId, set0)
-    const label = `${added.length} épisode${added.length > 1 ? 's' : ''} coché${added.length > 1 ? 's' : ''}`
+    const label = tr('{length} épisode{v1} coché{v2}', {
+      length: added.length,
+      v1: added.length > 1 ? 's' : '',
+      v2: added.length > 1 ? 's' : ''
+    })
     const held: Undoable = {
       label,
       run: async () => {
@@ -445,14 +456,18 @@ export const useApp = create<AppState>((set, get) => ({
     const lost = [...(watched.get(animeId) ?? [])]
     watched.set(animeId, new Set())
     const held: Undoable = {
-      label: `progression effacée (${lost.length} épisode${lost.length > 1 ? 's' : ''})`,
+      label: tr('progression effacée ({length} épisode{v1})', { length: lost.length, v1: lost.length > 1 ? 's' : '' }),
       run: async () => {
         for (const ep of lost) await window.api.library.setWatched(animeId, ep, true)
         set({ undoable: null })
       }
     }
     set({ watched })
-    if (lost.length) get().offerUndo(`Progression effacée (${lost.length} épisode${lost.length > 1 ? 's' : ''})`, held)
+    if (lost.length)
+      get().offerUndo(
+        tr('Progression effacée ({length} épisode{v1})', { length: lost.length, v1: lost.length > 1 ? 's' : '' }),
+        held
+      )
     else set({ undoable: null })
     await window.api.library.clearWatched(animeId)
   },
@@ -501,7 +516,7 @@ export const useApp = create<AppState>((set, get) => ({
     const n = await window.api.library.setEntries(animeIds, patch)
     set({
       undoable: {
-        label: `modification de ${n} série${n > 1 ? 's' : ''}`,
+        label: tr('modification de {n} série{v1}', { n, v1: n > 1 ? 's' : '' }),
         run: async () => {
           for (const { id, values } of before) await window.api.library.setEntry(id, values)
           set({ undoable: null })
@@ -516,7 +531,7 @@ export const useApp = create<AppState>((set, get) => ({
     const n = await window.api.library.markAllWatched(animeIds)
     set({
       undoable: {
-        label: `épisodes cochés sur ${n} série${n > 1 ? 's' : ''}`,
+        label: tr('épisodes cochés sur {n} série{v1}', { n, v1: n > 1 ? 's' : '' }),
         // Lu au moment d'annuler : l'écho de l'écriture a eu le temps d'arriver.
         run: async () => {
           for (const [id, had] of before) {

@@ -13,6 +13,7 @@ import { statusBlocked } from '@/lib/status'
 import { useApp } from '../store/app'
 import ListPicker from './ListPicker'
 import { Modal } from './ui'
+import { t } from '@shared/i18n'
 
 const STATUSES: LibraryStatus[] = ['watching', 'planned', 'completed', 'paused', 'dropped']
 
@@ -46,7 +47,7 @@ export default function BulkBar({
   const apply = async (label: string, action: () => Promise<number>): Promise<void> => {
     const before = useApp.getState().undoable
     const n = await action()
-    const message = `${label} — ${n} modifié${n > 1 ? 's' : ''}`
+    const message = t('{label} — {n} modifié{v2}', { label, n, v2: n > 1 ? 's' : '' })
     // L'action a laissé de quoi se défaire : on le propose tout de suite.
     const held = useApp.getState().undoable
     if (held && held !== before) offerUndo(message, held)
@@ -59,10 +60,10 @@ export default function BulkBar({
       <div
         className="glass-blur fixed bottom-5 left-1/2 z-40 flex -translate-x-1/2 flex-wrap items-center gap-1.5 rounded-[18px] px-3 py-2.5 shadow-2xl"
         role="region"
-        aria-label="Actions groupées"
+        aria-label={t('Actions groupées')}
       >
         <span className="px-1.5 text-[0.8rem] font-medium tabular-nums">
-          {selected.size} sélectionné{selected.size > 1 ? 's' : ''}
+          {t('{n} sélectionné{s}', { n: selected.size, s: selected.size > 1 ? 's' : '' })}
         </span>
 
         <span className="mx-1 h-5 w-px" style={{ background: 'var(--line)' }} />
@@ -91,15 +92,21 @@ export default function BulkBar({
               const left = ids.length - allowed.length
 
               if (allowed.length === 0) {
-                toast(`Aucune n’a fini de sortir : « ${STATUS_LABELS[status]} » ne s’applique à aucune.`, 'info')
+                toast(
+                  t('Aucune n’a fini de sortir : « {v0} » ne s’applique à aucune.', { v0: STATUS_LABELS[status] }),
+                  'info'
+                )
                 return
               }
-              const label = left > 0 ? `${STATUS_LABELS[status]} — ${left} encore en diffusion` : STATUS_LABELS[status]
+              const label =
+                left > 0
+                  ? t('{v0} — {left} encore en diffusion', { v0: STATUS_LABELS[status], left })
+                  : STATUS_LABELS[status]
               void apply(label, () => bulkPatch(allowed, { status }))
             }}
           >
             <option value="" disabled>
-              Statut…
+              {t('Statut…')}
             </option>
             {STATUSES.map((status) => (
               <option key={status} value={status}>
@@ -111,28 +118,28 @@ export default function BulkBar({
 
         <button className="btn !h-8 text-[0.78rem]" onClick={() => setPicking(true)}>
           <FolderPlus size={13} />
-          Liste
+          {t('Liste')}
         </button>
 
         <button
           className="btn !h-8 text-[0.78rem]"
           onClick={() =>
-            void apply(allFavorite ? 'Retirés des favoris' : 'Favoris', () =>
+            void apply(allFavorite ? t('Retirés des favoris') : t('Favoris'), () =>
               bulkPatch(ids, { favorite: !allFavorite })
             )
           }
         >
           {allFavorite ? <HeartOff size={13} /> : <Heart size={13} />}
-          {allFavorite ? 'Plus favori' : 'Favori'}
+          {allFavorite ? t('Plus favori') : t('Favori')}
         </button>
 
         <button
           className="btn !h-8 text-[0.78rem]"
-          onClick={() => void apply('Épisodes cochés', () => bulkMarkWatched(ids))}
-          title="Coche tous les épisodes connus de chaque série"
+          onClick={() => void apply(t('Épisodes cochés'), () => bulkMarkWatched(ids))}
+          title={t('Coche tous les épisodes connus de chaque série')}
         >
           <CheckCheck size={13} />
-          Tout vu
+          {t('Tout vu')}
         </button>
 
         <button
@@ -141,10 +148,10 @@ export default function BulkBar({
           onClick={() => setConfirmRemove(true)}
         >
           <Trash2 size={13} />
-          Retirer
+          {t('Retirer')}
         </button>
 
-        <button className="icon-btn !h-8 !w-8" onClick={onClear} aria-label="Annuler la sélection">
+        <button className="icon-btn !h-8 !w-8" onClick={onClear} aria-label={t('Annuler la sélection')}>
           <X size={14} />
         </button>
       </div>
@@ -154,24 +161,24 @@ export default function BulkBar({
       <Modal open={confirmRemove} onClose={() => setConfirmRemove(false)} width={420}>
         <div className="px-5 py-5">
           <p className="text-[0.95rem] font-semibold">
-            Retirer {selected.size} anime{selected.size > 1 ? 's' : ''} ?
+            {t('Retirer {n} anime{s} ?', { n: selected.size, s: selected.size > 1 ? 's' : '' })}
           </p>
           <p className="mt-1.5 text-[0.82rem] text-muted">
-            Leur historique d'épisodes sera supprimé aussi. Les fiches restent trouvables dans Découvrir.
+            {t("Leur historique d'épisodes sera supprimé aussi. Les fiches restent trouvables dans Découvrir.")}
           </p>
           <div className="mt-4 flex justify-end gap-1.5">
             <button className="btn" onClick={() => setConfirmRemove(false)}>
-              Annuler
+              {t('Annuler')}
             </button>
             <button
               className="btn"
               style={{ color: '#ff8080', borderColor: 'rgba(255,128,128,.3)' }}
               onClick={() => {
                 setConfirmRemove(false)
-                void apply('Retirés', () => bulkRemove(ids))
+                void apply(t('Retirés'), () => bulkRemove(ids))
               }}
             >
-              Retirer
+              {t('Retirer')}
             </button>
           </div>
         </div>

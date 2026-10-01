@@ -64,6 +64,7 @@ import Health from '@/components/Health'
 import RestoreBackup from '@/components/RestoreBackup'
 import { SETTINGS_SECTIONS, type SettingsSection } from '@/lib/settings-sections'
 import { useApp } from '@/store/app'
+import { t as tr, locale, UI_LANGS } from '@shared/i18n'
 
 /**
  * Une section : son nom en grand, et rien autour.
@@ -200,25 +201,28 @@ function CacheRow(): React.JSX.Element {
     }
   }, [])
 
-  const weight = stats ? `${(stats.bytes / 1048576).toFixed(1).replace('.', ',')} Mo` : '—'
+  const weight = stats ? tr('{v0} Mo', { v0: (stats.bytes / 1048576).toFixed(1).replace('.', ',') }) : '—'
   const hint = stats
-    ? `${stats.entries} réponses d'AniList gardées hors ligne, ${weight}. Les plus vieilles partent d'elles-mêmes.`
-    : 'Lecture…'
+    ? tr("{entries} réponses d'AniList gardées hors ligne, {weight}. Les plus vieilles partent d'elles-mêmes.", {
+        entries: stats.entries,
+        weight
+      })
+    : tr('Lecture…')
 
   return (
-    <Row label="Cache des données" hint={hint}>
+    <Row label={tr('Cache des données')} hint={hint}>
       <button
         className="btn"
         disabled={!stats || stats.entries === 0}
         onClick={() => {
           void window.api.cache.purge().then(async () => {
             setStats(await window.api.cache.stats())
-            toast('Cache vidé. Tout se retéléchargera à la demande.', 'ok')
+            toast(tr('Cache vidé. Tout se retéléchargera à la demande.'), 'ok')
           })
         }}
       >
         <Trash2 size={14} />
-        Vider
+        {tr('Vider')}
       </button>
     </Row>
   )
@@ -258,17 +262,21 @@ function BackupRow(): React.JSX.Element {
   }
 
   const hint = !status
-    ? 'Lecture…'
+    ? tr('Lecture…')
     : status.error
       ? status.error
       : !status.folder
-        ? 'Aucun dossier choisi : la bibliothèque n’a aucune copie hors du dossier de données.'
+        ? tr('Aucun dossier choisi : la bibliothèque n’a aucune copie hors du dossier de données.')
         : status.lastAt
-          ? `Dernière sauvegarde ${relativeDay(status.lastAt).toLowerCase()} · ${pluralize(status.count, 'copie gardée', 'copies gardées')} dans ${status.folder}`
-          : `Aucune copie encore dans ${status.folder}.`
+          ? tr('Dernière sauvegarde {v0} · {v1} dans {folder}', {
+              v0: relativeDay(status.lastAt).toLowerCase(),
+              v1: pluralize(status.count, tr('copie gardée'), tr('copies gardées')),
+              folder: status.folder
+            })
+          : tr('Aucune copie encore dans {folder}.', { folder: status.folder })
 
   return (
-    <Row label="Sauvegarde automatique" hint={hint}>
+    <Row label={tr('Sauvegarde automatique')} hint={hint}>
       {/* Cinq boutons sur une ligne ne laissaient qu'une colonne étroite au
           chemin du dossier : au-delà de cette largeur, ils passent à la ligne. */}
       <div className="flex max-w-[20rem] flex-wrap items-center justify-end gap-1.5">
@@ -276,42 +284,42 @@ function BackupRow(): React.JSX.Element {
           <>
             <button className="btn" disabled={busy} onClick={() => window.api.backup.reveal()}>
               <FolderOpen size={14} />
-              Ouvrir
+              {tr('Ouvrir')}
             </button>
             {status.count > 0 && (
               <button
                 className="btn"
                 disabled={busy}
-                title="Choisir une copie, voir ce qui changerait, puis restaurer"
+                title={tr('Choisir une copie, voir ce qui changerait, puis restaurer')}
                 onClick={() => setRestoring(true)}
               >
                 <History size={14} />
-                Restaurer…
+                {tr('Restaurer…')}
               </button>
             )}
             <button
               className="btn"
               disabled={busy}
-              onClick={() => run(() => window.api.backup.now(), 'Sauvegarde écrite.')}
+              onClick={() => run(() => window.api.backup.now(), tr('Sauvegarde écrite.'))}
             >
-              {busy ? 'Copie…' : 'Sauvegarder'}
+              {busy ? tr('Copie…') : tr('Sauvegarder')}
             </button>
           </>
         )}
         <button
           className={status?.folder ? 'btn' : 'btn btn-primary'}
           disabled={busy}
-          onClick={() => run(() => window.api.backup.choose(), 'Dossier choisi, première copie écrite.')}
+          onClick={() => run(() => window.api.backup.choose(), tr('Dossier choisi, première copie écrite.'))}
         >
           <ShieldCheck size={14} />
-          {status?.folder ? 'Changer' : 'Choisir un dossier'}
+          {status?.folder ? tr('Changer') : tr('Choisir un dossier')}
         </button>
         {status?.folder && (
           <button
             className="btn"
             disabled={busy}
-            title="Ne plus sauvegarder automatiquement. Les copies déjà écrites restent."
-            onClick={() => run(() => window.api.backup.forget(), 'Sauvegarde automatique arrêtée.')}
+            title={tr('Ne plus sauvegarder automatiquement. Les copies déjà écrites restent.')}
+            onClick={() => run(() => window.api.backup.forget(), tr('Sauvegarde automatique arrêtée.'))}
           >
             <X size={14} />
           </button>
@@ -357,19 +365,23 @@ function PhonePushRow(): React.JSX.Element {
       setStatus(res.status)
       if (res.ok) {
         setServer(null)
-        toast('Serveur enregistré. Réabonne-toi dans l’app ntfy.', 'ok')
-      } else toast(res.error ?? 'Serveur refusé.', 'error')
+        toast(tr('Serveur enregistré. Réabonne-toi dans l’app ntfy.'), 'ok')
+      } else toast(res.error ?? tr('Serveur refusé.'), 'error')
     })
   }
 
   return (
     <>
       <Row
-        label="Prévenir aussi sur le téléphone"
+        label={tr('Prévenir aussi sur le téléphone')}
         hint={
           status?.on
-            ? 'Par ntfy : les épisodes des séries que tu suis arrivent sur le téléphone, même loin du PC, tant qu’il est allumé.'
-            : 'Par ntfy, une app gratuite pour Android et iPhone. Le titre de la série et le numéro de l’épisode passent par le serveur choisi — ntfy.sh par défaut.'
+            ? tr(
+                'Par ntfy : les épisodes des séries que tu suis arrivent sur le téléphone, même loin du PC, tant qu’il est allumé.'
+              )
+            : tr(
+                'Par ntfy, une app gratuite pour Android et iPhone. Le titre de la série et le numéro de l’épisode passent par le serveur choisi — ntfy.sh par défaut.'
+              )
         }
       >
         <Toggle on={!!status?.on} onChange={(on) => void window.api.phonePush.enable(on).then(setStatus)} />
@@ -377,12 +389,13 @@ function PhonePushRow(): React.JSX.Element {
 
       {status?.on && status.url && (
         <div className="mt-1 flex flex-wrap items-start gap-4 px-1 py-3">
-          <QrCode text={status.url} label="Sujet ntfy à suivre" />
+          <QrCode text={status.url} label={tr('Sujet ntfy à suivre')} />
           <div className="min-w-[220px] flex-1">
-            <p className="text-[0.84rem] font-semibold">Abonne ton téléphone</p>
+            <p className="text-[0.84rem] font-semibold">{tr('Abonne ton téléphone')}</p>
             <p className="mt-1 text-[0.78rem] leading-relaxed text-muted">
-              Installe ntfy, touche « + », puis entre ce sujet — ou scanne le code, qui ouvre son adresse. Le sujet est
-              tiré au hasard et fait office de mot de passe : ne le partage pas.
+              {tr(
+                'Installe ntfy, touche « + », puis entre ce sujet — ou scanne le code, qui ouvre son adresse. Le sujet est tiré au hasard et fait office de mot de passe : ne le partage pas.'
+              )}
             </p>
             <code
               className="mt-2 block break-all rounded-[8px] px-2 py-1.5 text-[0.7rem]"
@@ -400,30 +413,30 @@ function PhonePushRow(): React.JSX.Element {
                     .test()
                     .then((res) =>
                       res.ok
-                        ? toast('Essai envoyé : regarde ton téléphone.', 'ok')
-                        : toast(res.error ?? 'Envoi impossible.', 'error')
+                        ? toast(tr('Essai envoyé : regarde ton téléphone.'), 'ok')
+                        : toast(res.error ?? tr('Envoi impossible.'), 'error')
                     )
                     .finally(() => setBusy(false))
                 }}
               >
                 <BellRing size={13} />
-                {busy ? 'Envoi…' : 'Envoyer un essai'}
+                {busy ? tr('Envoi…') : tr('Envoyer un essai')}
               </button>
               <button
                 className="chip"
-                title="L’ancien sujet ne recevra plus rien : à faire si l’adresse a circulé."
+                title={tr('L’ancien sujet ne recevra plus rien : à faire si l’adresse a circulé.')}
                 onClick={() =>
                   void window.api.phonePush.newTopic().then((next) => {
                     setStatus(next)
-                    toast('Nouveau sujet : réabonne-toi dans l’app ntfy.', 'ok')
+                    toast(tr('Nouveau sujet : réabonne-toi dans l’app ntfy.'), 'ok')
                   })
                 }
               >
-                Nouveau sujet
+                {tr('Nouveau sujet')}
               </button>
             </div>
             <label className="mt-3 block text-[0.74rem] text-muted">
-              Serveur ntfy
+              {tr('Serveur ntfy')}
               <input
                 className="field mt-1 block !h-[32px] w-full max-w-[320px]"
                 value={server ?? status.server}
@@ -547,9 +560,11 @@ export default function SettingsBody(): React.JSX.Element {
     await setPrefs({ remotePassword: chosen })
     setPassword(chosen)
 
-    const kept = chosen ? 'Mot de passe enregistré.' : 'Mot de passe effacé : il sera de nouveau tiré au hasard.'
+    const kept = chosen
+      ? tr('Mot de passe enregistré.')
+      : tr('Mot de passe effacé : il sera de nouveau tiré au hasard.')
     if (!remote?.on) {
-      toast(`${kept} Il servira au prochain allumage.`, 'ok')
+      toast(tr('{kept} Il servira au prochain allumage.', { kept }), 'ok')
       return
     }
 
@@ -557,7 +572,7 @@ export default function SettingsBody(): React.JSX.Element {
     const next = await window.api.remote.start()
     setRemote(next)
     if (next.error) toast(next.error, 'error')
-    else toast(`${kept} Le lien a changé : rescanne le QR code.`, 'ok')
+    else toast(tr('{kept} Le lien a changé : rescanne le QR code.', { kept }), 'ok')
   }
 
   const media = useApp((s) => s.media)
@@ -588,30 +603,32 @@ export default function SettingsBody(): React.JSX.Element {
    */
   const badId = prefs.discord && !looksLikeAppId(prefs.discordAppId)
   const discordNote = badId
-    ? 'Cet identifiant n’en est pas un : dix-sept à vingt chiffres, sans espace.'
+    ? tr('Cet identifiant n’en est pas un : dix-sept à vingt chiffres, sans espace.')
     : discord?.connected
-      ? 'Relié à Discord. Le statut apparaît dès qu’un épisode ou une bande-annonce démarre, et disparaît à la fermeture du lecteur.'
-      : (discord?.error ?? 'Recherche de Discord sur ce PC…')
+      ? tr(
+          'Relié à Discord. Le statut apparaît dès qu’un épisode ou une bande-annonce démarre, et disparaît à la fermeture du lecteur.'
+        )
+      : (discord?.error ?? tr('Recherche de Discord sur ce PC…'))
   const discordTone = badId || (discord?.error && !discord.connected) ? '#ff8f8f' : 'var(--color-muted)'
 
   return (
     <>
-      <Card id="apparence" title="Apparence" icon={<Palette size={17} />}>
+      <Card id="apparence" title={tr('Apparence')} icon={<Palette size={17} />}>
         <div
           data-settings-row
           className="border-t py-3 first:border-t-0 first:pt-0"
           style={{ borderColor: 'var(--line)' }}
         >
-          <p className="text-[0.85rem] font-medium">Thème</p>
+          <p className="text-[0.85rem] font-medium">{tr('Thème')}</p>
           <p className="mt-0.5 text-[0.74rem] text-faint">
-            Change toute l'interface : couleurs, typographie, arrondis, effets de fond.
+            {tr("Change toute l'interface : couleurs, typographie, arrondis, effets de fond.")}
           </p>
           {[
             { key: 'themes', title: '', hint: '', items: THEMES.filter((t) => !t.experience) },
             {
               key: 'experiences',
-              title: 'Expériences',
-              hint: 'Une autre app : navigation, accueil, bibliothèque et transitions refaits',
+              title: tr('Expériences'),
+              hint: tr('Une autre app : navigation, accueil, bibliothèque et transitions refaits'),
               items: THEMES.filter((t) => t.experience)
             }
           ].map((group) => (
@@ -653,9 +670,9 @@ export default function SettingsBody(): React.JSX.Element {
         </div>
 
         <div data-settings-row className="border-t py-3" style={{ borderColor: 'var(--line)' }}>
-          <p className="text-[0.85rem] font-medium">Disposition</p>
+          <p className="text-[0.85rem] font-medium">{tr('Disposition')}</p>
           <p className="mt-0.5 text-[0.74rem] text-faint">
-            Déplace la navigation et recompose les pages. Indépendant du thème.
+            {tr('Déplace la navigation et recompose les pages. Indépendant du thème.')}
           </p>
           <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
             {LAYOUTS.map((layout) => {
@@ -679,7 +696,7 @@ export default function SettingsBody(): React.JSX.Element {
           </div>
         </div>
 
-        <Row label="Couleur d'accent" hint="Toute l'interface s'accorde à cette teinte.">
+        <Row label={tr("Couleur d'accent")} hint={tr("Toute l'interface s'accorde à cette teinte.")}>
           <div className="flex items-center gap-1.5">
             {ACCENT_PRESETS.map((preset) => (
               <button
@@ -697,7 +714,7 @@ export default function SettingsBody(): React.JSX.Element {
             <label
               className="ml-1 grid h-7 w-7 cursor-pointer place-items-center rounded-full"
               style={{ background: 'rgba(255,255,255,.08)' }}
-              title="Couleur personnalisée"
+              title={tr('Couleur personnalisée')}
             >
               <Sparkles size={13} />
               <input
@@ -712,32 +729,37 @@ export default function SettingsBody(): React.JSX.Element {
               className="btn ml-2 !h-7 !px-2.5 !text-[0.72rem]"
               disabled={prefs.accent.toLowerCase() === accentFor(prefs.theme).toLowerCase()}
               onClick={() => setPrefs({ accent: accentFor(prefs.theme) })}
-              title="Revenir à la couleur par défaut du thème"
+              title={tr('Revenir à la couleur par défaut du thème')}
             >
               <span className="h-3 w-3 rounded-full" style={{ background: accentFor(prefs.theme) }} />
-              Couleur du thème
+              {tr('Couleur du thème')}
             </button>
           </div>
         </Row>
 
-        <Row label="Transparence Mica" hint="Laisse le fond d'écran Windows 11 transparaître derrière l'app.">
+        <Row
+          label={tr('Transparence Mica')}
+          hint={tr("Laisse le fond d'écran Windows 11 transparaître derrière l'app.")}
+        >
           <Toggle on={prefs.mica} onChange={(mica) => setPrefs({ mica })} />
         </Row>
 
-        <Row label="Réduire les animations" hint="Coupe les transitions et le fond animé.">
+        <Row label={tr('Réduire les animations')} hint={tr('Coupe les transitions et le fond animé.')}>
           <Toggle on={prefs.reduceMotion} onChange={(reduceMotion) => setPrefs({ reduceMotion })} />
         </Row>
 
         <Row
-          label="Un son quand un badge tombe"
+          label={tr('Un son quand un badge tombe')}
           hint="Trois notes, très courtes, avec le carton qui annonce le badge. Le carton reste si tu coupes le son ; « Réduire les animations » le calme sans le faire taire."
         >
           <Toggle on={prefs.badgeSound} onChange={(badgeSound) => setPrefs({ badgeSound })} />
         </Row>
 
         <Row
-          label="Nouveau design"
-          hint="Frise d'épisodes, phrases plutôt qu'étiquettes, une ligne par série. Allumé, tu choisis ci-dessous les pages qui changent. Sans effet dans les expériences, qui ont leurs propres pages."
+          label={tr('Nouveau design')}
+          hint={tr(
+            "Frise d'épisodes, phrases plutôt qu'étiquettes, une ligne par série. Allumé, tu choisis ci-dessous les pages qui changent. Sans effet dans les expériences, qui ont leurs propres pages."
+          )}
         >
           <Toggle on={prefs.newDesign} onChange={(newDesign) => setPrefs({ newDesign })} />
         </Row>
@@ -756,13 +778,35 @@ export default function SettingsBody(): React.JSX.Element {
         )}
       </Card>
 
-      <Card id="affichage" title="Affichage" icon={<Languages size={17} />}>
-        <Row label="Langue des titres">
+      <Card id="affichage" title={tr('Affichage')} icon={<Languages size={17} />}>
+        <Row
+          label={tr('Langue de l’app')}
+          hint={tr('Boutons, menus et textes. La fenêtre se recharge pour l’appliquer.')}
+        >
+          <div className="flex flex-wrap gap-1.5">
+            {/* Chaque langue écrite dans la sienne : on la reconnaît même sans lire l'actuelle. */}
+            {UI_LANGS.map((lang) => (
+              <button
+                key={lang.id}
+                lang={lang.id}
+                data-on={(prefs.uiLang ?? 'fr') === lang.id}
+                className="chip"
+                onClick={() => {
+                  if ((prefs.uiLang ?? 'fr') !== lang.id) void setPrefs({ uiLang: lang.id })
+                }}
+              >
+                {lang.label}
+              </button>
+            ))}
+          </div>
+        </Row>
+
+        <Row label={tr('Langue des titres')}>
           <div className="flex gap-1.5">
             {(
               [
-                ['romaji', 'Rōmaji'],
-                ['english', 'Anglais'],
+                ['romaji', tr('Rōmaji')],
+                ['english', tr('Anglais')],
                 ['native', '日本語']
               ] as [TitleLang, string][]
             ).map(([value, label]) => (
@@ -779,17 +823,19 @@ export default function SettingsBody(): React.JSX.Element {
         </Row>
 
         <Row
-          label="Bas de la barre latérale"
-          hint="Ce qui s’affiche entre la navigation et « Ces 7 jours » : les séries à reprendre, les sorties du jour, les deux, ou tes listes."
+          label={tr('Bas de la barre latérale')}
+          hint={tr(
+            'Ce qui s’affiche entre la navigation et « Ces 7 jours » : les séries à reprendre, les sorties du jour, les deux, ou tes listes.'
+          )}
         >
           <div className="flex flex-wrap gap-1.5">
             {(
               [
-                ['next', 'À suivre'],
-                ['tonight', 'Aujourd’hui'],
-                ['both', 'Les deux'],
-                ['lists', 'Mes listes'],
-                ['none', 'Rien']
+                ['next', tr('À suivre')],
+                ['tonight', tr('Aujourd’hui')],
+                ['both', tr('Les deux')],
+                ['lists', tr('Mes listes')],
+                ['none', tr('Rien')]
               ] as [SidebarWidget, string][]
             ).map(([value, label]) => (
               <button
@@ -804,12 +850,12 @@ export default function SettingsBody(): React.JSX.Element {
           </div>
         </Row>
 
-        <Row label="Premier jour de la semaine">
+        <Row label={tr('Premier jour de la semaine')}>
           <div className="flex gap-1.5">
             {(
               [
-                [1, 'Lundi'],
-                [0, 'Dimanche']
+                [1, tr('Lundi')],
+                [0, tr('Dimanche')]
               ] as [0 | 1, string][]
             ).map(([value, label]) => (
               <button
@@ -824,7 +870,7 @@ export default function SettingsBody(): React.JSX.Element {
           </div>
         </Row>
 
-        <Row label="Durée par défaut d'un épisode" hint="Utilisée quand AniList ne connaît pas la durée.">
+        <Row label={tr("Durée par défaut d'un épisode")} hint={tr('Utilisée quand AniList ne connaît pas la durée.')}>
           <div className="flex items-center gap-2">
             <input
               type="number"
@@ -834,29 +880,31 @@ export default function SettingsBody(): React.JSX.Element {
               onChange={(e) => setPrefs({ defaultRuntime: Math.max(1, Math.min(180, Number(e.target.value) || 24)) })}
               className="field w-[84px] text-center"
             />
-            <span className="text-[0.78rem] text-faint">min</span>
+            <span className="text-[0.78rem] text-faint">{tr('min')}</span>
           </div>
         </Row>
 
-        <Row label="Afficher le contenu adulte" hint="Inclut les titres classés 18+ dans Découvrir.">
+        <Row label={tr('Afficher le contenu adulte')} hint={tr('Inclut les titres classés 18+ dans Découvrir.')}>
           <Toggle on={prefs.showAdult} onChange={(showAdult) => setPrefs({ showAdult })} />
         </Row>
       </Card>
 
-      <Card id="notifications" title="Notifications" icon={<Bell size={17} />}>
+      <Card id="notifications" title={tr('Notifications')} icon={<Bell size={17} />}>
         <Row
-          label="Prévenir quand un épisode sort"
-          hint="Notification Windows pour les séries en cours ou à voir. Chaque série peut être coupée individuellement depuis sa fiche."
+          label={tr('Prévenir quand un épisode sort')}
+          hint={tr(
+            'Notification Windows pour les séries en cours ou à voir. Chaque série peut être coupée individuellement depuis sa fiche.'
+          )}
         >
           <Toggle on={prefs.notifications} onChange={(notifications) => setPrefs({ notifications })} />
         </Row>
 
         <Row
-          label="Nouvelles des mangas suivis"
+          label={tr('Nouvelles des mangas suivis')}
           hint={
-            'Quand un manga que tu lis finit de paraître, ou qu’un anime en est tiré. Vérifié une fois par jour' +
+            tr('Quand un manga que tu lis finit de paraître, ou qu’un anime en est tiré. Vérifié une fois par jour') +
             (prefs.lastMangaSweep
-              ? ` ; dernière fois le ${new Date(prefs.lastMangaSweep).toLocaleString('fr-FR')}.`
+              ? ` ; dernière fois le ${new Date(prefs.lastMangaSweep).toLocaleString(locale())}.`
               : '.')
           }
         >
@@ -873,10 +921,13 @@ export default function SettingsBody(): React.JSX.Element {
                     useApp.setState({ prefs: await window.api.prefs.get() })
                     toast(
                       res.news.length
-                        ? `${res.news.length} nouvelle${res.news.length > 1 ? 's' : ''} : regarde tes notifications.`
+                        ? tr('{length} nouvelle{v1} : regarde tes notifications.', {
+                            length: res.news.length,
+                            v1: res.news.length > 1 ? 's' : ''
+                          })
                         : res.checked
-                          ? `Rien de neuf parmi tes ${res.checked} mangas suivis.`
-                          : 'Aucun manga suivi.',
+                          ? tr('Rien de neuf parmi tes {checked} mangas suivis.', { checked: res.checked })
+                          : tr('Aucun manga suivi.'),
                       'ok'
                     )
                   } catch (err) {
@@ -887,7 +938,7 @@ export default function SettingsBody(): React.JSX.Element {
                 })()
               }
             >
-              {busy === 'mangas' ? 'Vérification…' : 'Vérifier'}
+              {busy === 'mangas' ? tr('Vérification…') : tr('Vérifier')}
             </button>
             <Toggle on={prefs.mangaAlerts} onChange={(mangaAlerts) => setPrefs({ mangaAlerts })} />
           </div>
@@ -896,7 +947,7 @@ export default function SettingsBody(): React.JSX.Element {
         <PhonePushRow />
 
         <Row
-          label="Prévenir à l'avance"
+          label={tr("Prévenir à l'avance")}
           hint="Ne vaut que pour les épisodes dont AniList connaît l'heure de diffusion ; les autres sont annoncés au rattrapage."
         >
           <select
@@ -907,13 +958,16 @@ export default function SettingsBody(): React.JSX.Element {
           >
             {[0, 15, 30, 60, 180, 720, 1440].map((minutes) => (
               <option key={minutes} value={minutes} style={{ background: '#0b0e1a' }}>
-                {minutes === 0 ? 'À la diffusion' : minutesToHuman(minutes)}
+                {minutes === 0 ? tr('À la diffusion') : minutesToHuman(minutes)}
               </option>
             ))}
           </select>
         </Row>
 
-        <Row label="Fréquence de vérification" hint="Plus court = plus réactif, mais plus de requêtes vers AniList.">
+        <Row
+          label={tr('Fréquence de vérification')}
+          hint={tr('Plus court = plus réactif, mais plus de requêtes vers AniList.')}
+        >
           <select
             className="field !w-[9.5rem]"
             value={prefs.notifyEveryMinutes}
@@ -928,22 +982,26 @@ export default function SettingsBody(): React.JSX.Element {
           </select>
         </Row>
 
-        <Row label="Séries en silence" hint={mutedNames || 'Aucune série coupée pour l’instant.'}>
+        <Row label={tr('Séries en silence')} hint={mutedNames || tr('Aucune série coupée pour l’instant.')}>
           <span className="text-[0.8rem] tabular-nums text-muted">{muted.length}</span>
         </Row>
       </Card>
 
-      <Card id="lecture" title="Lecture" icon={<PlayCircle size={17} />}>
+      <Card id="lecture" title={tr('Lecture')} icon={<PlayCircle size={17} />}>
         <Row
-          label="Cocher l’épisode fini"
-          hint="Aux neuf dixièmes de la lecture chez Anime-Sama, l’épisode est marqué vu sans que tu aies à y penser. Ce qui reste après, c’est le générique de fin. Un épisode pas encore diffusé n’est jamais coché."
+          label={tr('Cocher l’épisode fini')}
+          hint={tr(
+            'Aux neuf dixièmes de la lecture chez Anime-Sama, l’épisode est marqué vu sans que tu aies à y penser. Ce qui reste après, c’est le générique de fin. Un épisode pas encore diffusé n’est jamais coché.'
+          )}
         >
           <Toggle on={prefs.autoTick} onChange={(autoTick) => setPrefs({ autoTick })} />
         </Row>
 
         <Row
-          label="Enchaîner l’épisode suivant"
-          hint="À la fin d’un épisode, le suivant démarre dans la fenêtre déjà ouverte, après huit secondes qu’un bouton « Annuler » suffit à interrompre. Une pause volontaire dans le générique n’enchaîne rien, et une saison finie s’arrête d’elle-même."
+          label={tr('Enchaîner l’épisode suivant')}
+          hint={tr(
+            'À la fin d’un épisode, le suivant démarre dans la fenêtre déjà ouverte, après huit secondes qu’un bouton « Annuler » suffit à interrompre. Une pause volontaire dans le générique n’enchaîne rien, et une saison finie s’arrête d’elle-même.'
+          )}
         >
           <Toggle on={prefs.autoNext} onChange={(autoNext) => setPrefs({ autoNext })} />
         </Row>
@@ -952,7 +1010,7 @@ export default function SettingsBody(): React.JSX.Element {
             navigateurs, et cela ne se fait pas sans qu'on l'ait demandé. */}
         <Row
           badge="WIP"
-          label="Cocher aussi dans mon navigateur"
+          label={tr('Cocher aussi dans mon navigateur')}
           hint="Quand tu regardes un épisode sur ADN, FrAnime ou Anime-Sama dans Chrome, Edge, Opera ou Firefox, il est coché aux neuf dixièmes, comme dans le lecteur de l’app — pour une série de ta bibliothèque. L’app lit ce que Windows sait de la lecture en cours. Quand le site tait l’épisode, elle le cherche dans l’adresse de l’onglet (FrAnime) ou dans le stockage que le site laisse dans ton navigateur (Anime-Sama), et rien d’autre ; si elle ne le trouve pas, elle le dit au lieu de deviner. Crunchyroll n’est pas encore pris en charge."
         >
           <Toggle on={prefs.browserWatch} onChange={(browserWatch) => setPrefs({ browserWatch })} />
@@ -960,35 +1018,41 @@ export default function SettingsBody(): React.JSX.Element {
 
         <Row
           badge="WIP"
-          label="Proposer de passer les génériques"
-          hint="En chantier. Un bouton dans le coin du lecteur pendant l’opening et le générique de fin, quand un minutage existe. Les minutages viennent d’AniSkip, une base tenue par des bénévoles : environ neuf séries sur dix en ont un, et rien ne s’affiche pour les autres. Un contributeur peut se tromper d’étiquette — sur l’épisode 1 de Naruto, le prologue narré est donné pour un générique."
+          label={tr('Proposer de passer les génériques')}
+          hint={tr(
+            'En chantier. Un bouton dans le coin du lecteur pendant l’opening et le générique de fin, quand un minutage existe. Les minutages viennent d’AniSkip, une base tenue par des bénévoles : environ neuf séries sur dix en ont un, et rien ne s’affiche pour les autres. Un contributeur peut se tromper d’étiquette — sur l’épisode 1 de Naruto, le prologue narré est donné pour un générique.'
+          )}
         >
           <Toggle on={prefs.skipHint} onChange={(skipHint) => setPrefs({ skipHint })} />
         </Row>
 
         <Row
           badge="WIP"
-          label="Les passer sans rien demander"
-          hint="Éteint volontairement. Le minutage est relevé par des inconnus, sur une copie qui n’est pas forcément celle que tu regardes : un bouton ignoré ne coûte rien, un saut de travers coupe une scène. L’app refuse déjà de proposer quand la durée de référence s’écarte trop de la tienne."
+          label={tr('Les passer sans rien demander')}
+          hint={tr(
+            'Éteint volontairement. Le minutage est relevé par des inconnus, sur une copie qui n’est pas forcément celle que tu regardes : un bouton ignoré ne coûte rien, un saut de travers coupe une scène. L’app refuse déjà de proposer quand la durée de référence s’écarte trop de la tienne.'
+          )}
         >
           <Toggle on={prefs.autoSkip} onChange={(autoSkip) => setPrefs({ autoSkip })} />
         </Row>
       </Card>
 
-      <Card id="suites" title="Suites" icon={<Layers size={17} />}>
+      <Card id="suites" title={tr('Suites')} icon={<Layers size={17} />}>
         <Row
-          label="Ajouter les nouvelles saisons"
-          hint="Quand une suite d'une série que tu as regardée sort, elle rejoint ta bibliothèque en « À voir ». Une suite que tu retires n'est jamais remise."
+          label={tr('Ajouter les nouvelles saisons')}
+          hint={tr(
+            "Quand une suite d'une série que tu as regardée sort, elle rejoint ta bibliothèque en « À voir ». Une suite que tu retires n'est jamais remise."
+          )}
         >
           <Toggle on={prefs.autoSequels} onChange={(autoSequels) => setPrefs({ autoSequels })} />
         </Row>
 
         <Row
-          label="Chercher maintenant"
+          label={tr('Chercher maintenant')}
           hint={
             prefs.lastSequelSweep
-              ? `Dernière recherche : ${new Date(prefs.lastSequelSweep).toLocaleString('fr-FR')}`
-              : 'Jamais lancée. La recherche automatique tourne une fois par jour.'
+              ? tr('Dernière recherche : {v0}', { v0: new Date(prefs.lastSequelSweep).toLocaleString(locale()) })
+              : tr('Jamais lancée. La recherche automatique tourne une fois par jour.')
           }
         >
           <button
@@ -1001,8 +1065,12 @@ export default function SettingsBody(): React.JSX.Element {
                   const res = await window.api.anime.sweepSequels()
                   toast(
                     res.added.length
-                      ? `${res.added.length} suite${res.added.length > 1 ? 's' : ''} ajoutée${res.added.length > 1 ? 's' : ''} à ta bibliothèque.`
-                      : `Aucune nouvelle suite parmi tes ${res.checked} séries suivies.`,
+                      ? tr('{length} suite{v1} ajoutée{v2} à ta bibliothèque.', {
+                          length: res.added.length,
+                          v1: res.added.length > 1 ? 's' : '',
+                          v2: res.added.length > 1 ? 's' : ''
+                        })
+                      : tr('Aucune nouvelle suite parmi tes {checked} séries suivies.', { checked: res.checked }),
                     'ok'
                   )
                 } catch (err) {
@@ -1014,18 +1082,20 @@ export default function SettingsBody(): React.JSX.Element {
             }
           >
             <Layers size={14} />
-            {busy === 'sequels' ? 'Recherche…' : 'Chercher'}
+            {busy === 'sequels' ? tr('Recherche…') : tr('Chercher')}
           </button>
         </Row>
       </Card>
 
-      <Card id="telecommande" title="Télécommande" icon={<Smartphone size={17} />}>
+      <Card id="telecommande" title={tr('Télécommande')} icon={<Smartphone size={17} />}>
         {/* Éteinte à chaque démarrage, jamais retenue : allumer expose la
             bibliothèque à tout ce qui est branché sur la même box, et ça se
             décide à chaque fois plutôt qu'une fois pour toutes. */}
         <Row
-          label="Piloter depuis le téléphone"
-          hint="Ouvre une petite page sur le réseau local : voir ce qu’il reste à reprendre, cocher un épisode, faire ouvrir une fiche sur le PC. Protégée par un mot de passe, tiré au hasard à chaque allumage tant que tu n’en choisis pas un. Toujours éteinte au démarrage."
+          label={tr('Piloter depuis le téléphone')}
+          hint={tr(
+            'Ouvre une petite page sur le réseau local : voir ce qu’il reste à reprendre, cocher un épisode, faire ouvrir une fiche sur le PC. Protégée par un mot de passe, tiré au hasard à chaque allumage tant que tu n’en choisis pas un. Toujours éteinte au démarrage.'
+          )}
         >
           <Toggle
             on={remote?.on ?? false}
@@ -1042,8 +1112,10 @@ export default function SettingsBody(): React.JSX.Element {
             reste la valeur par défaut. En choisir un se paie d'un secret qui
             dure : c'est dit, et c'est à l'utilisateur de trancher. */}
         <Row
-          label="Choisir le mot de passe"
-          hint="Laissé vide, il est tiré au hasard à chaque allumage — le plus sûr, mais il faut rescanner le QR code à chaque fois. Rempli, le lien ne change plus et se met en favori sur le téléphone. Au moins 8 caractères, lettres et chiffres."
+          label={tr('Choisir le mot de passe')}
+          hint={tr(
+            'Laissé vide, il est tiré au hasard à chaque allumage — le plus sûr, mais il faut rescanner le QR code à chaque fois. Rempli, le lien ne change plus et se met en favori sur le téléphone. Au moins 8 caractères, lettres et chiffres.'
+          )}
         >
           <input
             type="text"
@@ -1058,7 +1130,7 @@ export default function SettingsBody(): React.JSX.Element {
                 e.currentTarget.blur()
               }
             }}
-            placeholder="tiré au hasard"
+            placeholder={tr('tiré au hasard')}
             className="field !h-[34px] w-[190px]"
             spellCheck={false}
             autoComplete="off"
@@ -1069,11 +1141,11 @@ export default function SettingsBody(): React.JSX.Element {
           <div className="mt-1 flex flex-wrap items-center gap-4 px-1 py-3">
             {/* Scanner évite de recopier vingt caractères à la main sur un
                 clavier de téléphone — c'était le seul point pénible. */}
-            <QrCode text={remote.url} label="Adresse de la télécommande" />
+            <QrCode text={remote.url} label={tr('Adresse de la télécommande')} />
             <div className="min-w-[200px] flex-1">
-              <p className="text-[0.84rem] font-semibold">Scanne depuis ton téléphone</p>
+              <p className="text-[0.84rem] font-semibold">{tr('Scanne depuis ton téléphone')}</p>
               <p className="mt-1 text-[0.78rem] leading-relaxed text-muted">
-                Il doit être sur le même wifi. Le mot de passe est dans le lien : rien d’autre à taper.
+                {tr('Il doit être sur le même wifi. Le mot de passe est dans le lien : rien d’autre à taper.')}
               </p>
               <code
                 className="mt-2 block break-all rounded-[8px] px-2 py-1.5 text-[0.7rem]"
@@ -1086,11 +1158,11 @@ export default function SettingsBody(): React.JSX.Element {
                 onClick={() =>
                   void navigator.clipboard
                     .writeText(remote.url as string)
-                    .then(() => toast('Adresse copiée.', 'ok'))
-                    .catch(() => toast('Copie refusée.', 'error'))
+                    .then(() => toast(tr('Adresse copiée.'), 'ok'))
+                    .catch(() => toast(tr('Copie refusée.'), 'error'))
                 }
               >
-                Copier le lien
+                {tr('Copier le lien')}
               </button>
             </div>
           </div>
@@ -1104,16 +1176,13 @@ export default function SettingsBody(): React.JSX.Element {
             className="mt-1 flex flex-wrap items-center gap-4 border-t px-1 py-3"
             style={{ borderColor: 'var(--line)' }}
           >
-            <QrCode text={remote.ics} label="Adresse du calendrier" />
+            <QrCode text={remote.ics} label={tr('Adresse du calendrier')} />
             <div className="min-w-[200px] flex-1">
-              <p className="text-[0.84rem] font-semibold">Le calendrier dans ton agenda</p>
+              <p className="text-[0.84rem] font-semibold">{tr('Le calendrier dans ton agenda')}</p>
               <p className="mt-1 text-[0.78rem] leading-relaxed text-muted">
-                Un abonnement à cette adresse pose les prochains épisodes de tes séries dans l’agenda du téléphone. Sur
-                iPhone : Réglages › Applications › Calendrier › Comptes › Ajouter un compte › Autre › Ajouter un
-                calendrier avec abonnement. L’agenda vient chercher le fichier ici, donc il ne se met à jour que sur ton
-                réseau, l’app ouverte et la télécommande allumée — un agenda hébergé ailleurs, comme celui de Google, ne
-                sait pas joindre une adresse locale. Chaque épisode y porte une alarme, au même moment que les
-                notifications du PC : sur iPhone, décoche « Retirer les alarmes » en t’abonnant pour qu’elle sonne.
+                {tr(
+                  'Un abonnement à cette adresse pose les prochains épisodes de tes séries dans l’agenda du téléphone. Sur iPhone : Réglages › Applications › Calendrier › Comptes › Ajouter un compte › Autre › Ajouter un calendrier avec abonnement. L’agenda vient chercher le fichier ici, donc il ne se met à jour que sur ton réseau, l’app ouverte et la télécommande allumée — un agenda hébergé ailleurs, comme celui de Google, ne sait pas joindre une adresse locale. Chaque épisode y porte une alarme, au même moment que les notifications du PC : sur iPhone, décoche « Retirer les alarmes » en t’abonnant pour qu’elle sonne.'
+                )}
               </p>
               <code
                 className="mt-2 block break-all rounded-[8px] px-2 py-1.5 text-[0.7rem]"
@@ -1126,12 +1195,12 @@ export default function SettingsBody(): React.JSX.Element {
                 onClick={() =>
                   void navigator.clipboard
                     .writeText(remote.ics as string)
-                    .then(() => toast('Adresse du calendrier copiée.', 'ok'))
-                    .catch(() => toast('Copie refusée.', 'error'))
+                    .then(() => toast(tr('Adresse du calendrier copiée.'), 'ok'))
+                    .catch(() => toast(tr('Copie refusée.'), 'error'))
                 }
               >
                 <CalendarPlus size={13} />
-                Copier l’adresse
+                {tr('Copier l’adresse')}
               </button>
             </div>
           </div>
@@ -1144,13 +1213,15 @@ export default function SettingsBody(): React.JSX.Element {
         )}
       </Card>
 
-      <Card id="discord" title="Statut Discord" icon={<MessageCircle size={17} />}>
+      <Card id="discord" title={tr('Statut Discord')} icon={<MessageCircle size={17} />}>
         {/* La seule chose de cette app qui sorte du PC d'elle-même : tous ceux
             qui voient ton profil verront le titre. D'où l'extinction par
             défaut, et le mode discret juste en dessous. */}
         <Row
-          label="Annoncer ce que je regarde"
-          hint="Affiche sur ton profil Discord la série, l’épisode, la jaquette et le temps restant — pendant une lecture seulement, et jamais autrement. Discord doit tourner sur ce PC."
+          label={tr('Annoncer ce que je regarde')}
+          hint={tr(
+            'Affiche sur ton profil Discord la série, l’épisode, la jaquette et le temps restant — pendant une lecture seulement, et jamais autrement. Discord doit tourner sur ce PC.'
+          )}
         >
           <Toggle
             on={prefs.discord}
@@ -1164,15 +1235,19 @@ export default function SettingsBody(): React.JSX.Element {
         {prefs.discord && (
           <>
             <Row
-              label="Sans le titre"
-              hint="N’annonce que « Un anime » : ni série, ni épisode, ni jaquette, ni horloge. Le fait de regarder, rien d’autre."
+              label={tr('Sans le titre')}
+              hint={tr(
+                'N’annonce que « Un anime » : ni série, ni épisode, ni jaquette, ni horloge. Le fait de regarder, rien d’autre.'
+              )}
             >
               <Toggle on={prefs.discordHideTitle} onChange={(discordHideTitle) => setPrefs({ discordHideTitle })} />
             </Row>
 
             <Row
-              label="Identifiant de l’application"
-              hint="Celui qui donne le nom affiché en gros, créé sur discord.com/developers. Celui d’origine convient : il est public par nature, puisqu’il voyage dans le statut."
+              label={tr('Identifiant de l’application')}
+              hint={tr(
+                'Celui qui donne le nom affiché en gros, créé sur discord.com/developers. Celui d’origine convient : il est public par nature, puisqu’il voyage dans le statut.'
+              )}
             >
               <input
                 value={prefs.discordAppId}
@@ -1201,14 +1276,14 @@ export default function SettingsBody(): React.JSX.Element {
               >
                 {discord.showing ? (
                   <>
-                    <span className="text-faint">Envoyé à Discord : </span>
+                    <span className="text-faint">{tr('Envoyé à Discord :')} </span>
                     <span className="font-semibold">{discord.showing}</span>
                   </>
                 ) : (
                   <span className="text-muted">
-                    Rien en cours de lecture. Lance un épisode : cette ligne dira ce qui part sur ton profil. Si elle se
-                    remplit et que Discord n’affiche toujours rien, c’est son réglage «&nbsp;Statut d’activité&nbsp;»
-                    qui est en cause, pas l’app.
+                    {tr(
+                      'Rien en cours de lecture. Lance un épisode : cette ligne dira ce qui part sur ton profil. Si elle se remplit et que Discord n’affiche toujours rien, c’est son réglage « Statut d’activité » qui est en cause, pas l’app.'
+                    )}
                   </span>
                 )}
               </div>
@@ -1217,10 +1292,12 @@ export default function SettingsBody(): React.JSX.Element {
         )}
       </Card>
 
-      <Card id="traduction" title="Traduction" icon={<LanguagesIcon size={17} />}>
+      <Card id="traduction" title={tr('Traduction')} icon={<LanguagesIcon size={17} />}>
         <Row
-          label="Résumés et titres d’épisodes en français"
-          hint="AniList ne les publie qu’en anglais. Avec une clé, ils sont traduits une fois puis gardés sur ce PC — rien n’est retraduit deux fois."
+          label={tr('Résumés et titres d’épisodes en français')}
+          hint={tr(
+            'AniList ne les publie qu’en anglais. Avec une clé, ils sont traduits une fois puis gardés sur ce PC — rien n’est retraduit deux fois.'
+          )}
         >
           <Toggle on={prefs.translate} onChange={(translate) => setPrefs({ translate })} />
         </Row>
@@ -1229,39 +1306,42 @@ export default function SettingsBody(): React.JSX.Element {
             reviendrait à l'offrir, et une traduction facturée à quelqu'un
             d'autre n'est pas gratuite pour autant. */}
         <Row
-          label="Clé DeepL"
-          hint="À créer gratuitement sur deepl.com/pro-api — 500 000 caractères par mois, de quoi traduire des centaines de fiches. Sans clé, les textes restent anglais et le reste de l’app ne change pas."
+          label={tr('Clé DeepL')}
+          hint={tr(
+            'À créer gratuitement sur deepl.com/pro-api — 500 000 caractères par mois, de quoi traduire des centaines de fiches. Sans clé, les textes restent anglais et le reste de l’app ne change pas.'
+          )}
         >
           <div className="flex flex-wrap items-center justify-end gap-1.5">
             <input
               type="password"
               value={prefs.deeplKey}
               onChange={(e) => setPrefs({ deeplKey: e.target.value })}
-              placeholder="collée ici"
+              placeholder={tr('collée ici')}
               className="field !h-[34px] w-[190px]"
               spellCheck={false}
             />
             <button
               className="chip"
-              title="Vider les traductions gardées et tout retraduire"
+              title={tr('Vider les traductions gardées et tout retraduire')}
               onClick={() =>
                 void window.api.translate
                   .purge()
-                  .then((n) => toast(n ? `${n} traductions oubliées.` : 'Rien à oublier.', 'ok'))
+                  .then((n) => toast(n ? tr('{n} traductions oubliées.', { n }) : tr('Rien à oublier.'), 'ok'))
               }
             >
               <Trash2 size={12} />
-              Vider
+              {tr('Vider')}
             </button>
           </div>
         </Row>
       </Card>
 
-      <Card id="suivis" title="Ce que tu suis" icon={<BellRing size={17} />}>
+      <Card id="suivis" title={tr('Ce que tu suis')} icon={<BellRing size={17} />}>
         {follows.length === 0 ? (
           <p className="px-1 py-2 text-[0.82rem] leading-relaxed text-muted">
-            Aucun suivi. Sur la page d’un studio ou d’un doubleur, « Suivre » te fera prévenir de ses prochaines sorties
-            — et elles remonteront sur l’accueil.
+            {tr(
+              'Aucun suivi. Sur la page d’un studio ou d’un doubleur, « Suivre » te fera prévenir de ses prochaines sorties — et elles remonteront sur l’accueil.'
+            )}
           </p>
         ) : (
           <div className="mb-3 flex flex-col gap-1.5">
@@ -1270,9 +1350,13 @@ export default function SettingsBody(): React.JSX.Element {
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-[0.83rem] font-semibold">{follow.name}</span>
                   <span className="text-[0.7rem] text-faint">
-                    {follow.kind === 'studio' ? 'Studio' : 'Personne'} · {follow.known.length} œuvres connues
+                    {follow.kind === 'studio' ? tr('Studio') : tr('Personne')} · {follow.known.length}{' '}
+                    {tr('œuvres connues')}
                     {follow.fresh.length > 0 &&
-                      ` · ${follow.fresh.length} nouveauté${follow.fresh.length > 1 ? 's' : ''}`}
+                      tr(' · {length} nouveauté{v1}', {
+                        length: follow.fresh.length,
+                        v1: follow.fresh.length > 1 ? 's' : ''
+                      })}
                   </span>
                 </span>
                 <button
@@ -1280,12 +1364,12 @@ export default function SettingsBody(): React.JSX.Element {
                   onClick={() =>
                     void window.api.follows.remove(follow.key).then(() => {
                       setFollows((prev) => prev.filter((f) => f.key !== follow.key))
-                      toast(`Tu ne suis plus ${follow.name}.`, 'ok')
+                      toast(tr('Tu ne suis plus {name}.', { name: follow.name }), 'ok')
                     })
                   }
                 >
                   <BellOff size={12} />
-                  Retirer
+                  {tr('Retirer')}
                 </button>
               </div>
             ))}
@@ -1293,8 +1377,10 @@ export default function SettingsBody(): React.JSX.Element {
         )}
 
         <Row
-          label="Chercher maintenant"
-          hint="La recherche tourne deux fois par jour d’elle-même. Une nouveauté déjà annoncée ne l’est jamais deux fois."
+          label={tr('Chercher maintenant')}
+          hint={tr(
+            'La recherche tourne deux fois par jour d’elle-même. Une nouveauté déjà annoncée ne l’est jamais deux fois.'
+          )}
         >
           <button
             className="btn"
@@ -1307,8 +1393,11 @@ export default function SettingsBody(): React.JSX.Element {
                   setFollows(await window.api.follows.list())
                   toast(
                     found.length
-                      ? `${found.length} nouveauté${found.length > 1 ? 's' : ''} chez ceux que tu suis.`
-                      : 'Rien de neuf chez ceux que tu suis.',
+                      ? tr('{length} nouveauté{v1} chez ceux que tu suis.', {
+                          length: found.length,
+                          v1: found.length > 1 ? 's' : ''
+                        })
+                      : tr('Rien de neuf chez ceux que tu suis.'),
                     'ok'
                   )
                 } catch (err) {
@@ -1320,7 +1409,7 @@ export default function SettingsBody(): React.JSX.Element {
             }
           >
             <BellRing size={14} />
-            {busy === 'follows' ? 'Recherche…' : 'Chercher'}
+            {busy === 'follows' ? tr('Recherche…') : tr('Chercher')}
           </button>
         </Row>
       </Card>
@@ -1332,32 +1421,38 @@ export default function SettingsBody(): React.JSX.Element {
         >
           <h2 className="mb-1.5 flex items-center gap-2 text-[0.98rem] font-semibold" style={{ color: '#ff9a9a' }}>
             <Database size={17} />
-            Bibliothèque en lecture seule
+            {tr('Bibliothèque en lecture seule')}
           </h2>
           <p className="text-[0.8rem] leading-relaxed text-muted">
-            Ton fichier de données est en schéma v{info.schema.version}, alors que cette version de l’app gère v
-            {info.schema.expected}. Il a donc été écrit par une version plus récente. Rien n’est enregistré pour
-            l’instant, afin de ne pas écraser des données que ce build ne sait pas lire. Installe la version la plus
-            récente pour repasser en écriture.
+            {tr('Ton fichier de données est en schéma v')}
+            {info.schema.version}
+            {tr(', alors que cette version de l’app gère v')}
+            {info.schema.expected}
+            {tr(
+              '. Il a donc été écrit par une version plus récente. Rien n’est enregistré pour l’instant, afin de ne pas écraser des données que ce build ne sait pas lire. Installe la version la plus récente pour repasser en écriture.'
+            )}
           </p>
         </section>
       )}
 
-      <Card id="donnees" title="Mes données" icon={<Database size={17} />}>
+      <Card id="donnees" title={tr('Mes données')} icon={<Database size={17} />}>
         <BackupRow />
 
-        <Row label="Exporter une sauvegarde" hint="Un fichier JSON avec toute ta bibliothèque et ton historique.">
+        <Row
+          label={tr('Exporter une sauvegarde')}
+          hint={tr('Un fichier JSON avec toute ta bibliothèque et ton historique.')}
+        >
           <button
             className="btn"
             disabled={busy !== null}
             onClick={() => run('export', () => window.api.data.export())}
           >
             <FileDown size={14} />
-            Exporter
+            {tr('Exporter')}
           </button>
         </Row>
 
-        <Row label="Restaurer une sauvegarde" hint="Fusionne avec l'existant, ou remplace tout.">
+        <Row label={tr('Restaurer une sauvegarde')} hint={tr("Fusionne avec l'existant, ou remplace tout.")}>
           <div className="flex gap-1.5">
             <button
               className="btn"
@@ -1365,21 +1460,23 @@ export default function SettingsBody(): React.JSX.Element {
               onClick={() => run('merge', () => window.api.data.import('merge'))}
             >
               <FileUp size={14} />
-              Fusionner
+              {tr('Fusionner')}
             </button>
             <button
               className="btn"
               disabled={busy !== null}
               onClick={() => run('replace', () => window.api.data.import('replace'))}
             >
-              Remplacer
+              {tr('Remplacer')}
             </button>
           </div>
         </Row>
 
         <Row
-          label="Importer depuis MyAnimeList"
-          hint="Le fichier animelist_*.xml (ou .xml.gz) exporté depuis MAL. Les correspondances AniList sont retrouvées automatiquement."
+          label={tr('Importer depuis MyAnimeList')}
+          hint={tr(
+            'Le fichier animelist_*.xml (ou .xml.gz) exporté depuis MAL. Les correspondances AniList sont retrouvées automatiquement.'
+          )}
         >
           <button
             className="btn btn-primary"
@@ -1387,7 +1484,7 @@ export default function SettingsBody(): React.JSX.Element {
             onClick={() => run('mal', () => window.api.data.importMal())}
           >
             <Upload size={14} />
-            {busy === 'mal' ? 'Import en cours…' : 'Importer'}
+            {busy === 'mal' ? tr('Import en cours…') : tr('Importer')}
           </button>
         </Row>
 
@@ -1395,7 +1492,7 @@ export default function SettingsBody(): React.JSX.Element {
             sans compte ni clé, ce qui est de loin le chemin le plus court pour
             amener des années d'historique. */}
         <Row
-          label="Importer depuis un pseudo"
+          label={tr('Importer depuis un pseudo')}
           hint="AniList ou Kitsu, si la liste est publique. AniList donne ses propres identifiants — l'import est exact. Kitsu passe par MyAnimeList ; une série sans correspondance est ignorée plutôt que devinée."
         >
           <div className="flex flex-wrap items-center justify-end gap-1.5">
@@ -1411,14 +1508,14 @@ export default function SettingsBody(): React.JSX.Element {
               onClick={() => run('anilist', () => window.api.data.importAniList(handle))}
             >
               <AtSign size={14} />
-              {busy === 'anilist' ? 'Import…' : 'AniList'}
+              {busy === 'anilist' ? tr('Import…') : 'AniList'}
             </button>
             <button
               className="btn"
               disabled={busy !== null || !handle.trim()}
               onClick={() => run('kitsu', () => window.api.data.importKitsu(handle))}
             >
-              {busy === 'kitsu' ? 'Import…' : 'Kitsu'}
+              {busy === 'kitsu' ? tr('Import…') : tr('Kitsu')}
             </button>
           </div>
         </Row>
@@ -1426,85 +1523,92 @@ export default function SettingsBody(): React.JSX.Element {
         <TvTimeImport />
 
         <Row
-          label="Santé de la bibliothèque"
-          hint="Fiches manquantes, visionnages orphelins, doublons, fichiers résiduels"
+          label={tr('Santé de la bibliothèque')}
+          hint={tr('Fiches manquantes, visionnages orphelins, doublons, fichiers résiduels')}
         >
           <button className="btn" onClick={() => setHealthOpen(true)}>
             <Stethoscope size={14} />
-            Examiner
+            {tr('Examiner')}
           </button>
         </Row>
 
-        <Row label="Raccourcis" hint="Clavier et souris, y compris les gestes qu'on ne devine pas seul">
+        <Row label={tr('Raccourcis')} hint={tr("Clavier et souris, y compris les gestes qu'on ne devine pas seul")}>
           <button className="btn" onClick={() => setHelp(true)}>
             <Keyboard size={14} />
-            Voir
+            {tr('Voir')}
           </button>
         </Row>
 
-        <Row label="Dossier de données" hint={info?.dbPath ?? '—'}>
+        <Row label={tr('Dossier de données')} hint={info?.dbPath ?? '—'}>
           <button className="btn" onClick={() => window.api.data.reveal()}>
             <FolderOpen size={14} />
-            Ouvrir
+            {tr('Ouvrir')}
           </button>
         </Row>
 
         <CacheRow />
 
-        <Row label="Tout effacer" hint="Supprime la bibliothèque et l'historique. Irréversible.">
+        <Row label={tr('Tout effacer')} hint={tr("Supprime la bibliothèque et l'historique. Irréversible.")}>
           <button
             className="btn"
             style={{ color: '#ff8080', borderColor: 'rgba(255,128,128,.3)' }}
             onClick={() => setConfirmReset(true)}
           >
             <Trash2 size={14} />
-            Réinitialiser
+            {tr('Réinitialiser')}
           </button>
         </Row>
       </Card>
 
-      <Card id="a-propos" title="À propos" icon={<HardDrive size={17} />}>
-        <Row label="AnimeList" hint="Suivi d'animes local-first. Données : AniList. Aucun compte, aucun tracking.">
+      <Card id="a-propos" title={tr('À propos')} icon={<HardDrive size={17} />}>
+        <Row
+          label="AnimeList"
+          hint={tr("Suivi d'animes local-first. Données : AniList. Aucun compte, aucun tracking.")}
+        >
           <span className="text-[0.8rem] tabular-nums text-muted">v{info?.version ?? '—'}</span>
         </Row>
-        <Row label="Auteur">
-          <span className="text-[0.82rem] font-semibold">Zaidal</span>
+        <Row label={tr('Auteur')}>
+          <span className="text-[0.82rem] font-semibold">{tr('Zaidal')}</span>
         </Row>
         <Row
-          label="Mise à jour automatique"
-          hint="Une nouvelle version publiée sur GitHub est téléchargée seule et installée à la fermeture de l'app. Coupé, elle n'est que signalée."
+          label={tr('Mise à jour automatique')}
+          hint={tr(
+            "Une nouvelle version publiée sur GitHub est téléchargée seule et installée à la fermeture de l'app. Coupé, elle n'est que signalée."
+          )}
         >
           <Toggle on={prefs.autoUpdate} onChange={(autoUpdate) => setPrefs({ autoUpdate })} />
         </Row>
         <UpdatePanel version={info?.version ?? null} />
-        <Row label="Schéma de données" hint="Version du format de ton fichier local.">
+        <Row label={tr('Schéma de données')} hint={tr('Version du format de ton fichier local.')}>
           <span className="text-[0.8rem] tabular-nums text-muted">
             v{info?.schema.version ?? '—'}
             {info && info.schema.applied.length > 0 && (
               <span className="ml-2 text-[0.72rem]" style={{ color: 'var(--accent-2)' }}>
-                {info.schema.applied.length} migration{info.schema.applied.length > 1 ? 's' : ''} appliquée
-                {info.schema.applied.length > 1 ? 's' : ''}
+                {tr('{n} migration{s} appliquée{s}', {
+                  n: info.schema.applied.length,
+                  s: info.schema.applied.length > 1 ? 's' : ''
+                })}
               </span>
             )}
           </span>
         </Row>
-        <Row label="Moteur">
+        <Row label={tr('Moteur')}>
           <span className="flex items-center gap-1.5 text-[0.78rem] tabular-nums text-faint">
             <Zap size={12} />
-            Electron {info?.electron ?? '—'} · Chromium {info?.chrome?.split('.')[0] ?? '—'}
+            {tr('Electron')} {info?.electron ?? '—'} {tr('· Chromium')} {info?.chrome?.split('.')[0] ?? '—'}
           </span>
         </Row>
       </Card>
       <Modal open={confirmReset} onClose={() => setConfirmReset(false)} width={440}>
         <div className="p-6">
-          <h3 className="title-xl mb-2 text-[1.1rem]">Tout effacer ?</h3>
+          <h3 className="title-xl mb-2 text-[1.1rem]">{tr('Tout effacer ?')}</h3>
           <p className="mb-6 text-[0.84rem] leading-relaxed text-muted">
-            Tes {entries.size} titres et {events.length} épisodes cochés seront supprimés définitivement. Pense à
-            exporter une sauvegarde avant.
+            {tr('Tes')} {entries.size} {tr('titres et')} {events.length}{' '}
+            {tr('épisodes cochés seront supprimés définitivement. Pense à exporter une sauvegarde avant.')}
           </p>
           <div className="flex justify-end gap-2">
             <button className="btn" onClick={() => setConfirmReset(false)}>
-              Annuler
+              {tr('Annuler')}
             </button>
             <button
               className="btn"
@@ -1512,10 +1616,10 @@ export default function SettingsBody(): React.JSX.Element {
               onClick={async () => {
                 await window.api.data.reset()
                 setConfirmReset(false)
-                toast('Bibliothèque réinitialisée', 'info')
+                toast(tr('Bibliothèque réinitialisée'), 'info')
               }}
             >
-              Effacer définitivement
+              {tr('Effacer définitivement')}
             </button>
           </div>
         </div>

@@ -20,6 +20,7 @@ import { clock } from '@shared/playback'
 import { ErrorBox, Poster, Spinner } from '@/components/ui'
 import { titleOf } from '@/lib/format'
 import { useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
 /** Ce que le presse-papier et le sélecteur ont le droit de contenir. */
 const ACCEPTED = 'image/png,image/jpeg,image/webp,image/gif'
@@ -94,9 +95,9 @@ export default function IdentifyImage({ initial }: { initial?: File | null }): R
           <ScanSearch size={19} />
         </span>
         <div className="min-w-0">
-          <h2 className="title-xl text-[1.2rem] leading-tight">Identifier une image</h2>
+          <h2 className="title-xl text-[1.2rem] leading-tight">{t('Identifier une image')}</h2>
           <p className="mt-0.5 text-[0.78rem] text-muted">
-            Colle une capture, dépose-la ou choisis un fichier : l’app dit la série, l’épisode et la seconde.
+            {t('Colle une capture, dépose-la ou choisis un fichier : l’app dit la série, l’épisode et la seconde.')}
           </p>
         </div>
       </div>
@@ -137,12 +138,12 @@ export default function IdentifyImage({ initial }: { initial?: File | null }): R
         ) : (
           <span className="flex flex-col items-center gap-2 text-[0.82rem] text-faint">
             <ImageUp size={22} />
-            Colle (Ctrl+V), dépose une image, ou clique pour en choisir une
+            {t('Colle (Ctrl+V), dépose une image, ou clique pour en choisir une')}
           </span>
         )}
       </button>
 
-      {busy && <Spinner label="Recherche de la scène…" />}
+      {busy && <Spinner label={t('Recherche de la scène…')} />}
       {error && (
         <div className="mt-4">
           <ErrorBox message={error} />
@@ -155,8 +156,9 @@ export default function IdentifyImage({ initial }: { initial?: File | null }): R
             /* Ne rien avoir trouvé est une réponse. Le dire clairement vaut
                mieux que d'afficher dix candidats à cinquante pour cent. */
             <p className="py-6 text-center text-[0.84rem] leading-relaxed text-muted">
-              Aucune scène ne correspond. L’index ne couvre que les anime : une image de manga, un fan art ou une photo
-              n’y sont pas.
+              {t(
+                'Aucune scène ne correspond. L’index ne couvre que les anime : une image de manga, un fan art ou une photo n’y sont pas.'
+              )}
             </p>
           ) : (
             <>
@@ -166,8 +168,9 @@ export default function IdentifyImage({ initial }: { initial?: File | null }): R
                   style={{ background: 'rgba(255,176,56,.12)', color: '#ffb038' }}
                 >
                   <TriangleAlert size={14} className="mt-0.5 shrink-0" />
-                  Rien de sûr ici. Ces titres se ressemblent un peu, sans plus — une image plus nette, ou une scène plus
-                  caractéristique, donnerait mieux.
+                  {t(
+                    'Rien de sûr ici. Ces titres se ressemblent un peu, sans plus — une image plus nette, ou une scène plus caractéristique, donnerait mieux.'
+                  )}
                 </p>
               )}
 
@@ -193,7 +196,7 @@ export default function IdentifyImage({ initial }: { initial?: File | null }): R
                         {titleOf(m.media, lang)}
                       </span>
                       <span className="mt-0.5 block text-[0.72rem] text-faint">
-                        {m.episode !== null ? `Épisode ${m.episode} · ` : ''}
+                        {m.episode !== null ? t('Épisode {episode} · ', { episode: m.episode }) : ''}
                         {clock(m.from)}
                       </span>
                     </span>
@@ -211,7 +214,7 @@ export default function IdentifyImage({ initial }: { initial?: File | null }): R
 
           {found.quota && (
             <p className="mt-3 text-center text-[0.7rem] text-faint">
-              {Math.max(0, found.quota.total - found.quota.used)} recherches restantes ce mois-ci
+              {Math.max(0, found.quota.total - found.quota.used)} {t('recherches restantes ce mois-ci')}
             </p>
           )}
         </div>

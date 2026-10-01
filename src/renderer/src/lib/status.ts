@@ -1,5 +1,6 @@
 import { canComplete } from '@shared/airing'
 import type { Entry, LibraryStatus, Media } from '@shared/types'
+import { t } from '@shared/i18n'
 
 /**
  * Pourquoi ce statut est refusé, ou `null` s'il est permis.
@@ -16,6 +17,6 @@ export function statusBlocked(status: LibraryStatus, media: Media, entry?: Entry
   if (status !== 'completed') return null
   if (canComplete(media, entry?.status === 'completed')) return null
   return media.nextAiring
-    ? `Elle n’a pas fini de sortir : l’épisode ${media.nextAiring.episode} est annoncé.`
-    : 'Elle n’a pas fini de sortir.'
+    ? t('Elle n’a pas fini de sortir : l’épisode {episode} est annoncé.', { episode: media.nextAiring.episode })
+    : t('Elle n’a pas fini de sortir.')
 }

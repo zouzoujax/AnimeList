@@ -1,5 +1,6 @@
 import { Star } from 'lucide-react'
 import { useState } from 'react'
+import { t } from '@shared/i18n'
 
 /**
  * Une note sur dix, en cinq étoiles coupées en deux.
@@ -36,7 +37,7 @@ export function Stars({
                   key={score}
                   onMouseEnter={() => setHover(score)}
                   onClick={() => onChange(value === score ? null : score)}
-                  aria-label={`Noter ${score} sur 10`}
+                  aria-label={t('Noter {score} sur 10', { score })}
                   className="absolute top-0 h-full w-1/2"
                   style={{ left: i === 0 ? 0 : '50%' }}
                 />

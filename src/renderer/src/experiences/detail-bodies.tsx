@@ -2,6 +2,7 @@ import { motion } from 'motion/react'
 import { useState } from 'react'
 import type { Media } from '@shared/types'
 import type { DetailPartKey, DetailParts } from '.'
+import { t as tr } from '@shared/i18n'
 
 /*
  * Le corps de la fiche, disposé par chaque expérience.
@@ -16,22 +17,22 @@ import type { DetailPartKey, DetailParts } from '.'
 type Props = { media: Media; parts: DetailParts }
 
 const TITLES: Record<DetailPartKey, string> = {
-  synopsis: 'Synopsis',
+  synopsis: tr('Synopsis'),
   trailer: 'Bande-annonce',
-  language: 'Langue',
-  franchise: 'Franchise',
-  episodes: 'Épisodes',
-  files: 'Fichiers',
-  cast: 'Personnages',
-  relations: 'Même série',
-  manga: 'Manga',
-  films: 'Films',
-  recommendations: 'Recommandations',
-  progress: 'Progression',
-  rating: 'Ta note',
-  info: 'Informations',
-  watch: 'Regarder',
-  error: 'Erreur'
+  language: tr('Langue'),
+  franchise: tr('Franchise'),
+  episodes: tr('Épisodes'),
+  files: tr('Fichiers'),
+  cast: tr('Personnages'),
+  relations: tr('Même série'),
+  manga: tr('Manga'),
+  films: tr('Films'),
+  recommendations: tr('Recommandations'),
+  progress: tr('Progression'),
+  rating: tr('Ta note'),
+  info: tr('Informations'),
+  watch: tr('Regarder'),
+  error: tr('Erreur')
 }
 
 /** Les blocs demandés qui ont quelque chose à montrer, dans l'ordre donné. */
@@ -61,10 +62,15 @@ function Stack({
 
 /* ─────────────────────────────── STREAMING : onglets sous la bannière */
 const STREAM_TABS: { id: string; label: string; main: DetailPartKey[]; side: DetailPartKey[] }[] = [
-  { id: 'episodes', label: 'Épisodes', main: ['language', 'episodes', 'files'], side: ['watch', 'progress'] },
-  { id: 'infos', label: 'Plus d’infos', main: ['synopsis', 'trailer'], side: ['info', 'rating', 'error'] },
-  { id: 'cast', label: 'Distribution', main: ['cast'], side: [] },
-  { id: 'more', label: 'Similaires', main: ['recommendations', 'relations', 'films', 'manga', 'franchise'], side: [] }
+  { id: 'episodes', label: tr('Épisodes'), main: ['language', 'episodes', 'files'], side: ['watch', 'progress'] },
+  { id: 'infos', label: tr('Plus d’infos'), main: ['synopsis', 'trailer'], side: ['info', 'rating', 'error'] },
+  { id: 'cast', label: tr('Distribution'), main: ['cast'], side: [] },
+  {
+    id: 'more',
+    label: tr('Similaires'),
+    main: ['recommendations', 'relations', 'films', 'manga', 'franchise'],
+    side: []
+  }
 ]
 
 export function StreamingDetailBody({ parts }: Props): React.JSX.Element {
@@ -95,11 +101,11 @@ export function StreamingDetailBody({ parts }: Props): React.JSX.Element {
 
 /* ─────────────────────────────── CONSOLE : menu latéral de hub de jeu */
 const CONSOLE_MENU: { id: string; label: string; keys: DetailPartKey[] }[] = [
-  { id: 'overview', label: 'Vue d’ensemble', keys: ['synopsis', 'progress', 'rating', 'trailer'] },
-  { id: 'episodes', label: 'Épisodes', keys: ['language', 'episodes', 'files'] },
-  { id: 'play', label: 'Où jouer', keys: ['watch', 'info', 'error'] },
-  { id: 'cast', label: 'Personnages', keys: ['cast'] },
-  { id: 'universe', label: 'Univers', keys: ['relations', 'films', 'manga', 'recommendations', 'franchise'] }
+  { id: 'overview', label: tr('Vue d’ensemble'), keys: ['synopsis', 'progress', 'rating', 'trailer'] },
+  { id: 'episodes', label: tr('Épisodes'), keys: ['language', 'episodes', 'files'] },
+  { id: 'play', label: tr('Où jouer'), keys: ['watch', 'info', 'error'] },
+  { id: 'cast', label: tr('Personnages'), keys: ['cast'] },
+  { id: 'universe', label: tr('Univers'), keys: ['relations', 'films', 'manga', 'recommendations', 'franchise'] }
 ]
 
 export function ConsoleDetailBody({ parts }: Props): React.JSX.Element {
@@ -108,7 +114,7 @@ export function ConsoleDetailBody({ parts }: Props): React.JSX.Element {
   return (
     <div className="xc-detail grid gap-8 px-12 pb-16 pt-4 lg:grid-cols-[230px_minmax(0,1fr)]">
       {/* Collé en haut : le menu doit rester sous la main pendant qu'on fait défiler une section. */}
-      <nav className="flex flex-col gap-1.5 self-start lg:sticky lg:top-24" aria-label="Sections de la fiche">
+      <nav className="flex flex-col gap-1.5 self-start lg:sticky lg:top-24" aria-label={tr('Sections de la fiche')}>
         {CONSOLE_MENU.map((m) => (
           <button key={m.id} className="xc-detail-item" data-on={section === m.id} onClick={() => setSection(m.id)}>
             {m.label}
@@ -132,7 +138,7 @@ export function MagazineDetailBody({ parts }: Props): React.JSX.Element {
   return (
     <div className="xm-detail xm-rule-double mx-12 mt-8 grid gap-10 pb-16 pt-6 lg:grid-cols-[280px_minmax(0,1fr)]">
       <aside className="xm-detail-box flex flex-col gap-6 self-start">
-        <p className="xm-kicker">L’encadré</p>
+        <p className="xm-kicker">{tr('L’encadré')}</p>
         <Stack parts={parts} keys={['progress', 'rating', 'info', 'watch', 'error']} className="flex flex-col gap-6" />
       </aside>
       <article>
@@ -204,13 +210,13 @@ export function HudDetailBody({ parts }: Props): React.JSX.Element {
 /* ─────────────────────────────── CARNET : pages du carnet */
 const CARNET_PAGES: { title: string; left: DetailPartKey[]; right: DetailPartKey[] }[] = [
   {
-    title: 'Ma fiche',
+    title: tr('Ma fiche'),
     left: ['synopsis', 'info', 'progress', 'rating'],
     right: ['watch', 'language', 'episodes', 'files']
   },
-  { title: 'Souvenirs', left: ['trailer'], right: ['cast'] },
+  { title: tr('Souvenirs'), left: ['trailer'], right: ['cast'] },
   {
-    title: 'À explorer ensuite',
+    title: tr('À explorer ensuite'),
     left: ['relations', 'films', 'franchise'],
     right: ['manga', 'recommendations', 'error']
   }

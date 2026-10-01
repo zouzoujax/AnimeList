@@ -14,6 +14,7 @@ import { useNewDesign } from '@/lib/nd'
 import { restoreScroll } from '@/lib/scroll'
 import { routeKeyOf, useApp } from '@/store/app'
 import { BrowserReview } from '@/components/BrowserReview'
+import { t } from '@shared/i18n'
 
 /**
  * Only the home page is in the entry bundle — it is what the window opens on.
@@ -75,7 +76,7 @@ function Boot(): React.JSX.Element {
             boxShadow: '0 0 40px -6px var(--glow)'
           }}
         />
-        <p className="text-[0.8rem] text-faint">Ouverture de ta bibliothèque…</p>
+        <p className="text-[0.8rem] text-faint">{t('Ouverture de ta bibliothèque…')}</p>
       </div>
     </div>
   )
@@ -119,11 +120,11 @@ export default function App(): React.JSX.Element {
       // Resource load failures (a 404 cover) leave `error` unset — ignore those.
       if (!event.error) return
       const message = event.error instanceof Error ? event.error.message : event.message
-      toast(`Erreur : ${message}`, 'error')
+      toast(t('Erreur : {message}', { message }), 'error')
     }
     const onRejection = (event: PromiseRejectionEvent): void => {
       const reason = event.reason instanceof Error ? event.reason.message : String(event.reason)
-      toast(`Échec : ${reason}`, 'error')
+      toast(t('Échec : {reason}', { reason }), 'error')
     }
     window.addEventListener('error', onError)
     window.addEventListener('unhandledrejection', onRejection)
@@ -225,7 +226,7 @@ export default function App(): React.JSX.Element {
           <div className={xp ? 'xp-frame relative flex min-h-0 flex-1' : 'flex min-h-0 flex-1'}>
             {/* First thing Tab reaches, so the whole navigation can be skipped. */}
             <a href="#contenu" className="skip-link">
-              Aller au contenu
+              {t('Aller au contenu')}
             </a>
             {xp ? <xp.Nav /> : <Sidebar />}
             <main id="contenu" className="scroll-y relative flex-1" tabIndex={-1}>
@@ -234,7 +235,9 @@ export default function App(): React.JSX.Element {
                   <ScrollOnArrival routeKey={routeKey} />
                   <ErrorBoundary resetKey={routeKey} onGoHome={() => navigate({ name: 'home' })}>
                     <Suspense
-                      fallback={route.name === 'anime' ? <FicheSkeleton /> : <Spinner label="Chargement de la page…" />}
+                      fallback={
+                        route.name === 'anime' ? <FicheSkeleton /> : <Spinner label={t('Chargement de la page…')} />
+                      }
                     >
                       {route.name === 'home' && (xp ? <xp.Home /> : nd.home ? <NdHomePage /> : <HomePage />)}
                       {route.name === 'discover' &&

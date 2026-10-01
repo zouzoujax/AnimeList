@@ -2,6 +2,7 @@ import { useMemo, useState, type ReactNode } from 'react'
 import { heatRamp, rgba } from '@/lib/color'
 import { num } from '@/lib/format'
 import { useApp } from '@/store/app'
+import { t, locale } from '@shared/i18n'
 
 /**
  * Every mark on this page encodes magnitude, so each chart stays single-hue and
@@ -101,7 +102,7 @@ export function ActivityHeatmap({ days }: { days: DayCount[] }): React.JSX.Eleme
       const mid = week[3] ?? week[0]
       const month = new Date(mid.date).getMonth()
       if (month === lastMonth || i - lastIndex < 3) return
-      marks.push({ index: i, label: new Date(mid.date).toLocaleDateString('fr-FR', { month: 'short' }) })
+      marks.push({ index: i, label: new Date(mid.date).toLocaleDateString(locale(), { month: 'short' }) })
       lastMonth = month
       lastIndex = i
     })
@@ -143,9 +144,9 @@ export function ActivityHeatmap({ days }: { days: DayCount[] }): React.JSX.Eleme
                         tooltip.show(
                           e,
                           <>
-                            <b className="tabular-nums">{day.count}</b> épisode{day.count > 1 ? 's' : ''} ·{' '}
+                            {t('{n} épisode{s}', { n: day.count, s: day.count > 1 ? 's' : '' })} ·{' '}
                             <span className="text-faint">
-                              {new Date(day.date).toLocaleDateString('fr-FR', {
+                              {new Date(day.date).toLocaleDateString(locale(), {
                                 day: 'numeric',
                                 month: 'long',
                                 year: 'numeric'
@@ -170,13 +171,15 @@ export function ActivityHeatmap({ days }: { days: DayCount[] }): React.JSX.Eleme
       </div>
 
       <div className="mt-3 flex items-center gap-1.5 text-[0.65rem] text-faint">
-        <span>Moins</span>
+        <span>{t('Moins')}</span>
         <span className="h-[10px] w-[10px] rounded-[3px]" style={{ background: 'rgba(255,255,255,.045)' }} />
         {ramp.map((c) => (
           <span key={c} className="h-[10px] w-[10px] rounded-[3px]" style={{ background: c }} />
         ))}
-        <span>Plus</span>
-        <span className="ml-auto tabular-nums">Pic : {max} épisodes en un jour</span>
+        <span>{t('Plus')}</span>
+        <span className="ml-auto tabular-nums">
+          {t('Pic :')} {max} {t('épisodes en un jour')}
+        </span>
       </div>
 
       {tooltip.node}
@@ -277,7 +280,7 @@ export function RankedBars({
   const max = Math.max(1, ...rows.map((r) => r.value))
 
   if (!rows.length) {
-    return <p className="py-6 text-center text-[0.78rem] text-faint">Pas encore assez de données.</p>
+    return <p className="py-6 text-center text-[0.78rem] text-faint">{t('Pas encore assez de données.')}</p>
   }
 
   return (

@@ -15,20 +15,23 @@ import { Poster } from '@/components/ui'
 import { plural } from '@/components/nd'
 import { minutesToHuman, startOfDay, titleOf } from '@/lib/format'
 import { useApp } from '@/store/app'
+import { t, locale } from '@shared/i18n'
 
 /** « Aujourd'hui », « Demain », puis le jour en toutes lettres. */
-export function dayName(i: number, day: number, today = "Aujourd'hui"): string {
+export function dayName(i: number, day: number, today = t("Aujourd'hui")): string {
   if (i === 0) return today
-  if (i === 1) return 'Demain'
+  if (i === 1) return t('Demain')
   // La majuscule dans le texte : `::first-letter` ne s'applique pas à une
   // ligne en flex, celle du plan qui porte aussi la durée.
-  const name = new Date(day).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric' })
+  const name = new Date(day).toLocaleDateString(locale(), { weekday: 'long', day: 'numeric' })
   return name[0].toUpperCase() + name.slice(1)
 }
 
 /** « Ép. 14 », « Ép. 14–16 ». */
 const episodesLabel = (episodes: number[]): string =>
-  episodes.length === 1 ? `Ép. ${episodes[0]}` : `Ép. ${episodes[0]}–${episodes[episodes.length - 1]}`
+  episodes.length === 1
+    ? `Ép. ${episodes[0]}`
+    : t('Ép. {v0}–{v1}', { v0: episodes[0], v1: episodes[episodes.length - 1] })
 
 /**
  * Le plan de la semaine, recalculé à chaque coche.
@@ -85,19 +88,32 @@ export function planSentence(plan: CatchUpPlan, now: number): string {
   // inclut les séries finies, et deux chiffres voisins qui diffèrent sans
   // raison dite passeraient pour une erreur.
   const n = plan.behind.episodes
-  const late = `Sur les séries en diffusion, ${plural(n, 'épisode')} ${n > 1 ? "t'attendent" : "t'attend"} (${minutesToHuman(plan.behind.minutes)})`
-  const pace = `à ton rythme d'environ ${minutesToHuman(plan.budget)} par soir`
+  const late = t('Sur les séries en diffusion, {v0} {v1} ({v2})', {
+    v0: plural(n, 'épisode'),
+    v1: n > 1 ? "t'attendent" : "t'attend",
+    v2: minutesToHuman(plan.behind.minutes)
+  })
+  const pace = t("à ton rythme d'environ {v0} par soir", { v0: minutesToHuman(plan.budget) })
   if (plan.doneOn === null) {
-    return `${late}. Même ${pace}, il en restera ${plan.left.episodes} dans une semaine.`
+    return t('{late}. Même {pace}, il en restera {episodes} dans une semaine.', {
+      late,
+      pace,
+      episodes: plan.left.episodes
+    })
   }
   const i = Math.round((plan.doneOn - startOfDay(now)) / 86_400_000)
   const when =
     i === 0
-      ? 'dès ce soir'
+      ? t('dès ce soir')
       : i === 1
         ? 'demain'
-        : new Date(plan.doneOn).toLocaleDateString('fr-FR', { weekday: 'long' })
-  return `${late}. ${pace[0].toUpperCase()}${pace.slice(1)}, tu es à jour ${when}, sorties de la semaine comprises.`
+        : new Date(plan.doneOn).toLocaleDateString(locale(), { weekday: 'long' })
+  return t('{late}. {v1}{v2}, tu es à jour {when}, sorties de la semaine comprises.', {
+    late,
+    v1: pace[0].toUpperCase(),
+    v2: pace.slice(1),
+    when
+  })
 }
 
 /**
@@ -131,7 +147,7 @@ export function PlanGrid({
         return (
           <div key={day} className="week-day" data-empty={!planned}>
             <p className="week-day-name flex items-baseline justify-between gap-2">
-              <span>{dayName(i, day, 'Ce soir')}</span>
+              <span>{dayName(i, day, t('Ce soir'))}</span>
               {planned && (
                 <span className="text-[0.7rem] font-normal text-faint">{minutesToHuman(planned.minutes)}</span>
               )}

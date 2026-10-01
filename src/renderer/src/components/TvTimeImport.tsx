@@ -13,12 +13,13 @@ import { AlertTriangle, Check, ExternalLink, Search, SkipForward, Upload, X } fr
 import type { TvTimeProgress, TvTimeReport, TvTimeShowResult } from '@shared/types'
 import { TVTIME_SKIP } from '@shared/types'
 import { useApp } from '../store/app'
+import { t } from '@shared/i18n'
 
 const STATUS_LABEL: Record<TvTimeShowResult['status'], string> = {
-  ok: 'Importée',
-  partial: 'Partielle',
-  unmatched: 'Introuvable',
-  skipped: 'Ignorée'
+  ok: t('Importée'),
+  partial: t('Partielle'),
+  unmatched: t('Introuvable'),
+  skipped: t('Ignorée')
 }
 
 const STATUS_COLOR: Record<TvTimeShowResult['status'], string> = {
@@ -64,7 +65,7 @@ function ShowRow({
       <div className="flex flex-wrap items-center gap-2">
         <span className="min-w-0 flex-1 truncate text-[0.82rem]">{show.sourceName}</span>
         <span className="text-[0.72rem] text-faint">
-          {show.placed}/{show.watched} ép.
+          {show.placed}/{show.watched} {t('ép.')}
         </span>
         <StatusChip status={show.status} />
       </div>
@@ -75,7 +76,7 @@ function ShowRow({
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
           <input
             className="field w-[8.5rem] text-[0.75rem]"
-            placeholder="id AniList"
+            placeholder={t('id AniList')}
             inputMode="numeric"
             value={draft}
             onChange={(e) => onDraft(e.target.value.replace(/[^0-9]/g, ''))}
@@ -83,9 +84,9 @@ function ShowRow({
               if (e.key === 'Enter' && draft) onPin()
             }}
           />
-          <button className="btn text-[0.75rem]" disabled={!draft} onClick={onPin} title="Associer cet id">
+          <button className="btn text-[0.75rem]" disabled={!draft} onClick={onPin} title={t('Associer cet id')}>
             <Check size={13} />
-            Associer
+            {t('Associer')}
           </button>
           <button
             className="btn text-[0.75rem]"
@@ -94,21 +95,21 @@ function ShowRow({
                 `https://anilist.co/search/anime?search=${encodeURIComponent(show.sourceName)}`
               )
             }
-            title="Chercher l'id sur AniList"
+            title={t("Chercher l'id sur AniList")}
           >
             <Search size={13} />
-            Chercher
+            {t('Chercher')}
             <ExternalLink size={11} />
           </button>
           {show.status === 'skipped' ? (
             <button className="btn text-[0.75rem]" onClick={onClear}>
               <X size={13} />
-              Ne plus ignorer
+              {t('Ne plus ignorer')}
             </button>
           ) : (
             <button className="btn text-[0.75rem]" onClick={onSkip}>
               <SkipForward size={13} />
-              Ignorer
+              {t('Ignorer')}
             </button>
           )}
         </div>
@@ -159,21 +160,22 @@ export default function TvTimeImport(): React.JSX.Element {
 
   return (
     <div className="border-t py-3" style={{ borderColor: 'var(--line)' }}>
-      <p className="text-[0.85rem] font-medium">Importer depuis TV Time / OpenTV</p>
+      <p className="text-[0.85rem] font-medium">{t('Importer depuis TV Time / OpenTV')}</p>
       <p className="mt-0.5 text-[0.74rem] text-faint">
-        Choisis le dossier de l'export. Les séries suivies sont retrouvées sur AniList et leurs épisodes répartis sur
-        les saisons correspondantes — une série TheTVDB couvre souvent plusieurs fiches AniList.
+        {t(
+          "Choisis le dossier de l'export. Les séries suivies sont retrouvées sur AniList et leurs épisodes répartis sur les saisons correspondantes — une série TheTVDB couvre souvent plusieurs fiches AniList."
+        )}
       </p>
 
       {busy ? (
         <div className="mt-3">
           <div className="flex items-center justify-between gap-3">
-            <span className="min-w-0 flex-1 truncate text-[0.78rem]">{progress.label || 'Analyse…'}</span>
+            <span className="min-w-0 flex-1 truncate text-[0.78rem]">{progress.label || t('Analyse…')}</span>
             <span className="text-[0.72rem] text-faint">
               {progress.done}/{progress.total}
             </span>
             <button className="btn text-[0.75rem]" onClick={() => void window.api.data.cancelTvTime()}>
-              Interrompre
+              {t('Interrompre')}
             </button>
           </div>
           <div className="mt-2 h-1.5 overflow-hidden rounded-full" style={{ background: 'var(--line)' }}>
@@ -186,18 +188,18 @@ export default function TvTimeImport(): React.JSX.Element {
             />
           </div>
           <p className="mt-1.5 text-[0.7rem] text-faint">
-            L'import respecte la limite de requêtes d'AniList ; compte environ une seconde par série.
+            {t("L'import respecte la limite de requêtes d'AniList ; compte environ une seconde par série.")}
           </p>
         </div>
       ) : (
         <div className="mt-2.5 flex flex-wrap gap-1.5">
           <button className="btn btn-primary" onClick={() => void start()}>
             <Upload size={14} />
-            Choisir un dossier
+            {t('Choisir un dossier')}
           </button>
           {prefs.tvtimeFolder && (
             <button className="btn" onClick={() => void start(prefs.tvtimeFolder)} title={prefs.tvtimeFolder}>
-              Relancer sur le dernier dossier
+              {t('Relancer sur le dernier dossier')}
             </button>
           )}
         </div>
@@ -209,7 +211,9 @@ export default function TvTimeImport(): React.JSX.Element {
             <p className="flex-1 text-[0.78rem]">{report.message}</p>
             {report.shows.length > problems.length && (
               <button className="btn text-[0.75rem]" onClick={() => setShowAll((v) => !v)}>
-                {showAll ? 'Ne montrer que les problèmes' : `Tout voir (${report.shows.length})`}
+                {showAll
+                  ? t('Ne montrer que les problèmes')
+                  : t('Tout voir ({length})', { length: report.shows.length })}
               </button>
             )}
           </div>
@@ -217,8 +221,10 @@ export default function TvTimeImport(): React.JSX.Element {
           {problems.length > 0 && !showAll && (
             <p className="mt-1.5 flex items-center gap-1.5 text-[0.74rem]" style={{ color: '#fbbf24' }}>
               <AlertTriangle size={13} />
-              {problems.length} série{problems.length > 1 ? 's' : ''} à vérifier. Associe un id AniList, puis relance :
-              les corrections sont conservées.
+              {t('{n} série{s} à vérifier. Associe un id AniList, puis relance : les corrections sont conservées.', {
+                n: problems.length,
+                s: problems.length > 1 ? 's' : ''
+              })}
             </p>
           )}
 
@@ -232,7 +238,10 @@ export default function TvTimeImport(): React.JSX.Element {
                   onDraft={(value) => setDrafts((d) => ({ ...d, [show.sourceId]: value }))}
                   onPin={() => {
                     setOverride(show.sourceId, Number(drafts[show.sourceId]))
-                    toast(`${show.sourceName} associée — relance l'import pour l'appliquer.`, 'ok')
+                    toast(
+                      t("{sourceName} associée — relance l'import pour l'appliquer.", { sourceName: show.sourceName }),
+                      'ok'
+                    )
                   }}
                   onSkip={() => setOverride(show.sourceId, TVTIME_SKIP)}
                   onClear={() => setOverride(show.sourceId, null)}
@@ -244,7 +253,7 @@ export default function TvTimeImport(): React.JSX.Element {
           {problems.length === 0 && (
             <p className="mt-1.5 flex items-center gap-1.5 text-[0.74rem]" style={{ color: STATUS_COLOR.ok }}>
               <Check size={13} />
-              Toutes les séries ont été placées.
+              {t('Toutes les séries ont été placées.')}
             </p>
           )}
         </div>

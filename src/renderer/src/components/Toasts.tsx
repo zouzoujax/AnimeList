@@ -1,6 +1,7 @@
 import { CircleCheck, Info, TriangleAlert, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
 const ICONS = {
   ok: CircleCheck,
@@ -54,7 +55,7 @@ export function Toasts(): React.JSX.Element {
                   {toast.action.label}
                 </button>
               )}
-              <button className="icon-btn !h-6 !w-6" onClick={() => dismiss(toast.id)} aria-label="Fermer">
+              <button className="icon-btn !h-6 !w-6" onClick={() => dismiss(toast.id)} aria-label={t('Fermer')}>
                 <X size={13} />
               </button>
             </motion.div>

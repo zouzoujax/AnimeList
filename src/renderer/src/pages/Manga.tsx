@@ -25,6 +25,7 @@ import { useDebounced, useInView } from '@/lib/hooks'
 import { useMangaChapters } from '@/lib/manga-chapters'
 import { useApp } from '@/store/app'
 import { unreadCount } from '@shared/mangadex'
+import { t } from '@shared/i18n'
 
 type Tab = MangaKind | 'mine'
 
@@ -77,24 +78,24 @@ function ShelfCard({
       </button>
       <div className="mt-1 flex items-center justify-between gap-2">
         <p className="text-[0.7rem] tabular-nums text-faint">
-          {entry.chapter > 0 ? `Ch. ${entry.chapter}${total ? ` / ${total}` : ''}` : 'Pas commencé'}
+          {entry.chapter > 0 ? `Ch. ${entry.chapter}${total ? ` / ${total}` : ''}` : t('Pas commencé')}
           {/* Seulement une fois commencé : « 153 à lire » sur un manga pas ouvert
               n'apprend rien que le numéro du dernier chapitre. */}
           {entry.chapter > 0 && unread > 0 && (
             <span
               className="ml-1.5 whitespace-nowrap rounded-full px-1.5 py-px text-[0.64rem] font-semibold text-ink"
               style={{ background: 'color-mix(in oklab, var(--accent) 28%, transparent)' }}
-              title="Chapitres parus en français ou en anglais, d’après MangaDex"
+              title={t('Chapitres parus en français ou en anglais, d’après MangaDex')}
             >
-              {unread} à lire
+              {unread} {t('à lire')}
             </span>
           )}
         </p>
         {entry.status !== 'completed' && !done && (
           <button
             className="chip !h-6 !px-2 !text-[0.68rem]"
-            title="Un chapitre lu aujourd’hui"
-            aria-label={`Un chapitre de plus pour ${manga.title.english ?? manga.title.romaji}`}
+            title={t('Un chapitre lu aujourd’hui')}
+            aria-label={t('Un chapitre de plus pour {v0}', { v0: manga.title.english ?? manga.title.romaji })}
             onClick={() => void window.api.manga.advance(manga.id, 1)}
           >
             <Plus size={11} />1
@@ -132,8 +133,8 @@ function MyReading({
     return (
       <p className="py-16 text-center text-sm text-faint">
         {entries.size
-          ? 'Aucun manga de ta liste ne vient de là.'
-          : 'Rien à lire pour l’instant. Ouvre un manga du catalogue et choisis « Je le lis ».'}
+          ? t('Aucun manga de ta liste ne vient de là.')
+          : t('Rien à lire pour l’instant. Ouvre un manga du catalogue et choisis « Je le lis ».')}
       </p>
     )
   }
@@ -144,7 +145,7 @@ function MyReading({
         <Section
           key={status}
           title={READ_STATUS_LABELS[status]}
-          subtitle={`${rows.length} titre${rows.length > 1 ? 's' : ''}`}
+          subtitle={t('{n} titre{s}', { n: rows.length, s: rows.length > 1 ? 's' : '' })}
         >
           <div className="card-grid">
             {rows.map(({ entry, manga }, i) => (
@@ -165,9 +166,9 @@ function MyReading({
 }
 
 const TABS: { kind: MangaKind; label: string; icon: typeof Flame }[] = [
-  { kind: 'trending', label: 'Tendances', icon: Flame },
-  { kind: 'popular', label: 'Populaires', icon: TrendingUp },
-  { kind: 'top', label: 'Mieux notés', icon: Star }
+  { kind: 'trending', label: t('Tendances'), icon: Flame },
+  { kind: 'popular', label: t('Populaires'), icon: TrendingUp },
+  { kind: 'top', label: t('Mieux notés'), icon: Star }
 ]
 
 function Card({ manga, index, onOpen }: { manga: Manga; index: number; onOpen: () => void }): React.JSX.Element {
@@ -190,7 +191,7 @@ function Card({ manga, index, onOpen }: { manga: Manga; index: number; onOpen: (
         {/* Le nombre de chapitres quand il est connu, le statut sinon : une
             série en cours n'en annonce aucun, et la ligne resterait vide. */}
         {manga.chapters
-          ? ` · ${manga.chapters} ch.`
+          ? t(' · {chapters} ch.', { chapters: manga.chapters })
           : MANGA_STATUS[manga.status ?? '']
             ? ` · ${MANGA_STATUS[manga.status ?? '']}`
             : ''}
@@ -283,10 +284,11 @@ export default function MangaPage(): React.JSX.Element {
 
   return (
     <div className="page">
-      <h1 className="title-xl mb-1 text-[1.85rem]">Manga</h1>
+      <h1 className="title-xl mb-1 text-[1.85rem]">{t('Manga')}</h1>
       <p className="mb-6 text-[0.85rem] text-muted">
-        Ce que tu lis, et le catalogue AniList pour trouver la suite d’une série. Manga, manhwa et manhua sont
-        distingués — AniList les mélange.
+        {t(
+          'Ce que tu lis, et le catalogue AniList pour trouver la suite d’une série. Manga, manhwa et manhua sont distingués — AniList les mélange.'
+        )}
       </p>
 
       <div className="glass sticky top-0 z-20 mb-7 rounded-[20px] p-3 backdrop-blur-xl">
@@ -296,13 +298,13 @@ export default function MangaPage(): React.JSX.Element {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher un manga…"
+              placeholder={t('Rechercher un manga…')}
               className="field w-full !pl-9 !pr-9"
             />
             {search && (
               <button
                 onClick={() => setSearch('')}
-                aria-label="Effacer"
+                aria-label={t('Effacer')}
                 className="icon-btn absolute right-1 top-1/2 !h-7 !w-7 -translate-y-1/2"
               >
                 <X size={13} />
@@ -320,7 +322,8 @@ export default function MangaPage(): React.JSX.Element {
               }}
             >
               <BookOpen size={13} />
-              Ma lecture{tracked > 0 ? ` · ${tracked}` : ''}
+              {t('Ma lecture')}
+              {tracked > 0 ? ` · ${tracked}` : ''}
             </button>
             {TABS.map(({ kind: k, label, icon: Icon }) => (
               <button
@@ -343,7 +346,7 @@ export default function MangaPage(): React.JSX.Element {
             chaque mot recouvre : le sens de lecture n'est pas le même. */}
         <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
           <button data-on={origin === null} className="chip" onClick={() => setOrigin(null)}>
-            Tout
+            {t('Tout')}
           </button>
           {ORIGIN_FILTERS.map((filter) => (
             <button
@@ -366,7 +369,7 @@ export default function MangaPage(): React.JSX.Element {
       ) : held.error ? (
         <ErrorBox message={held.error} />
       ) : items.length === 0 ? (
-        <p className="py-16 text-center text-sm text-faint">Aucun manga ne correspond.</p>
+        <p className="py-16 text-center text-sm text-faint">{t('Aucun manga ne correspond.')}</p>
       ) : (
         <>
           <div className="card-grid">
@@ -375,7 +378,7 @@ export default function MangaPage(): React.JSX.Element {
             ))}
           </div>
           {hasMore && <div ref={sentinel} className="h-4" />}
-          {loadingMore && <Spinner label="Chargement de la suite…" />}
+          {loadingMore && <Spinner label={t('Chargement de la suite…')} />}
         </>
       )}
 

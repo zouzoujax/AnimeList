@@ -40,6 +40,7 @@ import { getMedia, getPrefs, isWatched, setWatched, store } from './store'
 import { skipRangesFor } from './skip'
 import { soireeNext, stopSoiree } from './soiree-queue'
 import { openAnimeSamaEpisode, playNext, watchWindow } from './watch-window'
+import { t } from '@shared/i18n'
 
 /**
  * Assez souvent pour ne pas manquer une fin, assez rare pour ne rien coûter.
@@ -317,7 +318,7 @@ async function endSoiree(): Promise<void> {
   if (!win) return
 
   const video = await videoFrame(win)
-  if (video) await video.frame.executeJavaScript(noticeScript('Soirée terminée'), true).catch(() => false)
+  if (video) await video.frame.executeJavaScript(noticeScript(t('Soirée terminée')), true).catch(() => false)
   await new Promise((resolve) => setTimeout(resolve, END_LINGER_MS))
 
   const still = watchWindow()
@@ -374,7 +375,9 @@ async function advanceUnlessRefused(animeId: number, episode: number, key: strin
   // rebours promettait un épisode qui n'existe pas.
   if (!target) return
   const sameShow = target.animeId === animeId
-  const label = sameShow ? `Épisode ${target.episode}` : `${target.title ?? 'Suite'} — épisode ${target.episode}`
+  const label = sameShow
+    ? t('Épisode {episode}', { episode: target.episode })
+    : t('{v0} — épisode {episode}', { v0: target.title ?? t('Suite'), episode: target.episode })
 
   const win = watchWindow()
   const video = win ? await videoFrame(win) : null
@@ -474,7 +477,7 @@ async function offerSkip(animeId: number, episode: number, now: Playing, auto: b
     return
   }
 
-  const label = terminal ? 'Épisode suivant' : SKIP_LABELS[active.kind]
+  const label = terminal ? t('Épisode suivant') : SKIP_LABELS[active.kind]
   const posed = await video.frame
     .executeJavaScript(skipScript(terminal ? null : active.end, label, reste), true)
     .catch(() => false)

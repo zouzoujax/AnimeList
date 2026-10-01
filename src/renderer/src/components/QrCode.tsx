@@ -14,6 +14,7 @@
 import { useMemo } from 'react'
 import qrcode from 'qrcode-generator'
 import { qrPath, qrSize } from '@shared/qr'
+import { t } from '@shared/i18n'
 
 export default function QrCode({
   text,
@@ -50,7 +51,7 @@ export default function QrCode({
       width={size}
       height={size}
       role="img"
-      aria-label={label ?? 'QR code'}
+      aria-label={label ?? t('QR code')}
       shapeRendering="crispEdges"
       className="rounded-[10px]"
       style={{ background: '#fff' }}

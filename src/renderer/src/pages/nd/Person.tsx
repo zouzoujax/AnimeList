@@ -6,6 +6,7 @@ import { FollowButton } from '@/components/FollowButton'
 import { NdHeader, SeriesRow, plural } from '@/components/nd'
 import { ErrorBox, Poster, PosterSkeletons } from '@/components/ui'
 import { useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
 /**
  * Un personnage ou un doubleur, dans le nouveau design.
@@ -41,14 +42,14 @@ export default function NdPersonPage({ kind, id }: { kind: 'character' | 'staff'
   if (person === null) {
     return (
       <div className="page">
-        <ErrorBox message="Cette fiche est introuvable sur AniList." onRetry={back} />
+        <ErrorBox message={t('Cette fiche est introuvable sur AniList.')} onRetry={back} />
       </div>
     )
   }
 
   const owned = person.roles.filter((row) => entries.has(row.media.id))
   const others = person.roles.filter((row) => !entries.has(row.media.id))
-  const who = kind === 'staff' ? 'Doubleur' : 'Personnage'
+  const who = kind === 'staff' ? t('Doubleur') : t('Personnage')
 
   return (
     <div className="page">
@@ -66,8 +67,15 @@ export default function NdPersonPage({ kind, id }: { kind: 'character' | 'staff'
             title={person.name}
             sub={
               owned.length > 0
-                ? `${who}, dans ${plural(owned.length, 'série')} de ta bibliothèque et ${plural(others.length, 'autre')}.`
-                : `${who}, dans ${plural(person.roles.length, 'série')}. Aucune n’est dans ta bibliothèque.`
+                ? t('{who}, dans {v1} de ta bibliothèque et {v2}.', {
+                    who,
+                    v1: plural(owned.length, 'série'),
+                    v2: plural(others.length, 'autre')
+                  })
+                : t('{who}, dans {v1}. Aucune n’est dans ta bibliothèque.', {
+                    who,
+                    v1: plural(person.roles.length, 'série')
+                  })
             }
             // Seulement pour une personne : un personnage ne sort rien de neuf.
             actions={kind === 'staff' ? <FollowButton kind="staff" target={id} name={person.name} /> : undefined}
@@ -76,12 +84,12 @@ export default function NdPersonPage({ kind, id }: { kind: 'character' | 'staff'
       </div>
 
       {person.roles.length === 0 ? (
-        <p className="py-16 text-center text-sm text-muted">AniList ne lui connaît aucune autre série.</p>
+        <p className="py-16 text-center text-sm text-muted">{t('AniList ne lui connaît aucune autre série.')}</p>
       ) : (
         <>
           {owned.length > 0 && (
             <section className="mb-10">
-              <h2 className="title-xl mb-3.5 px-1 text-[1.32rem]">Là où tu l’as déjà croisé</h2>
+              <h2 className="title-xl mb-3.5 px-1 text-[1.32rem]">{t('Là où tu l’as déjà croisé')}</h2>
               <ul className="home-queue">
                 {owned.map((row) => (
                   <SeriesRow
@@ -95,7 +103,7 @@ export default function NdPersonPage({ kind, id }: { kind: 'character' | 'staff'
           )}
           {others.length > 0 && (
             <section>
-              {owned.length > 0 && <h2 className="title-xl mb-3.5 px-1 text-[1.32rem]">Ses autres séries</h2>}
+              {owned.length > 0 && <h2 className="title-xl mb-3.5 px-1 text-[1.32rem]">{t('Ses autres séries')}</h2>}
               <div className="card-grid">
                 {others.map((row, i) => (
                   <div key={row.media.id}>

@@ -28,6 +28,7 @@ import { ExternalLink, PictureInPicture2, RotateCcw, SkipBack, SkipForward, Tria
 import type { LocalEpisode } from '@shared/types'
 import { clock } from '@shared/playback'
 import { useApp } from '../store/app'
+import { t } from '@shared/i18n'
 
 /** Assez tard pour que ce soit vu, assez tôt pour ne pas dépendre du générique. */
 const WATCHED_AT = 0.9
@@ -144,7 +145,7 @@ export default function Player({
     const el = video.current
     if (!el || !document.pictureInPictureEnabled) return
     if (document.pictureInPictureElement) void document.exitPictureInPicture()
-    else void el.requestPictureInPicture().catch(() => toast('Ce format ne se détache pas.', 'error'))
+    else void el.requestPictureInPicture().catch(() => toast(t('Ce format ne se détache pas.'), 'error'))
   }
 
   /** Reprend là où on s'était arrêté, une fois la durée connue. */
@@ -202,13 +203,15 @@ export default function Player({
     // doit pas la réécrire derrière nous.
     mark.current = { at: 0, duration: 0 }
     void window.api.videos.forgetPosition(file.path)
-    void toggleEpisode(animeId, file.episode).then(() => toast(`Épisode ${file.episode} coché`, 'ok'))
+    void toggleEpisode(animeId, file.episode).then(() =>
+      toast(t('Épisode {episode} coché', { episode: file.episode }), 'ok')
+    )
   }
 
   const openOutside = (): void => {
     void window.api.videos.openExternal(file.path).then((ok) => {
       if (ok) onClose()
-      else toast('Ce fichier ne peut pas être ouvert.', 'error')
+      else toast(t('Ce fichier ne peut pas être ouvert.'), 'error')
     })
   }
 
@@ -240,7 +243,7 @@ export default function Player({
         <header className="flex shrink-0 items-center gap-3 py-3 pl-5 pr-[152px]">
           <div className="min-w-0 flex-1">
             <p className="truncate text-[0.9rem] font-semibold text-white">
-              {file.episode !== null ? `Épisode ${file.episode} · ` : ''}
+              {file.episode !== null ? t('Épisode {episode} · ', { episode: file.episode }) : ''}
               {title}
             </p>
             <p className="truncate text-[0.7rem] text-white/45">{file.name}</p>
@@ -249,14 +252,19 @@ export default function Player({
             <button
               className="icon-btn !h-8 !w-8"
               onClick={onPrevious}
-              title="Épisode précédent"
-              aria-label="Précédent"
+              title={t('Épisode précédent')}
+              aria-label={t('Précédent')}
             >
               <SkipBack size={15} />
             </button>
           )}
           {onNext && (
-            <button className="icon-btn !h-8 !w-8" onClick={onNext} title="Épisode suivant" aria-label="Suivant">
+            <button
+              className="icon-btn !h-8 !w-8"
+              onClick={onNext}
+              title={t('Épisode suivant')}
+              aria-label={t('Suivant')}
+            >
               <SkipForward size={15} />
             </button>
           )}
@@ -264,25 +272,29 @@ export default function Player({
             <button
               className="icon-btn !h-8 !w-8"
               onClick={popOut}
-              title="Détacher dans une fenêtre flottante"
+              title={t('Détacher dans une fenêtre flottante')}
               aria-label="Mini-lecteur"
             >
               <PictureInPicture2 size={15} />
             </button>
           )}
           {resumed !== null && (
-            <button className="btn" onClick={restart} title="Repartir du début de l’épisode">
+            <button className="btn" onClick={restart} title={t('Repartir du début de l’épisode')}>
               <RotateCcw size={14} />
-              Repris à {clock(resumed)}
+              {t('Repris à')} {clock(resumed)}
             </button>
           )}
-          <button className="btn" onClick={openOutside} title="Ouvrir dans le lecteur du système">
+          <button className="btn" onClick={openOutside} title={t('Ouvrir dans le lecteur du système')}>
             <ExternalLink size={14} />
-            Lecteur système
+            {t('Lecteur système')}
           </button>
-          <button className="btn btn-primary" onClick={onClose} title="Fermer — Échap, ou un clic à côté de la vidéo">
+          <button
+            className="btn btn-primary"
+            onClick={onClose}
+            title={t('Fermer — Échap, ou un clic à côté de la vidéo')}
+          >
             <X size={14} />
-            Fermer
+            {t('Fermer')}
           </button>
         </header>
 
@@ -298,14 +310,15 @@ export default function Player({
           {failed ? (
             <div className="max-w-md text-center">
               <TriangleAlert size={30} className="mx-auto mb-3" style={{ color: '#ffb038' }} />
-              <p className="text-[0.95rem] font-semibold text-white">Ce fichier ne se lit pas ici</p>
+              <p className="text-[0.95rem] font-semibold text-white">{t('Ce fichier ne se lit pas ici')}</p>
               <p className="mt-1.5 text-[0.82rem] leading-relaxed text-white/55">
-                Le format dépasse ce que l’app sait décoder — souvent du HEVC (x265), que Chromium refuse. Le lecteur du
-                système, lui, en vient à bout.
+                {t(
+                  'Le format dépasse ce que l’app sait décoder — souvent du HEVC (x265), que Chromium refuse. Le lecteur du système, lui, en vient à bout.'
+                )}
               </p>
               <button className="btn btn-primary mx-auto mt-4" onClick={openOutside}>
                 <ExternalLink size={14} />
-                Ouvrir dans le lecteur système
+                {t('Ouvrir dans le lecteur système')}
               </button>
             </div>
           ) : (

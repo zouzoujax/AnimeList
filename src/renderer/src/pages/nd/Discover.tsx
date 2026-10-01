@@ -20,21 +20,22 @@ import { monthBucket, premiereLabel, premiereOf, premiereSort, titleOf } from '@
 import { useBrowse, useDebounced, useInView } from '@/lib/hooks'
 import { StaleNote } from '@/components/StaleNote'
 import { useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
 const TABS: { id: BrowseKind; label: string }[] = [
-  { id: 'trending', label: 'Tendances' },
-  { id: 'season', label: 'Cette saison' },
-  { id: 'popular', label: 'Populaires' },
-  { id: 'top', label: 'Mieux notés' },
-  { id: 'upcoming', label: 'À venir' }
+  { id: 'trending', label: t('Tendances') },
+  { id: 'season', label: t('Cette saison') },
+  { id: 'popular', label: t('Populaires') },
+  { id: 'top', label: t('Mieux notés') },
+  { id: 'upcoming', label: t('À venir') }
 ]
 
 const TAB_LINES: Record<string, string> = {
-  trending: 'Ce que tout le monde regarde cette semaine.',
-  season: 'Les séries qui passent en ce moment.',
-  popular: 'Les séries les plus suivies sur AniList, toutes années confondues.',
-  top: 'Les mieux notées par la communauté.',
-  upcoming: 'Les sorties annoncées, de la plus proche à la plus lointaine.'
+  trending: t('Ce que tout le monde regarde cette semaine.'),
+  season: t('Les séries qui passent en ce moment.'),
+  popular: t('Les séries les plus suivies sur AniList, toutes années confondues.'),
+  top: t('Les mieux notées par la communauté.'),
+  upcoming: t('Les sorties annoncées, de la plus proche à la plus lointaine.')
 }
 
 const FORMATS: MediaFormat[] = ['TV', 'MOVIE', 'OVA', 'ONA', 'SPECIAL', 'TV_SHORT']
@@ -46,10 +47,10 @@ const FORMATS: MediaFormat[] = ['TV', 'MOVIE', 'OVA', 'ONA', 'SPECIAL', 'TV_SHOR
  * communauté explique d'où vient le titre. Sinon, on se tait.
  */
 function reasonOf(pick: ForYouPick): string {
-  if (pick.reasons.length) return `Parce que ${pick.reasons.join(' ')}.`
+  if (pick.reasons.length) return t('Parce que {v0}.', { v0: pick.reasons.join(' ') })
   if (pick.from.length) {
-    const extra = pick.from.length > 2 ? ` et ${pick.from.length - 2} autres` : ''
-    return `Parce que tu as aimé ${pick.from.slice(0, 2).join(' et ')}${extra}.`
+    const extra = pick.from.length > 2 ? t(' et {v0} autres', { v0: pick.from.length - 2 }) : ''
+    return t('Parce que tu as aimé {v0}{extra}.', { v0: pick.from.slice(0, 2).join(t(' et ')), extra })
   }
   return ''
 }
@@ -82,8 +83,8 @@ function PickCard({ pick }: { pick: ForYouPick }): React.JSX.Element {
 /** « Sort le 3 oct. 2026 », « Reprend en janvier 2027 », « Date à confirmer ». */
 function releaseLine(media: Media): string {
   const start = premiereOf(media)
-  if (!start?.year) return 'Date à confirmer'
-  const verb = media.status === 'RELEASING' ? 'Reprend' : 'Sort'
+  if (!start?.year) return t('Date à confirmer')
+  const verb = media.status === 'RELEASING' ? t('Reprend') : t('Sort')
   return `${verb} ${start.day && start.month ? 'le' : 'en'} ${premiereLabel(start).toLowerCase()}`
 }
 
@@ -201,10 +202,18 @@ export default function NdDiscoverPage({ initialSearch }: { initialSearch?: stri
 
   const recLine = rec
     ? rec.weak
-      ? `Ton profil ne tient encore que sur ${plural(rec.profile.sample, 'série')} : il s’affinera à mesure que tu en ajoutes.`
+      ? t('Ton profil ne tient encore que sur {v0} : il s’affinera à mesure que tu en ajoutes.', {
+          v0: plural(rec.profile.sample, 'série')
+        })
       : rec.profile.scored === 0
-        ? `D’après les ${rec.profile.sample} séries que tu regardes. Note-les, et le classement suivra tes goûts plutôt que tes habitudes.`
-        : `D’après tes ${rec.profile.scored} notes, sur ${plural(rec.profile.sample, 'série regardée', 'séries regardées')}.`
+        ? t(
+            'D’après les {sample} séries que tu regardes. Note-les, et le classement suivra tes goûts plutôt que tes habitudes.',
+            { sample: rec.profile.sample }
+          )
+        : t('D’après tes {scored} notes, sur {v1}.', {
+            scored: rec.profile.scored,
+            v1: plural(rec.profile.sample, 'série regardée', 'séries regardées')
+          })
     : ''
 
   return (
@@ -216,11 +225,11 @@ export default function NdDiscoverPage({ initialSearch }: { initialSearch?: stri
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Quel anime cherches-tu ?"
-          aria-label="Rechercher un anime"
+          placeholder={t('Quel anime cherches-tu ?')}
+          aria-label={t('Rechercher un anime')}
         />
         {search && (
-          <button onClick={() => setSearch('')} aria-label="Effacer la recherche">
+          <button onClick={() => setSearch('')} aria-label={t('Effacer la recherche')}>
             <X size={16} />
           </button>
         )}
@@ -231,9 +240,9 @@ export default function NdDiscoverPage({ initialSearch }: { initialSearch?: stri
           className="field"
           value={genre ?? ''}
           onChange={(e) => setGenre(e.target.value || null)}
-          aria-label="Genre"
+          aria-label={t('Genre')}
         >
-          <option value="">Tous les genres</option>
+          <option value="">{t('Tous les genres')}</option>
           {GENRES.map((g) => (
             <option key={g} value={g}>
               {GENRE_LABELS[g] ?? g}
@@ -244,9 +253,9 @@ export default function NdDiscoverPage({ initialSearch }: { initialSearch?: stri
           className="field"
           value={format ?? ''}
           onChange={(e) => setFormat((e.target.value || null) as MediaFormat | null)}
-          aria-label="Format"
+          aria-label={t('Format')}
         >
-          <option value="">Tous les formats</option>
+          <option value="">{t('Tous les formats')}</option>
           {FORMATS.map((f) => (
             <option key={f} value={f}>
               {FORMAT_LABELS[f]}
@@ -255,11 +264,11 @@ export default function NdDiscoverPage({ initialSearch }: { initialSearch?: stri
         </select>
         <button
           className="btn btn-ghost"
-          title="Colle une capture d'écran n'importe où sur la page, ou choisis un fichier"
+          title={t("Colle une capture d'écran n'importe où sur la page, ou choisis un fichier")}
           onClick={() => setIdentify({ open: true, file: null })}
         >
           <ScanSearch size={14} />
-          Retrouver un anime depuis une image
+          {t('Retrouver un anime depuis une image')}
         </button>
       </div>
 
@@ -268,7 +277,7 @@ export default function NdDiscoverPage({ initialSearch }: { initialSearch?: stri
       {!searching && rec && rec.picks.length > 0 && (
         <section className="mb-10">
           <div className="mb-3.5 px-1">
-            <h2 className="title-xl text-[1.32rem] leading-tight">Choisis pour toi</h2>
+            <h2 className="title-xl text-[1.32rem] leading-tight">{t('Choisis pour toi')}</h2>
             <p className="mt-0.5 max-w-[70ch] text-[0.8rem] text-muted">{recLine}</p>
           </div>
           <RowScroller>
@@ -281,11 +290,13 @@ export default function NdDiscoverPage({ initialSearch }: { initialSearch?: stri
 
       {searching ? (
         <h2 className="title-xl mb-3.5 px-1 text-[1.32rem]">
-          {loading ? 'Recherche…' : `${plural(items.length, 'résultat')} pour « ${debounced} »`}
+          {loading
+            ? t('Recherche…')
+            : t('{v0} pour « {debounced} »', { v0: plural(items.length, 'résultat'), debounced })}
         </h2>
       ) : (
         <div className="mb-3.5">
-          <NdTabs label="Catalogue" tabs={TABS} value={tab} onChange={setTab} />
+          <NdTabs label={t('Catalogue')} tabs={TABS} value={tab} onChange={setTab} />
           <p className="mt-1.5 px-1 text-[0.8rem] text-muted">
             {TAB_LINES[tab]}
             {tab === 'season' && (
@@ -295,7 +306,7 @@ export default function NdDiscoverPage({ initialSearch }: { initialSearch?: stri
                   className="font-medium underline underline-offset-2"
                   onClick={() => navigate({ name: 'season' })}
                 >
-                  Faire le tri de la saison
+                  {t('Faire le tri de la saison')}
                 </button>
               </>
             )}
@@ -310,8 +321,8 @@ export default function NdDiscoverPage({ initialSearch }: { initialSearch?: stri
       ) : items.length === 0 ? (
         <p className="py-16 text-center text-sm text-muted">
           {showSchedule
-            ? 'Rien d’annoncé pour l’instant.'
-            : 'Aucun anime ne correspond. Essaie un autre genre ou un autre format.'}
+            ? t('Rien d’annoncé pour l’instant.')
+            : t('Aucun anime ne correspond. Essaie un autre genre ou un autre format.')}
         </p>
       ) : (
         <>
@@ -325,7 +336,7 @@ export default function NdDiscoverPage({ initialSearch }: { initialSearch?: stri
             </div>
           )}
           {hasMore && <div ref={sentinel} className="h-4" />}
-          {loadingMore && <Spinner label="Chargement de la suite…" />}
+          {loadingMore && <Spinner label={t('Chargement de la suite…')} />}
         </>
       )}
 

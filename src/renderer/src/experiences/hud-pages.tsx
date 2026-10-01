@@ -10,6 +10,7 @@ import { statusBlocked } from '@/lib/status'
 import { useApp } from '@/store/app'
 import { useCatalogue, useForYou, useMangaList, useWeek } from './pages-data'
 import type { DetailHeroProps } from '.'
+import { t } from '@shared/i18n'
 
 /*
  * COCKPIT — les autres postes du vaisseau : un scanner de catalogue, une carte
@@ -44,7 +45,7 @@ const MODES: { kind: BrowseKind; label: string }[] = [
   { kind: 'season', label: 'SAISON' },
   { kind: 'popular', label: 'POPULAIRES' },
   { kind: 'top', label: 'TOP' },
-  { kind: 'upcoming', label: 'À VENIR' }
+  { kind: 'upcoming', label: t('À VENIR') }
 ]
 
 export function HudDiscover({ initialSearch }: { initialSearch?: string }): React.JSX.Element {
@@ -57,10 +58,15 @@ export function HudDiscover({ initialSearch }: { initialSearch?: string }): Reac
 
   return (
     <div className="xh-screen grid grid-cols-12 gap-3 p-5">
-      <Box code="S-00" title="Scanner du catalogue" className="col-span-12">
+      <Box code="S-00" title={t('Scanner du catalogue')} className="col-span-12">
         <label className="xh-prompt">
           <span className="xh-hot">SCAN &gt;</span>
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="saisir un titre…" autoFocus />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={t('saisir un titre…')}
+            autoFocus
+          />
           <span className="xh-cursor" aria-hidden />
         </label>
         {!searching && (
@@ -74,7 +80,7 @@ export function HudDiscover({ initialSearch }: { initialSearch?: string }): Reac
         )}
       </Box>
 
-      <Box code="S-01" title={`Signaux détectés · ${items.length}`} className="col-span-8">
+      <Box code="S-01" title={t('Signaux détectés · {length}', { length: items.length })} className="col-span-8">
         <div className="grid grid-cols-2 gap-2">
           {items.map((media, i) => (
             <motion.button
@@ -100,16 +106,16 @@ export function HudDiscover({ initialSearch }: { initialSearch?: string }): Reac
             </motion.button>
           ))}
         </div>
-        {loading && items.length === 0 && <p className="xh-code mt-2">BALAYAGE EN COURS…</p>}
+        {loading && items.length === 0 && <p className="xh-code mt-2">{t('BALAYAGE EN COURS…')}</p>}
         {error && <p className="xh-code mt-2">{error}</p>}
         {hasMore && !loading && (
           <button className="xh-cmd mt-4" onClick={loadMore}>
-            ▼ ÉTENDRE LE BALAYAGE
+            {t('▼ ÉTENDRE LE BALAYAGE')}
           </button>
         )}
       </Box>
 
-      <Box code="S-02" title="Cibles recommandées" className="col-span-4">
+      <Box code="S-02" title={t('Cibles recommandées')} className="col-span-4">
         <ul className="flex flex-col gap-3">
           {(rec?.picks ?? []).slice(0, 8).map((pick, i) => (
             <li key={pick.media.id}>
@@ -120,7 +126,7 @@ export function HudDiscover({ initialSearch }: { initialSearch?: string }): Reac
               </button>
             </li>
           ))}
-          {!rec && <li className="xh-code">CALCUL DU PROFIL…</li>}
+          {!rec && <li className="xh-code">{t('CALCUL DU PROFIL…')}</li>}
         </ul>
       </Box>
     </div>
@@ -144,7 +150,7 @@ export function HudCalendar(): React.JSX.Element {
 
   return (
     <div className="xh-screen grid grid-cols-12 gap-3 p-5">
-      <Box code="O-00" title="Carte des orbites" className="col-span-12">
+      <Box code="O-00" title={t('Carte des orbites')} className="col-span-12">
         <div className="mb-4 flex flex-wrap gap-2">
           <button className="xh-cmd" data-on={scope === 'library'} onClick={() => setScope('library')}>
             [SUIVIS]
@@ -186,7 +192,11 @@ export function HudCalendar(): React.JSX.Element {
                       style={{ left: `${pos}%` }}
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      title={`${formatTime(slot.airingAt * 1000)} · ${titleOf(slot.media, lang)} · ép. ${slot.episode}`}
+                      title={t('{v0} · {v1} · ép. {episode}', {
+                        v0: formatTime(slot.airingAt * 1000),
+                        v1: titleOf(slot.media, lang),
+                        episode: slot.episode
+                      })}
                       onClick={() => navigate({ name: 'anime', id: slot.media.id })}
                     />
                   )
@@ -196,11 +206,11 @@ export function HudCalendar(): React.JSX.Element {
             </div>
           ))}
         </div>
-        {week.loading && <p className="xh-code mt-2">TRIANGULATION…</p>}
+        {week.loading && <p className="xh-code mt-2">{t('TRIANGULATION…')}</p>}
         {week.error && <p className="xh-code mt-2">{week.error}</p>}
       </Box>
 
-      <Box code="O-01" title="Prochains contacts" className="col-span-12">
+      <Box code="O-01" title={t('Prochains contacts')} className="col-span-12">
         <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-2">
           {upcoming.map((slot) => (
             <button
@@ -209,12 +219,16 @@ export function HudCalendar(): React.JSX.Element {
               onClick={() => navigate({ name: 'anime', id: slot.media.id })}
             >
               <span className="truncate text-[0.82rem]">
-                {titleOf(slot.media, lang)} <span className="xh-code">ÉP.{slot.episode}</span>
+                {titleOf(slot.media, lang)}{' '}
+                <span className="xh-code">
+                  {t('ÉP.')}
+                  {slot.episode}
+                </span>
               </span>
               <span className="xh-hot shrink-0 text-[0.8rem]">T-{countdown(slot.airingAt)}</span>
             </button>
           ))}
-          {upcoming.length === 0 && <p className="xh-code">AUCUN CONTACT IMMINENT.</p>}
+          {upcoming.length === 0 && <p className="xh-code">{t('AUCUN CONTACT IMMINENT.')}</p>}
         </div>
       </Box>
     </div>
@@ -235,10 +249,10 @@ export function HudManga(): React.JSX.Element {
 
   return (
     <div className="xh-screen p-5">
-      <Box code="A-00" title={`Archives manga · ${items.length}`}>
+      <Box code="A-00" title={t('Archives manga · {length}', { length: items.length })}>
         <label className="xh-prompt mb-3">
           <span className="xh-hot">ARCH &gt;</span>
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="titre…" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('titre…')} />
         </label>
         <div className="mb-3 flex gap-2">
           {MANGA_MODES.map((m) => (
@@ -251,10 +265,10 @@ export function HudManga(): React.JSX.Element {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Titre</th>
-              <th>Origine</th>
+              <th>{t('Titre')}</th>
+              <th>{t('Origine')}</th>
               <th>Chap.</th>
-              <th>Note</th>
+              <th>{t('Note')}</th>
             </tr>
           </thead>
           <tbody>
@@ -273,7 +287,7 @@ export function HudManga(): React.JSX.Element {
             ))}
           </tbody>
         </table>
-        {loading && <p className="xh-code mt-2">LECTURE DES ARCHIVES…</p>}
+        {loading && <p className="xh-code mt-2">{t('LECTURE DES ARCHIVES…')}</p>}
         {error && <p className="xh-code mt-2">{error}</p>}
       </Box>
       <Modal open={open !== null} onClose={() => setOpen(null)} width={640}>
@@ -316,7 +330,7 @@ export function HudDetailHero(props: DetailHeroProps): React.JSX.Element {
 
   return (
     <div className="xh-screen grid grid-cols-12 gap-3 p-5">
-      <Box code={`D-${String(media.id).padStart(6, '0')}`} title="Dossier cible" className="col-span-12">
+      <Box code={`D-${String(media.id).padStart(6, '0')}`} title={t('Dossier cible')} className="col-span-12">
         <button className="xh-cmd mb-4" onClick={props.onBack}>
           <ArrowLeft size={13} /> RETOUR
         </button>
@@ -325,27 +339,32 @@ export function HudDetailHero(props: DetailHeroProps): React.JSX.Element {
           <div className="min-w-0 flex-1">
             <p className="xh-code">
               {formatLabel(media.format).toUpperCase()} · {media.seasonYear ?? '—'} ·{' '}
-              {media.studios[0] ?? 'STUDIO INCONNU'}
+              {media.studios[0] ?? t('STUDIO INCONNU')}
             </p>
             <h1 className="title-xl clamp-2 mt-1 text-[2.4rem] leading-tight">{titleOf(media, lang)}</h1>
-            {props.alsoKnownAs[0] && <p className="xh-code mt-1">ALIAS › {props.alsoKnownAs[0]}</p>}
+            {props.alsoKnownAs[0] && (
+              <p className="xh-code mt-1">
+                {t('ALIAS ›')} {props.alsoKnownAs[0]}
+              </p>
+            )}
             <div className="mt-5 flex flex-wrap gap-2">
               {next !== null && (
                 <button className="xh-cmd xh-cmd-hot" onClick={props.onMark}>
-                  ▶ ENGAGER ÉP. {next}
+                  {t('▶ ENGAGER ÉP.')} {next}
                 </button>
               )}
               {!entry && (
                 <button className="xh-cmd xh-cmd-hot" onClick={props.onAdd}>
-                  + VERROUILLER LA CIBLE
+                  {t('+ VERROUILLER LA CIBLE')}
                 </button>
               )}
               <button className="xh-cmd" data-on={!!entry?.favorite} onClick={props.onFavorite}>
-                {entry?.favorite ? '♥ PRIORITAIRE' : '♡ PRIORITÉ'}
+                {entry?.favorite ? t('♥ PRIORITAIRE') : t('♡ PRIORITÉ')}
               </button>
               {entry && (
                 <button className="xh-cmd" data-on={props.inLists > 0} onClick={props.onLists}>
-                  ≡ LISTES{props.inLists > 0 ? ` (${props.inLists})` : ''}
+                  {t('≡ LISTES')}
+                  {props.inLists > 0 ? ` (${props.inLists})` : ''}
                 </button>
               )}
             </div>

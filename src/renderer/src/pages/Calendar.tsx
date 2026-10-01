@@ -11,6 +11,7 @@ import { countdown, formatTime, titleOf } from '@/lib/format'
 import { useNow } from '@/lib/hooks'
 import { useMangaChapters } from '@/lib/manga-chapters'
 import { useApp } from '@/store/app'
+import { t, locale } from '@shared/i18n'
 
 const DAY_MS = 86_400_000
 type Scope = 'library' | 'all'
@@ -22,8 +23,8 @@ export function startOfWeek(ts: number, weekStart: 0 | 1): number {
   return d.getTime() - shift * DAY_MS
 }
 
-const dayMonth = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' })
-const monthYear = new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric' })
+const dayMonth = new Intl.DateTimeFormat(locale(), { day: 'numeric', month: 'short' })
+const monthYear = new Intl.DateTimeFormat(locale(), { month: 'long', year: 'numeric' })
 
 /** "27 juil. – 2 août" for the week starting at `from`. */
 export function weekRange(from: number): string {
@@ -91,11 +92,11 @@ function PickerBody({
         className="flex items-center justify-between gap-2 border-b px-3 py-2.5"
         style={{ borderColor: 'var(--line)' }}
       >
-        <button className="icon-btn" onClick={() => shiftMonth(-1)} aria-label="Mois précédent">
+        <button className="icon-btn" onClick={() => shiftMonth(-1)} aria-label={t('Mois précédent')}>
           <ChevronLeft size={16} />
         </button>
         <span className="text-[0.92rem] font-semibold capitalize">{monthYear.format(month)}</span>
-        <button className="icon-btn" onClick={() => shiftMonth(1)} aria-label="Mois suivant">
+        <button className="icon-btn" onClick={() => shiftMonth(1)} aria-label={t('Mois suivant')}>
           <ChevronRight size={16} />
         </button>
       </div>
@@ -121,7 +122,9 @@ function PickerBody({
                   : undefined
               }
             >
-              <span className="w-[70px] shrink-0 text-[0.72rem] font-semibold text-faint">Semaine {i + 1}</span>
+              <span className="w-[70px] shrink-0 text-[0.72rem] font-semibold text-faint">
+                {t('Semaine')} {i + 1}
+              </span>
               <span className="flex-1 text-[0.85rem] font-medium">{weekRange(ts)}</span>
               {isNow && (
                 <span
@@ -131,7 +134,7 @@ function PickerBody({
                     color: 'var(--accent-2)'
                   }}
                 >
-                  en cours
+                  {t('en cours')}
                 </span>
               )}
             </button>
@@ -148,10 +151,10 @@ function PickerBody({
           }}
         >
           <CalendarDays size={14} />
-          Cette semaine
+          {t('Cette semaine')}
         </button>
         <button className="btn" onClick={onClose}>
-          Fermer
+          {t('Fermer')}
         </button>
       </div>
     </>
@@ -161,19 +164,19 @@ function PickerBody({
 const EMPTY_SLOTS: AiringEntry[] = []
 
 const MANGA_LABELS: Record<Exclude<MangaEvent['kind'], 'chapters'>, string> = {
-  start: 'Début de parution',
-  end: 'Fin de parution',
-  adaptation: 'Adaptation animée'
+  start: t('Début de parution'),
+  end: t('Fin de parution'),
+  adaptation: t('Adaptation animée')
 }
 
-const chapterNumber = (n: number): string => n.toLocaleString('fr-FR')
+const chapterNumber = (n: number): string => n.toLocaleString(locale())
 
 /** « Ch. 131 », ou « Ch. 130 – 131 » quand plusieurs sortent le même jour. */
 function labelOf(event: MangaEvent): string {
   if (event.kind !== 'chapters') return MANGA_LABELS[event.kind]
   return event.from === event.to
     ? `Ch. ${chapterNumber(event.to)}`
-    : `Ch. ${chapterNumber(event.from)} – ${chapterNumber(event.to)}`
+    : t('Ch. {v0} – {v1}', { v0: chapterNumber(event.from), v1: chapterNumber(event.to) })
 }
 
 /** Le titre d'un manga dans la langue choisie, comme `titleOf` pour un anime. */
@@ -224,7 +227,11 @@ function MangaSlot({
           <Icon size={9} />
           {labelOf(event)}
         </p>
-        {adaptation && <p className="clamp-1 text-[0.64rem] text-faint">Tiré de {mangaTitle(manga, lang)}</p>}
+        {adaptation && (
+          <p className="clamp-1 text-[0.64rem] text-faint">
+            {t('Tiré de')} {mangaTitle(manga, lang)}
+          </p>
+        )}
         {event.kind === 'chapters' && (
           <p className="text-[0.64rem] uppercase tracking-wide text-faint">{event.langs.join(' · ')}</p>
         )}
@@ -361,11 +368,11 @@ export default function CalendarPage(): React.JSX.Element {
     <div className="flex gap-1.5">
       <button data-on={scope === 'library'} className="chip !h-9" onClick={() => setScope('library')}>
         <LibraryBig size={13} />
-        Ma liste
+        {t('Ma liste')}
       </button>
       <button data-on={scope === 'all'} className="chip !h-9" onClick={() => setScope('all')}>
         <Globe size={13} />
-        Tous les animes
+        {t('Tous les animes')}
       </button>
     </div>
   )
@@ -375,15 +382,17 @@ export default function CalendarPage(): React.JSX.Element {
       <div className="mx-auto max-w-[900px] px-7 py-16">
         <EmptyState
           icon={<CalendarDays size={24} />}
-          title="Aucune série suivie"
-          hint="Ajoute des animes en cours ou à voir pour retrouver leurs épisodes ici — ou consulte tout ce qui passe cette semaine."
+          title={t('Aucune série suivie')}
+          hint={t(
+            'Ajoute des animes en cours ou à voir pour retrouver leurs épisodes ici — ou consulte tout ce qui passe cette semaine.'
+          )}
           action={
             <div className="mt-1 flex gap-2">
               <button className="btn btn-primary" onClick={() => setScope('all')}>
-                Voir tous les animes
+                {t('Voir tous les animes')}
               </button>
               <button className="btn" onClick={() => navigate({ name: 'discover' })}>
-                Trouver des séries
+                {t('Trouver des séries')}
               </button>
             </div>
           }
@@ -396,30 +405,43 @@ export default function CalendarPage(): React.JSX.Element {
     <div className="page">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="title-xl text-[1.85rem]">Calendrier</h1>
+          <h1 className="title-xl text-[1.85rem]">{t('Calendrier')}</h1>
           <p className="mt-1 text-[0.85rem] text-muted">
             {loading
-              ? 'Chargement…'
+              ? t('Chargement…')
               : total > 0
-                ? `${total} épisodes ${scope === 'all' ? 'toutes séries confondues' : 'dans tes séries'}${
-                    mangaTotal ? ` · ${mangaTotal} sortie${mangaTotal > 1 ? 's' : ''} manga` : ''
-                  } · ${weekRange(from)}`
+                ? t('{total} épisodes {v1}{v2} · {v3}', {
+                    total,
+                    v1: scope === 'all' ? t('toutes séries confondues') : t('dans tes séries'),
+                    v2: mangaTotal
+                      ? t(' · {mangaTotal} sortie{v1} manga', { mangaTotal, v1: mangaTotal > 1 ? 's' : '' })
+                      : '',
+                    v3: weekRange(from)
+                  })
                 : mangaTotal
-                  ? `${mangaTotal} sortie${mangaTotal > 1 ? 's' : ''} manga · ${weekRange(from)}`
-                  : `Rien de prévu du ${weekRange(from)}`}
+                  ? t('{mangaTotal} sortie{v1} manga · {v2}', {
+                      mangaTotal,
+                      v1: mangaTotal > 1 ? 's' : '',
+                      v2: weekRange(from)
+                    })
+                  : t('Rien de prévu du {v0}', { v0: weekRange(from) })}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2.5">
           {scopeSwitch}
           <div className="flex items-center gap-1.5">
-            <button className="icon-btn" onClick={() => setOffset((o) => o - 1)} aria-label="Semaine précédente">
+            <button className="icon-btn" onClick={() => setOffset((o) => o - 1)} aria-label={t('Semaine précédente')}>
               <ChevronLeft size={16} />
             </button>
-            <button className="btn !h-9 min-w-[168px]" onClick={() => setPickerOpen(true)} title="Choisir une semaine">
+            <button
+              className="btn !h-9 min-w-[168px]"
+              onClick={() => setPickerOpen(true)}
+              title={t('Choisir une semaine')}
+            >
               <CalendarDays size={14} />
-              {offset === 0 ? 'Cette semaine' : weekRange(from)}
+              {offset === 0 ? t('Cette semaine') : weekRange(from)}
             </button>
-            <button className="icon-btn" onClick={() => setOffset((o) => o + 1)} aria-label="Semaine suivante">
+            <button className="icon-btn" onClick={() => setOffset((o) => o + 1)} aria-label={t('Semaine suivante')}>
               <ChevronRight size={16} />
             </button>
           </div>
@@ -428,7 +450,7 @@ export default function CalendarPage(): React.JSX.Element {
 
       {error && <ErrorBox message={error} onRetry={() => setNonce((n) => n + 1)} />}
       {loading ? (
-        <Spinner label="Récupération de la grille…" />
+        <Spinner label={t('Récupération de la grille…')} />
       ) : (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-4 xl:grid-cols-7">
           {days.map((day, di) => {
@@ -455,10 +477,10 @@ export default function CalendarPage(): React.JSX.Element {
                     className="text-[0.74rem] font-semibold capitalize"
                     style={{ color: isToday ? 'var(--accent-2)' : 'var(--color-muted)' }}
                   >
-                    {new Date(day.date).toLocaleDateString('fr-FR', { weekday: 'short' })}
+                    {new Date(day.date).toLocaleDateString(locale(), { weekday: 'short' })}
                   </span>
                   <span className="text-[0.72rem] tabular-nums text-faint">
-                    {new Date(day.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                    {new Date(day.date).toLocaleDateString(locale(), { day: 'numeric', month: 'short' })}
                   </span>
                 </div>
 

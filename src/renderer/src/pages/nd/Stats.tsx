@@ -8,6 +8,7 @@ import { toneAccent } from '@/lib/color'
 import { dayLabel, hoursOf, minutesToHuman, monthLabel, num, startOfDay, titleOf } from '@/lib/format'
 import { BADGE_GROUPS, badgeTitle, useBadgeWall, type Badge } from '@/lib/badges'
 import { useApp } from '@/store/app'
+import { t as tr, locale } from '@shared/i18n'
 
 const DAY_MS = 86_400_000
 
@@ -75,7 +76,7 @@ function BadgeRow({ badge }: { badge: Badge }): React.JSX.Element {
       </span>
       <span className="nd-badge-state">
         {done ? (
-          'Obtenu'
+          tr('Obtenu')
         ) : (
           <>
             <span className="nd-badge-bar" aria-hidden>
@@ -157,7 +158,7 @@ export default function NdStatsPage({ focus }: { focus?: 'badges' }): React.JSX.
       { x: box.x, y: box.y, width: box.width, height: box.height },
       `animelist-${activeYear}.png`
     )
-    if (name) toast(`Image enregistrée dans ${name}.`, 'ok')
+    if (name) toast(tr('Image enregistrée dans {name}.', { name }), 'ok')
   }
 
   const monthly = useMemo(() => {
@@ -168,9 +169,9 @@ export default function NdStatsPage({ focus }: { focus?: 'badges' }): React.JSX.
       if (d.getFullYear() === activeYear) buckets[d.getMonth()] += ev.minutes
     }
     return buckets.map((mins, i) => ({
-      label: new Date(activeYear, i, 1).toLocaleDateString('fr-FR', { month: 'narrow' }),
+      label: new Date(activeYear, i, 1).toLocaleDateString(locale(), { month: 'narrow' }),
       value: hoursOf(mins),
-      detail: `${new Date(activeYear, i, 1).toLocaleDateString('fr-FR', { month: 'long' })} : ${minutesToHuman(mins)}`
+      detail: `${new Date(activeYear, i, 1).toLocaleDateString(locale(), { month: 'long' })} : ${minutesToHuman(mins)}`
     }))
   }, [events, activeYear])
 
@@ -249,11 +250,13 @@ export default function NdStatsPage({ focus }: { focus?: 'badges' }): React.JSX.
       <div className="mx-auto max-w-[900px] px-7 py-16">
         <EmptyState
           icon={<ChartColumn size={24} />}
-          title="Rien à compter pour l'instant"
-          hint="Coche ton premier épisode et cette page se remplit : temps passé, séries de jours, genres, badges."
+          title={tr("Rien à compter pour l'instant")}
+          hint={tr(
+            'Coche ton premier épisode et cette page se remplit : temps passé, séries de jours, genres, badges.'
+          )}
           action={
             <button className="btn btn-primary" onClick={() => navigate({ name: 'library' })}>
-              Ouvrir ma bibliothèque
+              {tr('Ouvrir ma bibliothèque')}
             </button>
           }
         />
@@ -271,14 +274,17 @@ export default function NdStatsPage({ focus }: { focus?: 'badges' }): React.JSX.
 
   // Les chiffres de détail, en liste : l'intitulé à gauche, la valeur à droite.
   const facts: [string, string][] = [
-    ['Épisodes regardés', num(stats.episodes)],
-    ['Séries terminées', num(stats.completed)],
-    ['Séries en cours', num(stats.watching)],
-    ['Jours d’affilée en ce moment', dayLabel(stats.streaks.current)],
-    ['Record de jours d’affilée', dayLabel(stats.streaks.best)],
-    ['Meilleure journée', plural(stats.bestDay, 'épisode')],
-    ['Journées où tu as regardé', num(stats.activeDays)],
-    ['Note moyenne', stats.meanScore ? `${stats.meanScore.toFixed(1).replace('.', ',')} sur 10` : 'Aucune note']
+    [tr('Épisodes regardés'), num(stats.episodes)],
+    [tr('Séries terminées'), num(stats.completed)],
+    [tr('Séries en cours'), num(stats.watching)],
+    [tr('Jours d’affilée en ce moment'), dayLabel(stats.streaks.current)],
+    [tr('Record de jours d’affilée'), dayLabel(stats.streaks.best)],
+    [tr('Meilleure journée'), plural(stats.bestDay, 'épisode')],
+    [tr('Journées où tu as regardé'), num(stats.activeDays)],
+    [
+      tr('Note moyenne'),
+      stats.meanScore ? tr('{v0} sur 10', { v0: stats.meanScore.toFixed(1).replace('.', ',') }) : tr('Aucune note')
+    ]
   ]
 
   return (
@@ -286,13 +292,15 @@ export default function NdStatsPage({ focus }: { focus?: 'badges' }): React.JSX.
       {/* L'élément de la page : la phrase qu'on retiendrait, écrite en grand. */}
       <section className="mb-11 px-1">
         <p className="title-xl max-w-[26ch] text-[2.4rem] leading-[1.1]">
-          Tu as passé {spokenDuration(stats.minutes)} devant des animes.
+          {tr('Tu as passé')} {spokenDuration(stats.minutes)} {tr('devant des animes.')}
         </p>
         <p className="mt-3 max-w-[70ch] text-[0.9rem] leading-relaxed text-muted">
-          {plural(stats.episodes, 'épisode')} cochés dans {plural(stats.tracked, 'série')}.
+          {plural(stats.episodes, 'épisode')} {tr('cochés dans')} {plural(stats.tracked, 'série')}.
           {stats.importedCount > 0 &&
-            ` Dont ${num(stats.importedCount)} importés sans date : ils comptent dans les totaux, pas dans les graphiques.`}{' '}
-          Tout est calculé sur ce PC et n’en sort pas.
+            tr(' Dont {v0} importés sans date : ils comptent dans les totaux, pas dans les graphiques.', {
+              v0: num(stats.importedCount)
+            })}{' '}
+          {tr('Tout est calculé sur ce PC et n’en sort pas.')}
         </p>
 
         <dl className="nd-facts mt-7">
@@ -307,20 +315,24 @@ export default function NdStatsPage({ focus }: { focus?: 'badges' }): React.JSX.
 
       {backlog.series > 0 && (
         <Part
-          title={`Il te reste ${spokenDuration(backlog.total)} à regarder`}
+          title={tr('Il te reste {v0} à regarder', { v0: spokenDuration(backlog.total) })}
           sub={
             backlog.days === null
-              ? `Sur ${plural(backlog.series, 'série')} en cours ou à voir.`
-              : `Environ ${plural(backlog.days, 'jour')} à ton rythme de ${backlog.perActiveDay} minutes par journée de visionnage${backlog.thin ? ', mesuré sur trop peu de journées pour être sûr' : ''}.`
+              ? tr('Sur {v0} en cours ou à voir.', { v0: plural(backlog.series, 'série') })
+              : tr('Environ {v0} à ton rythme de {perActiveDay} minutes par journée de visionnage{v2}.', {
+                  v0: plural(backlog.days, 'jour'),
+                  perActiveDay: backlog.perActiveDay,
+                  v2: backlog.thin ? tr(', mesuré sur trop peu de journées pour être sûr') : ''
+                })
           }
         >
           <dl className="nd-facts">
             <div>
-              <dt>Dans les séries en cours</dt>
+              <dt>{tr('Dans les séries en cours')}</dt>
               <dd>{minutesToHuman(backlog.watchingMin)}</dd>
             </div>
             <div>
-              <dt>Dans les séries à voir</dt>
+              <dt>{tr('Dans les séries à voir')}</dt>
               <dd>{minutesToHuman(backlog.plannedMin)}</dd>
             </div>
           </dl>
@@ -328,17 +340,21 @@ export default function NdStatsPage({ focus }: { focus?: 'badges' }): React.JSX.
       )}
 
       <Part
-        title={`Ton année ${activeYear}`}
+        title={tr('Ton année {activeYear}', { activeYear })}
         sub={
           yearCard.episodes > 0
-            ? `${spokenDuration(yearCard.minutes)} sur ${plural(yearCard.days, 'journée')}, ${plural(yearCard.series, 'série')}.`
-            : 'Aucun épisode coché cette année-là.'
+            ? tr('{v0} sur {v1}, {v2}.', {
+                v0: spokenDuration(yearCard.minutes),
+                v1: plural(yearCard.days, 'journée'),
+                v2: plural(yearCard.series, 'série')
+              })
+            : tr('Aucun épisode coché cette année-là.')
         }
         action={
           <div className="flex flex-wrap items-center gap-3">
             {years.length > 1 && (
               <NdTabs
-                label="Année"
+                label={tr('Année')}
                 size="sm"
                 tabs={years.slice(0, 5).map((y) => ({ id: String(y), label: String(y) }))}
                 value={String(activeYear)}
@@ -348,7 +364,7 @@ export default function NdStatsPage({ focus }: { focus?: 'badges' }): React.JSX.
             {yearCard.episodes > 0 && (
               <button className="btn" onClick={() => void saveYearCard()}>
                 <ImageDown size={14} />
-                Enregistrer en image
+                {tr('Enregistrer en image')}
               </button>
             )}
           </div>
@@ -357,12 +373,12 @@ export default function NdStatsPage({ focus }: { focus?: 'badges' }): React.JSX.
         <div className="nd-panel">
           <ActivityHeatmap days={heatDays} />
           <p className="mt-2 text-[0.76rem] text-faint">
-            Un carré par jour : plus il est clair, plus tu as regardé ce jour-là.
+            {tr('Un carré par jour : plus il est clair, plus tu as regardé ce jour-là.')}
           </p>
         </div>
 
         <div className="nd-panel mt-4">
-          <MonthlyColumns data={monthly} unit="Heures de visionnage par mois" />
+          <MonthlyColumns data={monthly} unit={tr('Heures de visionnage par mois')} />
         </div>
 
         {yearCard.episodes > 0 && (
@@ -377,7 +393,7 @@ export default function NdStatsPage({ focus }: { focus?: 'badges' }): React.JSX.
             </p>
             <p className="mt-1.5 text-[0.86rem] text-muted">
               {plural(yearCard.episodes, 'épisode')}, {plural(yearCard.series, 'série')},{' '}
-              {plural(yearCard.days, 'journée')} devant l’écran.
+              {plural(yearCard.days, 'journée')} {tr('devant l’écran.')}
             </p>
             {yearCard.top.length > 0 && (
               <div className="mt-5 flex gap-3">
@@ -390,7 +406,7 @@ export default function NdStatsPage({ focus }: { focus?: 'badges' }): React.JSX.
                 ))}
               </div>
             )}
-            <p className="mt-4 text-[0.7rem] text-faint">AnimeList</p>
+            <p className="mt-4 text-[0.7rem] text-faint">{tr('AnimeList')}</p>
           </div>
         )}
       </Part>
@@ -399,10 +415,12 @@ export default function NdStatsPage({ focus }: { focus?: 'badges' }): React.JSX.
         <section>
           <h2 className="title-xl px-1 text-[1.15rem]">
             {stats.genres[0]
-              ? `${GENRE_LABELS[stats.genres[0][0]] ?? stats.genres[0][0]} est ton genre le plus regardé`
-              : 'Tes genres'}
+              ? tr('{v0} est ton genre le plus regardé', { v0: GENRE_LABELS[stats.genres[0][0]] ?? stats.genres[0][0] })
+              : tr('Tes genres')}
           </h2>
-          <p className="mb-3 mt-0.5 px-1 text-[0.78rem] text-muted">Choisis un genre pour filtrer ta bibliothèque.</p>
+          <p className="mb-3 mt-0.5 px-1 text-[0.78rem] text-muted">
+            {tr('Choisis un genre pour filtrer ta bibliothèque.')}
+          </p>
           <div className="nd-panel">
             <RankedBars
               rows={stats.genres
@@ -415,9 +433,11 @@ export default function NdStatsPage({ focus }: { focus?: 'badges' }): React.JSX.
         </section>
         <section>
           <h2 className="title-xl px-1 text-[1.15rem]">
-            {stats.studios[0] ? `${stats.studios[0][0]} est ton studio le plus vu` : 'Tes studios'}
+            {stats.studios[0] ? tr('{v0} est ton studio le plus vu', { v0: stats.studios[0][0] }) : tr('Tes studios')}
           </h2>
-          <p className="mb-3 mt-0.5 px-1 text-[0.78rem] text-muted">Choisis un studio pour voir tout son catalogue.</p>
+          <p className="mb-3 mt-0.5 px-1 text-[0.78rem] text-muted">
+            {tr('Choisis un studio pour voir tout son catalogue.')}
+          </p>
           <div className="nd-panel">
             <RankedBars
               rows={stats.studios.map(([s, n]) => ({ key: s, label: s, value: n, detail: 'ép.' }))}
@@ -430,8 +450,8 @@ export default function NdStatsPage({ focus }: { focus?: 'badges' }): React.JSX.
 
       {timeline.length > 0 && (
         <Part
-          title="Mois par mois"
-          sub={`${plural(timeline.length, 'mois')} de visionnage, du plus récent au plus ancien.`}
+          title={tr('Mois par mois')}
+          sub={tr('{v0} de visionnage, du plus récent au plus ancien.', { v0: plural(timeline.length, 'mois') })}
         >
           <ol className="nd-timeline">
             {timeline.map((month) => (
@@ -470,22 +490,22 @@ export default function NdStatsPage({ focus }: { focus?: 'badges' }): React.JSX.
 
       <Part
         id="badges"
-        title={`${unlocked} badges obtenus sur ${badges.length}`}
+        title={tr('{unlocked} badges obtenus sur {length}', { unlocked, length: badges.length })}
         sub={
           badgeFilter === 'todo'
-            ? 'Les plus proches d’abord : ce sont ceux qui sont à ta portée.'
+            ? tr('Les plus proches d’abord : ce sont ceux qui sont à ta portée.')
             : badgeFilter === 'done'
-              ? 'Ceux que tu as déjà.'
-              : 'Tous les badges, par famille.'
+              ? tr('Ceux que tu as déjà.')
+              : tr('Tous les badges, par famille.')
         }
         action={
           <NdTabs
-            label="Badges"
+            label={tr('Badges')}
             size="sm"
             tabs={[
-              { id: 'todo' as const, label: 'À obtenir', count: badges.length - unlocked },
-              { id: 'done' as const, label: 'Obtenus', count: unlocked },
-              { id: 'all' as const, label: 'Tous', count: badges.length }
+              { id: 'todo' as const, label: tr('À obtenir'), count: badges.length - unlocked },
+              { id: 'done' as const, label: tr('Obtenus'), count: unlocked },
+              { id: 'all' as const, label: tr('Tous'), count: badges.length }
             ]}
             value={badgeFilter}
             onChange={setBadgeFilter}
@@ -494,7 +514,7 @@ export default function NdStatsPage({ focus }: { focus?: 'badges' }): React.JSX.
       >
         {shownBadges.length === 0 ? (
           <p className="px-1 text-[0.85rem] text-muted">
-            Aucun badge pour l’instant. Coche des épisodes, ils viendront.
+            {tr('Aucun badge pour l’instant. Coche des épisodes, ils viendront.')}
           </p>
         ) : badgeFilter === 'todo' ? (
           <ul className="nd-badges">
@@ -514,7 +534,7 @@ export default function NdStatsPage({ focus }: { focus?: 'badges' }): React.JSX.
                   <h3 className="mb-2 px-1 text-[0.95rem] font-semibold">
                     {group}
                     <span className="ml-2 text-[0.78rem] font-normal text-faint">
-                      {done} sur {whole.length}
+                      {done} {tr('sur')} {whole.length}
                     </span>
                   </h3>
                   <ul className="nd-badges">
@@ -530,7 +550,7 @@ export default function NdStatsPage({ focus }: { focus?: 'badges' }): React.JSX.
       </Part>
 
       {topRated.length > 0 && (
-        <Part title="Tes mieux notées" sub="Les séries auxquelles tu as mis les meilleures notes.">
+        <Part title={tr('Tes mieux notées')} sub={tr('Les séries auxquelles tu as mis les meilleures notes.')}>
           <RowScroller>
             {topRated.map(({ entry, media }) => (
               <button
@@ -540,7 +560,9 @@ export default function NdStatsPage({ focus }: { focus?: 'badges' }): React.JSX.
               >
                 <Poster src={media.cover.xl} alt="" className="aspect-[2/3] w-full" />
                 <p className="clamp-2 mt-2 text-[0.78rem] font-medium leading-snug">{titleOf(media, lang)}</p>
-                <p className="text-[0.72rem] text-muted">{entry.score} sur 10</p>
+                <p className="text-[0.72rem] text-muted">
+                  {entry.score} {tr('sur 10')}
+                </p>
               </button>
             ))}
           </RowScroller>

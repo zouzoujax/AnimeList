@@ -18,6 +18,7 @@ import { EmptyState, Poster } from '@/components/ui'
 import { formatTime, relativeDay, titleOf } from '@/lib/format'
 import { JOURNAL_FILTERS, emotionOf, passLabel, useJournal } from '@/lib/journal'
 import { useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
 function Emotions({ ids }: { ids: EmotionId[] }): React.JSX.Element {
   return (
@@ -38,9 +39,9 @@ function Emotions({ ids }: { ids: EmotionId[] }): React.JSX.Element {
 
 /** La phrase du haut : ce que le journal contient, dit d'une traite. */
 function summary(total: number, noted: number, pinned: number): string {
-  if (total === 0) return 'Chaque épisode que tu coches viendra se poser ici, à sa date.'
-  const start = `Tu as regardé ${plural(total, 'épisode')}.`
-  if (noted === 0 && pinned === 0) return `${start} Ouvre-en un pour écrire ce que tu veux en retenir.`
+  if (total === 0) return t('Chaque épisode que tu coches viendra se poser ici, à sa date.')
+  const start = t('Tu as regardé {v0}.', { v0: plural(total, 'épisode') })
+  if (noted === 0 && pinned === 0) return t('{start} Ouvre-en un pour écrire ce que tu veux en retenir.', { start })
   const bits: string[] = []
   if (noted > 0) bits.push(plural(noted, 'porte une note', 'portent une note'))
   if (pinned > 0) bits.push(plural(pinned, 'attend d’être revu', 'attendent d’être revus'))
@@ -55,7 +56,7 @@ export default function NdJournalPage(): React.JSX.Element {
   return (
     <div className="page mx-auto max-w-[980px] px-7 py-7">
       <NdHeader
-        title="Journal"
+        title={t('Journal')}
         sub={
           <>
             {summary(j.total, j.noted, j.pinned)}
@@ -63,9 +64,10 @@ export default function NdJournalPage(): React.JSX.Element {
                 a importé sa liste croirait à des épisodes perdus. */}
             {j.imported > 0 && (
               <span className="mt-1 block text-[0.8rem] text-faint">
-                {plural(j.imported, 'ligne importée reste', 'lignes importées restent')} en dehors : leur date est celle
-                du pointage dans l'app d'origine, pas celle d'une soirée. La corriger depuis sa fiche la fait entrer
-                ici.
+                {plural(j.imported, 'ligne importée reste', 'lignes importées restent')}{' '}
+                {t(
+                  "en dehors : leur date est celle du pointage dans l'app d'origine, pas celle d'une soirée. La corriger depuis sa fiche la fait entrer ici."
+                )}
               </span>
             )}
           </>
@@ -79,13 +81,13 @@ export default function NdJournalPage(): React.JSX.Element {
               <Search size={15} />
               <input
                 type="search"
-                placeholder="Chercher dans tes notes et tes séries…"
+                placeholder={t('Chercher dans tes notes et tes séries…')}
                 value={j.search}
                 onChange={(e) => j.setSearch(e.target.value)}
-                aria-label="Chercher dans le journal"
+                aria-label={t('Chercher dans le journal')}
               />
             </label>
-            <div className="nd-seg" role="group" aria-label="Ce qu'on montre">
+            <div className="nd-seg" role="group" aria-label={t("Ce qu'on montre")}>
               {JOURNAL_FILTERS.map((f) => (
                 <button key={f.id} aria-pressed={j.filter === f.id} title={f.hint} onClick={() => j.setFilter(f.id)}>
                   {f.label}
@@ -96,7 +98,7 @@ export default function NdJournalPage(): React.JSX.Element {
           </div>
 
           {j.emotionCounts.size > 0 && (
-            <div className="nd-seg mb-6" role="group" aria-label="Filtrer par ressenti">
+            <div className="nd-seg mb-6" role="group" aria-label={t('Filtrer par ressenti')}>
               {EMOTIONS.filter((e) => j.emotionCounts.has(e.id)).map((e) => (
                 <button
                   key={e.id}
@@ -120,21 +122,25 @@ export default function NdJournalPage(): React.JSX.Element {
       {j.total === 0 ? (
         <EmptyState
           icon={<NotebookPen size={22} />}
-          title={j.imported > 0 ? 'Rien de daté pour l’instant' : 'Ton journal est vide'}
+          title={j.imported > 0 ? t('Rien de daté pour l’instant') : t('Ton journal est vide')}
           hint={
             j.imported > 0
-              ? "Tout ton historique vient d'un import, et ces dates sont celles du pointage, pas du visionnage. Le prochain épisode que tu coches ici ouvrira le journal."
-              : "Coche un épisode et il apparaîtra ici. Depuis sa fiche, tu peux lui ajouter un ressenti et quelques lignes — c'est ce que cette page te redonne, des mois plus tard."
+              ? t(
+                  "Tout ton historique vient d'un import, et ces dates sont celles du pointage, pas du visionnage. Le prochain épisode que tu coches ici ouvrira le journal."
+                )
+              : t(
+                  "Coche un épisode et il apparaîtra ici. Depuis sa fiche, tu peux lui ajouter un ressenti et quelques lignes — c'est ce que cette page te redonne, des mois plus tard."
+                )
           }
         />
       ) : j.rows.length === 0 ? (
         <EmptyState
           icon={<Search size={22} />}
-          title="Rien ne correspond"
+          title={t('Rien ne correspond')}
           hint={JOURNAL_FILTERS.find((f) => f.id === j.filter)?.hint}
           action={
             <button className="btn mt-1" onClick={j.reset}>
-              Tout afficher
+              {t('Tout afficher')}
             </button>
           }
         />
@@ -161,7 +167,7 @@ export default function NdJournalPage(): React.JSX.Element {
                         <button
                           className="nd-chip-series group !w-full !items-start"
                           onClick={() => setEditing({ animeId: event.animeId, episode: event.episode })}
-                          title="Ouvrir cet épisode"
+                          title={t('Ouvrir cet épisode')}
                         >
                           <Poster
                             src={m.cover.large}
@@ -178,12 +184,13 @@ export default function NdJournalPage(): React.JSX.Element {
                             </span>
                             <span className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.78rem] text-muted">
                               <span>
-                                Épisode {event.episode}
+                                {t('Épisode')} {event.episode}
                                 {pass > 0 && `, ${passLabel(pass).toLowerCase()}`}
                               </span>
                               {event.pinned && (
                                 <span className="flex items-center gap-1 text-[0.75rem] text-faint">
-                                  <Star size={11} fill="currentColor" />À revoir
+                                  <Star size={11} fill="currentColor" />
+                                  {t('À revoir')}
                                 </span>
                               )}
                               {event.emotions && event.emotions.length > 0 && <Emotions ids={event.emotions} />}
@@ -210,7 +217,8 @@ export default function NdJournalPage(): React.JSX.Element {
           {j.remaining > 0 && (
             <div className="flex justify-center py-2">
               <button className="btn" onClick={j.more}>
-                Afficher {j.remaining > 120 ? 'les 120 suivants' : `les ${j.remaining} derniers`}
+                {t('Afficher')}{' '}
+                {j.remaining > 120 ? t('les 120 suivants') : t('les {remaining} derniers', { remaining: j.remaining })}
               </button>
             </div>
           )}

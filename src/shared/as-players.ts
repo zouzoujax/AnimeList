@@ -1,3 +1,4 @@
+import { t } from './i18n'
 /**
  * Les lecteurs d'une page d'épisodes chez Anime-Sama.
  *
@@ -38,7 +39,7 @@ export function parsePlayers(raw: unknown): PlayerChoice | null {
   const clean = labels
     .slice(0, MAX_PLAYERS)
     .map((label, i) =>
-      typeof label === 'string' && label.trim() ? label.trim().slice(0, MAX_LABEL) : `Lecteur ${i + 1}`
+      typeof label === 'string' && label.trim() ? label.trim().slice(0, MAX_LABEL) : t('Lecteur {v0}', { v0: i + 1 })
     )
   if (clean.length < 2) return null
 

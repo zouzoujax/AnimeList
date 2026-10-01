@@ -29,6 +29,7 @@
  */
 
 import type { Branch, Node, Tree } from './franchise'
+import { t, lazy } from './i18n'
 
 export type NextKind = 'season' | Exclude<Branch, 'resume'>
 
@@ -54,12 +55,12 @@ export const NEXT_MAX = 8
 /** Dans l'ordre où l'on conseille, du plus proche de l'histoire au plus lointain. */
 const BRANCH_ORDER: Exclude<Branch, 'resume'>[] = ['film', 'ova', 'spinoff', 'alternative']
 
-const KIND_LABELS: Record<Exclude<Branch, 'resume'>, string> = {
-  film: 'Film',
-  ova: 'OVA ou spécial',
+const KIND_LABELS: Record<Exclude<Branch, 'resume'>, string> = lazy(() => ({
+  film: t('Film'),
+  ova: t('OVA ou spécial'),
   spinoff: 'Spin-off',
-  alternative: 'Version alternative'
-}
+  alternative: t('Version alternative')
+}))
 
 /** Vu en entier : un total inconnu ne compte jamais comme fini. */
 const done = (n: Pick<Node, 'seen' | 'total'>): boolean => n.total !== null && n.total > 0 && n.seen >= n.total
@@ -81,7 +82,10 @@ export function nextUp(tree: Tree, finishedId: number, max = NEXT_MAX): Suggesti
       cover: season.cover,
       format: season.format,
       kind: 'season',
-      label: `Saison ${season.number}${season.part ? ` · partie ${season.part}` : ''}`,
+      label: t('Saison {number}{v1}', {
+        number: season.number,
+        v1: season.part ? t(' · partie {part}', { part: season.part }) : ''
+      }),
       date: season.date ?? null
     }
     break

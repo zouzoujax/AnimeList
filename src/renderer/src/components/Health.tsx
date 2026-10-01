@@ -11,10 +11,13 @@ import { CircleCheck, Loader, Stethoscope, Trash2, TriangleAlert } from 'lucide-
 import type { HealthReport } from '@shared/types'
 import { Modal } from './ui'
 import { useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
 function weight(bytes: number): string {
   const ko = bytes / 1024
-  return ko >= 1024 ? `${(ko / 1024).toFixed(1).replace('.', ',')} Mo` : `${Math.round(ko)} Ko`
+  return ko >= 1024
+    ? t('{v0} Mo', { v0: (ko / 1024).toFixed(1).replace('.', ',') })
+    : t('{v0} Ko', { v0: Math.round(ko) })
 }
 
 function Finding({
@@ -62,41 +65,49 @@ export default function Health({ open, onClose }: { open: boolean; onClose: () =
       <div className="flex items-center gap-2.5 border-b px-5 py-4" style={{ borderColor: 'var(--line)' }}>
         <Stethoscope size={17} style={{ color: 'var(--accent)' }} />
         <div className="flex-1">
-          <p className="text-[1rem] font-semibold">Santé de la bibliothèque</p>
+          <p className="text-[1rem] font-semibold">{t('Santé de la bibliothèque')}</p>
           <p className="mt-0.5 text-[0.75rem] text-faint">
-            {report ? `${report.entries} séries, ${report.events} visionnages` : 'Rien de tout ceci n’est urgent'}
+            {report
+              ? t('{entries} séries, {events} visionnages', { entries: report.entries, events: report.events })
+              : t('Rien de tout ceci n’est urgent')}
           </p>
         </div>
         <button className="btn" disabled={busy} onClick={() => void scan()}>
           {busy ? <Loader size={14} className="animate-spin" /> : <Stethoscope size={14} />}
-          {report ? 'Relire' : 'Examiner'}
+          {report ? t('Relire') : t('Examiner')}
         </button>
       </div>
 
       <div className="max-h-[56vh] overflow-y-auto px-5 py-2">
         {!report ? (
           <p className="py-8 text-center text-[0.82rem] text-muted">
-            L’examen parcourt tout l’historique. Il ne modifie rien.
+            {t('L’examen parcourt tout l’historique. Il ne modifie rien.')}
           </p>
         ) : (
           <>
             <Finding
               ok={report.missingMedia.length === 0}
-              label="Fiches manquantes"
+              label={t('Fiches manquantes')}
               detail={
                 report.missingMedia.length === 0
-                  ? 'Chaque série suivie a sa fiche AniList.'
-                  : `${report.missingMedia.length} série${report.missingMedia.length > 1 ? 's' : ''} sans fiche : sans titre ni jaquette, et invisible dans la bibliothèque. Ouvrir la fiche depuis la recherche la rétablit.`
+                  ? t('Chaque série suivie a sa fiche AniList.')
+                  : t(
+                      '{length} série{v1} sans fiche : sans titre ni jaquette, et invisible dans la bibliothèque. Ouvrir la fiche depuis la recherche la rétablit.',
+                      { length: report.missingMedia.length, v1: report.missingMedia.length > 1 ? 's' : '' }
+                    )
               }
             />
 
             <Finding
               ok={orphans === 0}
-              label="Visionnages orphelins"
+              label={t('Visionnages orphelins')}
               detail={
                 orphans === 0
-                  ? 'Tous les visionnages appartiennent à une série suivie.'
-                  : `${orphans} visionnage${orphans > 1 ? 's' : ''} rattaché${orphans > 1 ? 's' : ''} à une série effacée. Ils comptent encore dans le temps total.`
+                  ? t('Tous les visionnages appartiennent à une série suivie.')
+                  : t(
+                      '{orphans} visionnage{v1} rattaché{v2} à une série effacée. Ils comptent encore dans le temps total.',
+                      { orphans, v1: orphans > 1 ? 's' : '', v2: orphans > 1 ? 's' : '' }
+                    )
               }
               action={
                 orphans > 0 ? (
@@ -104,13 +115,16 @@ export default function Health({ open, onClose }: { open: boolean; onClose: () =
                     className="btn shrink-0 !h-8"
                     onClick={() =>
                       void window.api.health.cleanOrphans().then(async (n) => {
-                        toast(`${n} visionnage${n > 1 ? 's' : ''} effacé${n > 1 ? 's' : ''}.`, 'ok')
+                        toast(
+                          t('{n} visionnage{v1} effacé{v2}.', { n, v1: n > 1 ? 's' : '', v2: n > 1 ? 's' : '' }),
+                          'ok'
+                        )
                         await scan()
                       })
                     }
                   >
                     <Trash2 size={13} />
-                    Nettoyer
+                    {t('Nettoyer')}
                   </button>
                 ) : undefined
               }
@@ -118,37 +132,46 @@ export default function Health({ open, onClose }: { open: boolean; onClose: () =
 
             <Finding
               ok={report.beyondTotal.length === 0}
-              label="Épisodes au-delà du total"
+              label={t('Épisodes au-delà du total')}
               detail={
                 report.beyondTotal.length === 0
-                  ? 'Aucune série ne compte plus d’épisodes qu’elle n’en a.'
+                  ? t('Aucune série ne compte plus d’épisodes qu’elle n’en a.')
                   : report.beyondTotal
                       .slice(0, 3)
-                      .map((row) => `${row.title} : ${row.highest} coché pour ${row.total} annoncés`)
+                      .map((row) =>
+                        t('{title} : {highest} coché pour {total} annoncés', {
+                          title: row.title,
+                          highest: row.highest,
+                          total: row.total
+                        })
+                      )
                       .join(' · ')
               }
             />
 
             <Finding
               ok={report.duplicates.length === 0}
-              label="Doublons"
+              label={t('Doublons')}
               detail={
                 report.duplicates.length === 0
-                  ? 'Aucune série suivie deux fois.'
+                  ? t('Aucune série suivie deux fois.')
                   : report.duplicates
                       .slice(0, 3)
-                      .map((row) => `${row.title} (${row.ids.length} entrées)`)
+                      .map((row) => t('{title} ({length} entrées)', { title: row.title, length: row.ids.length }))
                       .join(' · ')
               }
             />
 
             <Finding
               ok={report.strayFiles.length === 0}
-              label="Fichiers résiduels"
+              label={t('Fichiers résiduels')}
               detail={
                 report.strayFiles.length === 0
-                  ? 'Le dossier de données ne contient que ce qui sert.'
-                  : `${report.strayFiles.length} fichier${report.strayFiles.length > 1 ? 's' : ''} d’avant une migration ou une correction, tous vieux de plus d’un mois.`
+                  ? t('Le dossier de données ne contient que ce qui sert.')
+                  : t('{length} fichier{v1} d’avant une migration ou une correction, tous vieux de plus d’un mois.', {
+                      length: report.strayFiles.length,
+                      v1: report.strayFiles.length > 1 ? 's' : ''
+                    })
               }
             />
 
@@ -168,7 +191,7 @@ export default function Health({ open, onClose }: { open: boolean; onClose: () =
                   className="btn !h-7 shrink-0 !px-2 text-[0.7rem]"
                   onClick={() =>
                     void window.api.health.removeStray(file.name).then(async (ok) => {
-                      toast(ok ? 'Fichier supprimé.' : 'Suppression refusée.', ok ? 'ok' : 'error')
+                      toast(ok ? t('Fichier supprimé.') : t('Suppression refusée.'), ok ? 'ok' : 'error')
                       await scan()
                     })
                   }
@@ -183,7 +206,7 @@ export default function Health({ open, onClose }: { open: boolean; onClose: () =
 
       <div className="flex justify-end border-t px-5 py-3" style={{ borderColor: 'var(--line)' }}>
         <button className="btn" onClick={onClose}>
-          Fermer
+          {t('Fermer')}
         </button>
       </div>
     </Modal>

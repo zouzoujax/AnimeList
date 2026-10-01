@@ -20,6 +20,7 @@ import { EmptyState, Poster } from '@/components/ui'
 import { formatTime, minutesToHuman, pluralize, relativeDay, titleOf } from '@/lib/format'
 import { JOURNAL_FILTERS, emotionOf, passLabel, useJournal } from '@/lib/journal'
 import { useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
 function Emotions({ ids }: { ids: EmotionId[] }): React.JSX.Element {
   return (
@@ -45,18 +46,24 @@ export default function JournalPage(): React.JSX.Element {
 
   return (
     <div className="mx-auto max-w-[900px] px-7 py-7">
-      <h1 className="title-xl mb-1 text-[1.85rem]">Journal</h1>
+      <h1 className="title-xl mb-1 text-[1.85rem]">{t('Journal')}</h1>
       <p className="mb-1 text-[0.88rem] text-muted">
         {j.total === 0
-          ? 'Chaque épisode coché viendra se poser ici, à sa date.'
-          : `${pluralize(j.total, 'épisode regardé', 'épisodes regardés')}, dont ${pluralize(j.noted, 'porte une note', 'portent une note')}${j.pinned > 0 ? ` et ${pluralize(j.pinned, 'est à revoir', 'sont à revoir')}` : ''}.`}
+          ? t('Chaque épisode coché viendra se poser ici, à sa date.')
+          : t('{v0}, dont {v1}{v2}.', {
+              v0: pluralize(j.total, t('épisode regardé'), t('épisodes regardés')),
+              v1: pluralize(j.noted, t('porte une note'), t('portent une note')),
+              v2: j.pinned > 0 ? t(' et {v}', { v: pluralize(j.pinned, t('est à revoir'), t('sont à revoir')) }) : ''
+            })}
       </p>
       {/* Dit une fois, sans y revenir : sans cette phrase, quelqu'un qui a
           importé sa liste croirait à des épisodes perdus. */}
       {j.imported > 0 && (
         <p className="mb-6 text-[0.78rem] text-faint">
-          {pluralize(j.imported, 'ligne importée reste', 'lignes importées restent')} en dehors : leur date est celle du
-          pointage dans l'app d'origine, pas celle d'une soirée. La corriger depuis sa fiche la fait entrer ici.
+          {pluralize(j.imported, t('ligne importée reste'), t('lignes importées restent'))}{' '}
+          {t(
+            "en dehors : leur date est celle du pointage dans l'app d'origine, pas celle d'une soirée. La corriger depuis sa fiche la fait entrer ici."
+          )}
         </p>
       )}
 
@@ -68,7 +75,7 @@ export default function JournalPage(): React.JSX.Element {
               <input
                 type="search"
                 className="field w-full !pl-9"
-                placeholder="Chercher dans tes notes et tes séries…"
+                placeholder={t('Chercher dans tes notes et tes séries…')}
                 value={j.search}
                 onChange={(e) => j.setSearch(e.target.value)}
               />
@@ -90,7 +97,7 @@ export default function JournalPage(): React.JSX.Element {
 
           {j.emotionCounts.size > 0 && (
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="label mr-1">Ressenti</span>
+              <span className="label mr-1">{t('Ressenti')}</span>
               {EMOTIONS.filter((e) => j.emotionCounts.has(e.id)).map((e) => (
                 <button
                   key={e.id}
@@ -113,22 +120,26 @@ export default function JournalPage(): React.JSX.Element {
       {j.total === 0 ? (
         <EmptyState
           icon={<NotebookPen size={22} />}
-          title={j.imported > 0 ? 'Rien de daté pour l’instant' : 'Ton journal est vide'}
+          title={j.imported > 0 ? t('Rien de daté pour l’instant') : t('Ton journal est vide')}
           hint={
             j.imported > 0
-              ? "Tout ton historique vient d'un import, et ces dates sont celles du pointage, pas du visionnage. Le prochain épisode que tu coches ici ouvrira le journal."
-              : "Coche un épisode et il apparaîtra ici. Depuis sa fiche, tu peux lui ajouter un ressenti et quelques lignes — c'est ce que cette page te redonne, des mois plus tard."
+              ? t(
+                  "Tout ton historique vient d'un import, et ces dates sont celles du pointage, pas du visionnage. Le prochain épisode que tu coches ici ouvrira le journal."
+                )
+              : t(
+                  "Coche un épisode et il apparaîtra ici. Depuis sa fiche, tu peux lui ajouter un ressenti et quelques lignes — c'est ce que cette page te redonne, des mois plus tard."
+                )
           }
         />
       ) : j.rows.length === 0 ? (
         <EmptyState
           icon={<Search size={22} />}
-          title="Rien ne correspond"
+          title={t('Rien ne correspond')}
           hint={JOURNAL_FILTERS.find((f) => f.id === j.filter)?.hint}
           action={
             <button className="btn mt-1" onClick={j.reset}>
               <X size={13} />
-              Tout afficher
+              {t('Tout afficher')}
             </button>
           }
         />
@@ -143,7 +154,7 @@ export default function JournalPage(): React.JSX.Element {
                     {relativeDay(day).replace(/^./, (c) => c.toUpperCase())}
                   </h2>
                   <span className="text-[0.74rem] text-faint">
-                    {pluralize(dayRows.length, 'épisode', 'épisodes')}
+                    {pluralize(dayRows.length, t('épisode'), t('épisodes'))}
                     {minutes > 0 && ` · ${minutesToHuman(minutes)}`}
                   </span>
                 </header>
@@ -157,7 +168,7 @@ export default function JournalPage(): React.JSX.Element {
                         <button
                           className="glass group flex w-full gap-3 rounded-2xl p-2.5 text-left transition-colors hover:bg-white/5"
                           onClick={() => setEditing({ animeId: event.animeId, episode: event.episode })}
-                          title="Ouvrir cet épisode"
+                          title={t('Ouvrir cet épisode')}
                         >
                           <Poster
                             src={m.cover.large}
@@ -176,7 +187,9 @@ export default function JournalPage(): React.JSX.Element {
                               </span>
                             </div>
                             <p className="mt-0.5 flex items-center gap-1.5 text-[0.75rem] text-muted">
-                              <span>Épisode {event.episode}</span>
+                              <span>
+                                {t('Épisode')} {event.episode}
+                              </span>
                               {pass > 0 && (
                                 <span
                                   className="rounded-full px-1.5 py-px text-[0.66rem] text-faint"
@@ -186,8 +199,12 @@ export default function JournalPage(): React.JSX.Element {
                                 </span>
                               )}
                               {event.pinned && (
-                                <span className="flex items-center gap-0.5 text-[0.7rem] text-faint" title="À revoir">
-                                  <Star size={11} fill="currentColor" />À revoir
+                                <span
+                                  className="flex items-center gap-0.5 text-[0.7rem] text-faint"
+                                  title={t('À revoir')}
+                                >
+                                  <Star size={11} fill="currentColor" />
+                                  {t('À revoir')}
                                 </span>
                               )}
                               {event.emotions && event.emotions.length > 0 && <Emotions ids={event.emotions} />}
@@ -214,7 +231,8 @@ export default function JournalPage(): React.JSX.Element {
           {j.remaining > 0 && (
             <div className="flex justify-center py-2">
               <button className="btn" onClick={j.more}>
-                Afficher plus ({j.remaining} restants)
+                {t('Afficher plus (')}
+                {j.remaining} {t('restants)')}
               </button>
             </div>
           )}

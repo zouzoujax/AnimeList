@@ -1,3 +1,4 @@
+import { t } from './i18n'
 /**
  * Ce que Discord affiche, et la forme exacte qu'il attend.
  *
@@ -154,10 +155,10 @@ function stateOf(now: Watching): string | undefined {
     now.episode === null
       ? (now.note ?? null)
       : now.total && now.total > 0
-        ? `Épisode ${now.episode} sur ${now.total}`
-        : `Épisode ${now.episode}`
+        ? t('Épisode {episode} sur {total}', { episode: now.episode, total: now.total })
+        : t('Épisode {episode}', { episode: now.episode })
 
-  if (now.paused) return clampText(episode ? `${episode} · En pause` : 'En pause')
+  if (now.paused) return clampText(episode ? t('{episode} · En pause', { episode }) : t('En pause'))
   return episode ? clampText(episode) : undefined
 }
 
@@ -176,7 +177,7 @@ export function activityOf(
   { hideTitle = false, at = Date.now() }: { hideTitle?: boolean; at?: number } = {}
 ): Activity | null {
   if (!now) return null
-  if (hideTitle) return { details: 'Un anime' }
+  if (hideTitle) return { details: t('Un anime') }
 
   const details = clampText(now.title)
   if (!details) return null

@@ -101,6 +101,7 @@ import { useMemo } from 'react'
 import { isEarned, UNKNOWN_DATE, unlockedAt } from '@shared/badge-log'
 import { formatDate, startOfDay } from '@/lib/format'
 import { useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
 /*
  * Le mur des badges, calculé une fois pour toute l’app.
@@ -171,21 +172,21 @@ export function badgeTitle(badge: Badge): string {
   if (!badge.earned) {
     return `${Math.round(Math.min(1, Math.max(0, badge.progress)) * 100)} % — ${badge.hint}`
   }
-  if (badge.unlockedAt === null) return `Débloqué — ${badge.hint}`
+  if (badge.unlockedAt === null) return t('Débloqué — {hint}', { hint: badge.hint })
   // Tous les badges d'avant le registre : la date n'a jamais été notée, et
   // afficher celle du jour où il a été inventorié serait un mensonge.
-  if (badge.unlockedAt === UNKNOWN_DATE) return `Débloqué avant le suivi des dates — ${badge.hint}`
-  return `Débloqué le ${formatDate(badge.unlockedAt)} — ${badge.hint}`
+  if (badge.unlockedAt === UNKNOWN_DATE) return t('Débloqué avant le suivi des dates — {hint}', { hint: badge.hint })
+  return t('Débloqué le {v0} — {hint}', { v0: formatDate(badge.unlockedAt), hint: badge.hint })
 }
 
 export const BADGE_GROUPS = [
-  'Volume',
-  'Assiduité',
-  'Exploits',
-  'Collection',
-  'Curiosité',
-  'Critique',
-  'Époques'
+  t('Volume'),
+  t('Assiduité'),
+  t('Exploits'),
+  t('Collection'),
+  t('Curiosité'),
+  t('Critique'),
+  t('Époques')
 ] as const
 
 export interface BadgeStats {
@@ -464,793 +465,814 @@ export function useBadgeWall(): { stats: BadgeStats; badges: Badge[] } {
     return [
       // ---- Volume : nombre d'épisodes et temps cumulé
       {
-        group: 'Volume',
+        group: t('Volume'),
         id: 'first',
-        label: 'Premier pas',
-        hint: '1 épisode coché',
+        label: t('Premier pas'),
+        hint: t('1 épisode coché'),
         icon: Sparkles,
         progress: stats.episodes
       },
       {
-        group: 'Volume',
+        group: t('Volume'),
         id: 'c10',
-        label: 'Mise en route',
-        hint: '10 épisodes',
+        label: t('Mise en route'),
+        hint: t('10 épisodes'),
         icon: Play,
         progress: stats.episodes / 10
       },
       {
-        group: 'Volume',
+        group: t('Volume'),
         id: 'c100',
-        label: 'Centurion',
-        hint: '100 épisodes',
+        label: t('Centurion'),
+        hint: t('100 épisodes'),
         icon: Medal,
         progress: stats.episodes / 100
       },
       {
-        group: 'Volume',
+        group: t('Volume'),
         id: 'c500',
-        label: 'Vétéran',
-        hint: '500 épisodes',
+        label: t('Vétéran'),
+        hint: t('500 épisodes'),
         icon: Swords,
         progress: stats.episodes / 500
       },
       {
-        group: 'Volume',
+        group: t('Volume'),
         id: 'c1000',
-        label: 'Millénaire',
-        hint: '1 000 épisodes',
+        label: t('Millénaire'),
+        hint: t('1 000 épisodes'),
         icon: Crown,
         progress: stats.episodes / 1000
       },
       {
-        group: 'Volume',
+        group: t('Volume'),
         id: 'c2500',
-        label: 'Insatiable',
-        hint: '2 500 épisodes',
+        label: t('Insatiable'),
+        hint: t('2 500 épisodes'),
         icon: Orbit,
         progress: stats.episodes / 2500
       },
       {
-        group: 'Volume',
+        group: t('Volume'),
         id: 'c5000',
-        label: 'Sans fond',
-        hint: '5 000 épisodes',
+        label: t('Sans fond'),
+        hint: t('5 000 épisodes'),
         icon: Atom,
         progress: stats.episodes / 5000
       },
-      { group: 'Volume', id: 'h10', label: 'Première soirée', hint: '10 heures', icon: Clock, progress: hours / 10 },
-      { group: 'Volume', id: 'h100', label: 'Otaku confirmé', hint: '100 heures', icon: Timer, progress: hours / 100 },
-      { group: 'Volume', id: 'h500', label: 'Légende', hint: '500 heures', icon: Trophy, progress: hours / 500 },
       {
-        group: 'Volume',
+        group: t('Volume'),
+        id: 'h10',
+        label: t('Première soirée'),
+        hint: t('10 heures'),
+        icon: Clock,
+        progress: hours / 10
+      },
+      {
+        group: t('Volume'),
+        id: 'h100',
+        label: t('Otaku confirmé'),
+        hint: t('100 heures'),
+        icon: Timer,
+        progress: hours / 100
+      },
+      {
+        group: t('Volume'),
+        id: 'h500',
+        label: t('Légende'),
+        hint: t('500 heures'),
+        icon: Trophy,
+        progress: hours / 500
+      },
+      {
+        group: t('Volume'),
         id: 'd30',
-        label: 'Un mois d’écran',
-        hint: '30 jours cumulés',
+        label: t('Un mois d’écran'),
+        hint: t('30 jours cumulés'),
         icon: Hourglass,
         progress: days / 30
       },
       {
-        group: 'Volume',
+        group: t('Volume'),
         id: 'c7500',
-        label: 'Sans limite',
-        hint: '7 500 épisodes',
+        label: t('Sans limite'),
+        hint: t('7 500 épisodes'),
         icon: InfinityIcon,
         progress: stats.episodes / 7500
       },
       {
-        group: 'Volume',
+        group: t('Volume'),
         id: 'h1000',
-        label: 'Le millier d’heures',
-        hint: '1 000 heures',
+        label: t('Le millier d’heures'),
+        hint: t('1 000 heures'),
         icon: Mountain,
         progress: hours / 1000
       },
       {
-        group: 'Volume',
+        group: t('Volume'),
         id: 'd100',
-        label: 'Cent jours d’écran',
-        hint: '100 jours cumulés',
+        label: t('Cent jours d’écran'),
+        hint: t('100 jours cumulés'),
         icon: Tent,
         progress: days / 100
       },
       {
-        group: 'Volume',
+        group: t('Volume'),
         id: 'seen100',
-        label: 'Cent titres entamés',
-        hint: '100 séries commencées',
+        label: t('Cent titres entamés'),
+        hint: t('100 séries commencées'),
         icon: Footprints,
         progress: stats.startedTitles / 100
       },
 
       // ---- Assiduité : régularité dans le temps
       {
-        group: 'Assiduité',
+        group: t('Assiduité'),
         id: 'streak3',
-        label: 'Trois d’affilée',
-        hint: '3 jours de suite',
+        label: t('Trois d’affilée'),
+        hint: t('3 jours de suite'),
         icon: Activity,
         progress: stats.streaks.best / 3
       },
       {
-        group: 'Assiduité',
+        group: t('Assiduité'),
         id: 'streak7',
-        label: 'Régulier',
-        hint: '7 jours de suite',
+        label: t('Régulier'),
+        hint: t('7 jours de suite'),
         icon: Flame,
         progress: stats.streaks.best / 7
       },
       {
-        group: 'Assiduité',
+        group: t('Assiduité'),
         id: 'streak14',
-        label: 'Rituel',
-        hint: '14 jours de suite',
+        label: t('Rituel'),
+        hint: t('14 jours de suite'),
         icon: CalendarCheck,
         progress: stats.streaks.best / 14
       },
       {
-        group: 'Assiduité',
+        group: t('Assiduité'),
         id: 'streak30',
-        label: 'Increvable',
-        hint: '30 jours de suite',
+        label: t('Increvable'),
+        hint: t('30 jours de suite'),
         icon: Rocket,
         progress: stats.streaks.best / 30
       },
       {
-        group: 'Assiduité',
+        group: t('Assiduité'),
         id: 'streak100',
-        label: 'Métronome',
-        hint: '100 jours de suite',
+        label: t('Métronome'),
+        hint: t('100 jours de suite'),
         icon: Gauge,
         progress: stats.streaks.best / 100
       },
       {
-        group: 'Assiduité',
+        group: t('Assiduité'),
         id: 'days50',
-        label: 'Habitué',
-        hint: '50 jours actifs',
+        label: t('Habitué'),
+        hint: t('50 jours actifs'),
         icon: CalendarDays,
         progress: stats.activeDays / 50
       },
       {
-        group: 'Assiduité',
+        group: t('Assiduité'),
         id: 'weekend',
-        label: 'Roi du week-end',
-        hint: '50 épisodes un samedi ou dimanche',
+        label: t('Roi du week-end'),
+        hint: t('50 épisodes un samedi ou dimanche'),
         icon: Popcorn,
         progress: stats.weekend / 50
       },
       {
-        group: 'Assiduité',
+        group: t('Assiduité'),
         id: 'night',
-        label: 'Noctambule',
-        hint: '25 épisodes entre minuit et 5 h',
+        label: t('Noctambule'),
+        hint: t('25 épisodes entre minuit et 5 h'),
         icon: Moon,
         progress: stats.night / 25
       },
       {
-        group: 'Assiduité',
+        group: t('Assiduité'),
         id: 'streak50',
-        label: 'Inébranlable',
-        hint: '50 jours de suite',
+        label: t('Inébranlable'),
+        hint: t('50 jours de suite'),
         icon: Anchor,
         progress: stats.streaks.best / 50
       },
       {
-        group: 'Assiduité',
+        group: t('Assiduité'),
         id: 'streak365',
-        label: 'Une année sans faute',
-        hint: '365 jours de suite',
+        label: t('Une année sans faute'),
+        hint: t('365 jours de suite'),
         icon: Sun,
         progress: stats.streaks.best / 365
       },
       {
-        group: 'Assiduité',
+        group: t('Assiduité'),
         id: 'days100',
-        label: 'Cent jours actifs',
-        hint: '100 jours actifs',
+        label: t('Cent jours actifs'),
+        hint: t('100 jours actifs'),
         icon: Sprout,
         progress: stats.activeDays / 100
       },
       {
-        group: 'Assiduité',
+        group: t('Assiduité'),
         id: 'days365',
-        label: 'Une année d’activité',
-        hint: '365 jours actifs',
+        label: t('Une année d’activité'),
+        hint: t('365 jours actifs'),
         icon: TreePine,
         progress: stats.activeDays / 365
       },
       {
-        group: 'Assiduité',
+        group: t('Assiduité'),
         id: 'morning',
         label: 'Lève-tôt',
-        hint: '50 épisodes entre 5 h et 9 h',
+        hint: t('50 épisodes entre 5 h et 9 h'),
         icon: Sunrise,
         progress: stats.morning / 50
       },
       {
-        group: 'Assiduité',
+        group: t('Assiduité'),
         id: 'weekdays',
-        label: 'Semaine complète',
-        hint: 'regarder les 7 jours de la semaine',
+        label: t('Semaine complète'),
+        hint: t('regarder les 7 jours de la semaine'),
         icon: CalendarRange,
         progress: stats.weekdays / 7
       },
       {
-        group: 'Assiduité',
+        group: t('Assiduité'),
         id: 'months',
-        label: 'Les douze mois',
-        hint: 'regarder pendant les 12 mois de l’année',
+        label: t('Les douze mois'),
+        hint: t('regarder pendant les 12 mois de l’année'),
         icon: CalendarClock,
         progress: stats.months / 12
       },
 
       // ---- Exploits : performances sur une journée
       {
-        group: 'Exploits',
+        group: t('Exploits'),
         id: 'marathon5',
-        label: 'Petite série',
-        hint: '5 épisodes en un jour',
+        label: t('Petite série'),
+        hint: t('5 épisodes en un jour'),
         icon: Zap,
         progress: stats.bestDay / 5
       },
       {
-        group: 'Exploits',
+        group: t('Exploits'),
         id: 'marathon12',
-        label: 'Un cour d’un coup',
-        hint: '12 épisodes en un jour',
+        label: t('Un cour d’un coup'),
+        hint: t('12 épisodes en un jour'),
         icon: Layers,
         progress: stats.bestDay / 12
       },
       {
-        group: 'Exploits',
+        group: t('Exploits'),
         id: 'marathon25',
-        label: 'Nuit blanche',
-        hint: '25 épisodes en un jour',
+        label: t('Nuit blanche'),
+        hint: t('25 épisodes en un jour'),
         icon: Ghost,
         progress: stats.bestDay / 25
       },
       {
-        group: 'Exploits',
+        group: t('Exploits'),
         id: 'marathon50',
-        label: 'Hors catégorie',
-        hint: '50 épisodes en un jour',
+        label: t('Hors catégorie'),
+        hint: t('50 épisodes en un jour'),
         icon: Rocket,
         progress: stats.bestDay / 50
       },
       {
-        group: 'Exploits',
+        group: t('Exploits'),
         id: 'long1',
-        label: 'Le souffle long',
-        hint: 'terminer une série de 100+ épisodes',
+        label: t('Le souffle long'),
+        hint: t('terminer une série de 100+ épisodes'),
         icon: Snail,
         progress: stats.longDone
       },
       {
-        group: 'Exploits',
+        group: t('Exploits'),
         id: 'long3',
-        label: 'Fleuve tranquille',
-        hint: '3 séries de 100+ épisodes',
+        label: t('Fleuve tranquille'),
+        hint: t('3 séries de 100+ épisodes'),
         icon: Undo2,
         progress: stats.longDone / 3
       },
       {
-        group: 'Exploits',
+        group: t('Exploits'),
         id: 'rewatch',
-        label: 'Encore une fois',
-        hint: 'un visionnage répété',
+        label: t('Encore une fois'),
+        hint: t('un visionnage répété'),
         icon: Repeat,
         progress: stats.rewatches
       },
       {
-        group: 'Exploits',
+        group: t('Exploits'),
         id: 'marathon75',
-        label: 'Démesure',
-        hint: '75 épisodes en un jour',
+        label: t('Démesure'),
+        hint: t('75 épisodes en un jour'),
         icon: Tornado,
         progress: stats.bestDay / 75
       },
       {
-        group: 'Exploits',
+        group: t('Exploits'),
         id: 'day8h',
-        label: 'Journée pleine',
-        hint: '8 heures en une seule journée',
+        label: t('Journée pleine'),
+        hint: t('8 heures en une seule journée'),
         icon: Bed,
         progress: stats.bestDayMinutes / 480
       },
       {
-        group: 'Exploits',
+        group: t('Exploits'),
         id: 'day12h',
-        label: 'Sans dormir',
-        hint: '12 heures en une seule journée',
+        label: t('Sans dormir'),
+        hint: t('12 heures en une seule journée'),
         icon: Skull,
         progress: stats.bestDayMinutes / 720
       },
       {
-        group: 'Exploits',
+        group: t('Exploits'),
         id: 'binge12',
-        label: 'D’une traite',
-        hint: '12 épisodes de la même série en un jour',
+        label: t('D’une traite'),
+        hint: t('12 épisodes de la même série en un jour'),
         icon: Drum,
         progress: stats.bestTitleDay / 12
       },
       {
-        group: 'Exploits',
+        group: t('Exploits'),
         id: 'variety5',
-        label: 'Zappeur',
-        hint: '5 séries différentes en un jour',
+        label: t('Zappeur'),
+        hint: t('5 séries différentes en un jour'),
         icon: Shuffle,
         progress: stats.bestVariety / 5
       },
       {
-        group: 'Exploits',
+        group: t('Exploits'),
         id: 'fastFinish',
-        label: 'Avalée en un jour',
-        hint: 'finir une série de 12+ épisodes en 24 h',
+        label: t('Avalée en un jour'),
+        hint: t('finir une série de 12+ épisodes en 24 h'),
         icon: Wind,
         progress: stats.fastFinish
       },
       {
-        group: 'Exploits',
+        group: t('Exploits'),
         id: 'long5',
-        label: 'Marathonien',
-        hint: '5 séries de 100+ épisodes',
+        label: t('Marathonien'),
+        hint: t('5 séries de 100+ épisodes'),
         icon: Waves,
         progress: stats.longDone / 5
       },
       {
-        group: 'Exploits',
+        group: t('Exploits'),
         id: 'rewatch10',
-        label: 'Éternel retour',
-        hint: '10 revisionnages',
+        label: t('Éternel retour'),
+        hint: t('10 revisionnages'),
         icon: RotateCcw,
         progress: stats.rewatches / 10
       },
 
       // ---- Collection : taille et forme de la bibliothèque
       {
-        group: 'Collection',
+        group: t('Collection'),
         id: 'done1',
-        label: 'Générique de fin',
-        hint: '1 série terminée',
+        label: t('Générique de fin'),
+        hint: t('1 série terminée'),
         icon: CheckCheck,
         progress: stats.completed
       },
       {
-        group: 'Collection',
+        group: t('Collection'),
         id: 'done10',
-        label: 'Complétiste',
-        hint: '10 séries terminées',
+        label: t('Complétiste'),
+        hint: t('10 séries terminées'),
         icon: Award,
         progress: stats.completed / 10
       },
       {
-        group: 'Collection',
+        group: t('Collection'),
         id: 'done50',
-        label: 'Archiviste',
-        hint: '50 séries terminées',
+        label: t('Archiviste'),
+        hint: t('50 séries terminées'),
         icon: Archive,
         progress: stats.completed / 50
       },
       {
-        group: 'Collection',
+        group: t('Collection'),
         id: 'done100',
-        label: 'Bibliothécaire',
-        hint: '100 séries terminées',
+        label: t('Bibliothécaire'),
+        hint: t('100 séries terminées'),
         icon: Boxes,
         progress: stats.completed / 100
       },
       {
-        group: 'Collection',
+        group: t('Collection'),
         id: 'lib50',
-        label: 'Collectionneur',
-        hint: '50 titres suivis',
+        label: t('Collectionneur'),
+        hint: t('50 titres suivis'),
         icon: Gem,
         progress: stats.tracked / 50
       },
       {
-        group: 'Collection',
+        group: t('Collection'),
         id: 'lib250',
-        label: 'Conservateur',
-        hint: '250 titres suivis',
+        label: t('Conservateur'),
+        hint: t('250 titres suivis'),
         icon: Database,
         progress: stats.tracked / 250
       },
       {
-        group: 'Collection',
+        group: t('Collection'),
         id: 'fav20',
-        label: 'Cœur tendre',
-        hint: '20 favoris',
+        label: t('Cœur tendre'),
+        hint: t('20 favoris'),
         icon: Heart,
         progress: stats.favorites / 20
       },
       {
-        group: 'Collection',
+        group: t('Collection'),
         id: 'movies10',
-        label: 'Cinéphile',
-        hint: '10 films terminés',
+        label: t('Cinéphile'),
+        hint: t('10 films terminés'),
         icon: Clapperboard,
         progress: stats.movies / 10
       },
       {
-        group: 'Collection',
+        group: t('Collection'),
         id: 'done25',
-        label: 'Bon élève',
-        hint: '25 séries terminées',
+        label: t('Bon élève'),
+        hint: t('25 séries terminées'),
         icon: Bookmark,
         progress: stats.completed / 25
       },
       {
-        group: 'Collection',
+        group: t('Collection'),
         id: 'done250',
-        label: 'Rayonnage complet',
-        hint: '250 séries terminées',
+        label: t('Rayonnage complet'),
+        hint: t('250 séries terminées'),
         icon: Library,
         progress: stats.completed / 250
       },
       {
-        group: 'Collection',
+        group: t('Collection'),
         id: 'lib100',
-        label: 'Étagère pleine',
-        hint: '100 titres suivis',
+        label: t('Étagère pleine'),
+        hint: t('100 titres suivis'),
         icon: Package,
         progress: stats.tracked / 100
       },
       {
-        group: 'Collection',
+        group: t('Collection'),
         id: 'lib500',
-        label: 'Entrepôt',
-        hint: '500 titres suivis',
+        label: t('Entrepôt'),
+        hint: t('500 titres suivis'),
         icon: Warehouse,
         progress: stats.tracked / 500
       },
       {
-        group: 'Collection',
+        group: t('Collection'),
         id: 'fav50',
-        label: 'Grand cœur',
-        hint: '50 favoris',
+        label: t('Grand cœur'),
+        hint: t('50 favoris'),
         icon: HeartHandshake,
         progress: stats.favorites / 50
       },
       {
-        group: 'Collection',
+        group: t('Collection'),
         id: 'movies1',
-        label: 'Séance unique',
-        hint: '1 film terminé',
+        label: t('Séance unique'),
+        hint: t('1 film terminé'),
         icon: Film,
         progress: stats.movies
       },
       {
-        group: 'Collection',
+        group: t('Collection'),
         id: 'movies25',
-        label: 'Salle obscure',
-        hint: '25 films terminés',
+        label: t('Salle obscure'),
+        hint: t('25 films terminés'),
         icon: Ticket,
         progress: stats.movies / 25
       },
       {
-        group: 'Collection',
+        group: t('Collection'),
         id: 'backlog50',
-        label: 'Pile à voir',
-        hint: '50 titres en attente',
+        label: t('Pile à voir'),
+        hint: t('50 titres en attente'),
         icon: ListTodo,
         progress: stats.planned / 50
       },
       {
-        group: 'Collection',
+        group: t('Collection'),
         id: 'lists3',
-        label: 'Rangement',
-        hint: '3 listes personnalisées',
+        label: t('Rangement'),
+        hint: t('3 listes personnalisées'),
         icon: FolderHeart,
         progress: listCount / 3
       },
       {
-        group: 'Collection',
+        group: t('Collection'),
         id: 'shortForm',
-        label: 'Format court',
-        hint: '10 séries de moins de 10 min terminées',
+        label: t('Format court'),
+        hint: t('10 séries de moins de 10 min terminées'),
         icon: Feather,
         progress: stats.shortForm / 10
       },
 
       // ---- Curiosité : diversité de ce qui est regardé
       {
-        group: 'Curiosité',
+        group: t('Curiosité'),
         id: 'genres5',
         label: 'Touche-à-tout',
-        hint: '5 genres différents',
+        hint: t('5 genres différents'),
         icon: Dices,
         progress: stats.genres.length / 5
       },
       {
-        group: 'Curiosité',
+        group: t('Curiosité'),
         id: 'genres10',
-        label: 'Explorateur',
-        hint: '10 genres différents',
+        label: t('Explorateur'),
+        hint: t('10 genres différents'),
         icon: Target,
         progress: stats.genres.length / 10
       },
       {
-        group: 'Curiosité',
+        group: t('Curiosité'),
         id: 'genresAll',
-        label: 'Sans préjugé',
-        hint: 'les 18 genres',
+        label: t('Sans préjugé'),
+        hint: t('les 18 genres'),
         icon: Globe,
         progress: stats.genres.length / 18
       },
       {
-        group: 'Curiosité',
+        group: t('Curiosité'),
         id: 'studios10',
-        label: 'Œil averti',
-        hint: '10 studios différents',
+        label: t('Œil averti'),
+        hint: t('10 studios différents'),
         icon: Eye,
         progress: stats.studioCount / 10
       },
       {
-        group: 'Curiosité',
+        group: t('Curiosité'),
         id: 'studios25',
-        label: 'Connaisseur',
-        hint: '25 studios différents',
+        label: t('Connaisseur'),
+        hint: t('25 studios différents'),
         icon: Users,
         progress: stats.studioCount / 25
       },
       {
-        group: 'Curiosité',
+        group: t('Curiosité'),
         id: 'genres15',
-        label: 'Sans frontière',
-        hint: '15 genres différents',
+        label: t('Sans frontière'),
+        hint: t('15 genres différents'),
         icon: Compass,
         progress: stats.genres.length / 15
       },
       {
-        group: 'Curiosité',
+        group: t('Curiosité'),
         id: 'studios50',
-        label: 'Carte des studios',
-        hint: '50 studios différents',
+        label: t('Carte des studios'),
+        hint: t('50 studios différents'),
         icon: Factory,
         progress: stats.studioCount / 50
       },
       {
-        group: 'Curiosité',
+        group: t('Curiosité'),
         id: 'studioFan',
-        label: 'Maison de confiance',
-        hint: '250 épisodes d’un même studio',
+        label: t('Maison de confiance'),
+        hint: t('250 épisodes d’un même studio'),
         icon: Magnet,
         progress: stats.topStudio / 250
       },
       {
-        group: 'Curiosité',
+        group: t('Curiosité'),
         id: 'genreFan',
-        label: 'Genre de prédilection',
-        hint: '500 épisodes d’un même genre',
+        label: t('Genre de prédilection'),
+        hint: t('500 épisodes d’un même genre'),
         icon: Puzzle,
         progress: stats.topGenre / 500
       },
       {
-        group: 'Curiosité',
+        group: t('Curiosité'),
         id: 'confidential',
-        label: 'Hors des sentiers',
-        hint: 'suivre un titre de moins de 5 000 membres',
+        label: t('Hors des sentiers'),
+        hint: t('suivre un titre de moins de 5 000 membres'),
         icon: Fish,
         progress: stats.confidential
       },
       {
-        group: 'Curiosité',
+        group: t('Curiosité'),
         id: 'mainstream',
-        label: 'Grand public',
-        hint: 'suivre un titre de plus de 300 000 membres',
+        label: t('Grand public'),
+        hint: t('suivre un titre de plus de 300 000 membres'),
         icon: Megaphone,
         progress: stats.mainstream
       },
 
       // ---- Critique : notes, ressentis, notes écrites
       {
-        group: 'Critique',
+        group: t('Critique'),
         id: 'rate1',
-        label: 'Premier avis',
-        hint: '1 note donnée',
+        label: t('Premier avis'),
+        hint: t('1 note donnée'),
         icon: Star,
         progress: stats.scoredCount
       },
       {
-        group: 'Critique',
+        group: t('Critique'),
         id: 'rate25',
-        label: 'Critique',
-        hint: '25 notes données',
+        label: t('Critique'),
+        hint: t('25 notes données'),
         icon: TrendingUp,
         progress: stats.scoredCount / 25
       },
       {
-        group: 'Critique',
+        group: t('Critique'),
         id: 'rate100',
-        label: 'Jury',
-        hint: '100 notes données',
+        label: t('Jury'),
+        hint: t('100 notes données'),
         icon: Trophy,
         progress: stats.scoredCount / 100
       },
       {
-        group: 'Critique',
+        group: t('Critique'),
         id: 'perfect',
         label: 'Chef-d’œuvre',
-        hint: 'mettre un 10/10',
+        hint: t('mettre un 10/10'),
         icon: Crown,
         progress: stats.perfect
       },
       {
-        group: 'Critique',
+        group: t('Critique'),
         id: 'emotions',
-        label: 'Palette complète',
-        hint: 'utiliser les 8 ressentis',
+        label: t('Palette complète'),
+        hint: t('utiliser les 8 ressentis'),
         icon: Palette,
         progress: stats.emotionsUsed / 8
       },
       {
-        group: 'Critique',
+        group: t('Critique'),
         id: 'notes10',
-        label: 'Carnet de bord',
-        hint: '10 fiches annotées',
+        label: t('Carnet de bord'),
+        hint: t('10 fiches annotées'),
         icon: Pencil,
         progress: stats.notes / 10
       },
       {
-        group: 'Critique',
+        group: t('Critique'),
         id: 'dropped',
-        label: 'Sans pitié',
-        hint: 'abandonner 5 séries',
+        label: t('Sans pitié'),
+        hint: t('abandonner 5 séries'),
         icon: Ban,
         progress: stats.dropped / 5
       },
       {
-        group: 'Critique',
+        group: t('Critique'),
         id: 'rate250',
-        label: 'Grand jury',
-        hint: '250 notes données',
+        label: t('Grand jury'),
+        hint: t('250 notes données'),
         icon: Scale,
         progress: stats.scoredCount / 250
       },
       {
-        group: 'Critique',
+        group: t('Critique'),
         id: 'scale',
-        label: 'Toute la gamme',
-        hint: 'utiliser les 10 notes',
+        label: t('Toute la gamme'),
+        hint: t('utiliser les 10 notes'),
         icon: Ruler,
         progress: stats.scoresUsed / 10
       },
       {
-        group: 'Critique',
+        group: t('Critique'),
         id: 'perfect5',
-        label: 'Panthéon',
-        hint: '5 notes de 10/10',
+        label: t('Panthéon'),
+        hint: t('5 notes de 10/10'),
         icon: Diamond,
         progress: stats.perfect / 5
       },
       {
-        group: 'Critique',
+        group: t('Critique'),
         id: 'harsh',
-        label: 'Verdict sévère',
-        hint: 'mettre 3/10 ou moins',
+        label: t('Verdict sévère'),
+        hint: t('mettre 3/10 ou moins'),
         icon: ThumbsDown,
         progress: stats.harsh
       },
       {
-        group: 'Critique',
+        group: t('Critique'),
         id: 'contrarian',
-        label: 'À contre-courant',
-        hint: 's’écarter de 25 points de la note AniList',
+        label: t('À contre-courant'),
+        hint: t('s’écarter de 25 points de la note AniList'),
         icon: Split,
         progress: stats.contrarian
       },
       {
-        group: 'Critique',
+        group: t('Critique'),
         id: 'notes1',
-        label: 'Première ligne',
-        hint: '1 fiche annotée',
+        label: t('Première ligne'),
+        hint: t('1 fiche annotée'),
         icon: PenLine,
         progress: stats.notes
       },
       {
-        group: 'Critique',
+        group: t('Critique'),
         id: 'notes50',
-        label: 'Journal intime',
-        hint: '50 fiches annotées',
+        label: t('Journal intime'),
+        hint: t('50 fiches annotées'),
         icon: NotebookPen,
         progress: stats.notes / 50
       },
       {
-        group: 'Critique',
+        group: t('Critique'),
         id: 'dropped25',
-        label: 'Tri sans état d’âme',
-        hint: '25 abandons',
+        label: t('Tri sans état d’âme'),
+        hint: t('25 abandons'),
         icon: Trash2,
         progress: stats.dropped / 25
       },
 
       // ---- Époques : les années que la bibliothèque traverse
       {
-        group: 'Époques',
+        group: t('Époques'),
         id: 'era80',
-        label: 'Avant la couleur',
-        hint: 'un titre d’avant 1990',
+        label: t('Avant la couleur'),
+        hint: t('un titre d’avant 1990'),
         icon: Radio,
         progress: stats.oldest < 1990 ? 1 : 0
       },
       {
-        group: 'Époques',
+        group: t('Époques'),
         id: 'era90',
-        label: 'Années 1990',
-        hint: 'un titre des années 1990',
+        label: t('Années 1990'),
+        hint: t('un titre des années 1990'),
         icon: Tv,
         progress: stats.decades.has(1990) ? 1 : 0
       },
       {
-        group: 'Époques',
+        group: t('Époques'),
         id: 'era2000',
-        label: 'Années 2000',
-        hint: 'un titre des années 2000',
+        label: t('Années 2000'),
+        hint: t('un titre des années 2000'),
         icon: Gamepad2,
         progress: stats.decades.has(2000) ? 1 : 0
       },
       {
-        group: 'Époques',
+        group: t('Époques'),
         id: 'era2010',
-        label: 'Années 2010',
-        hint: 'un titre des années 2010',
+        label: t('Années 2010'),
+        hint: t('un titre des années 2010'),
         icon: Smartphone,
         progress: stats.decades.has(2010) ? 1 : 0
       },
       {
-        group: 'Époques',
+        group: t('Époques'),
         id: 'era2020',
-        label: 'Années 2020',
-        hint: 'un titre des années 2020',
+        label: t('Années 2020'),
+        hint: t('un titre des années 2020'),
         icon: Wifi,
         progress: stats.decades.has(2020) ? 1 : 0
       },
       {
-        group: 'Époques',
+        group: t('Époques'),
         id: 'decades4',
-        label: 'Traversée du temps',
-        hint: '4 décennies différentes',
+        label: t('Traversée du temps'),
+        hint: t('4 décennies différentes'),
         icon: Milestone,
         progress: stats.decades.size / 4
       },
       {
-        group: 'Époques',
+        group: t('Époques'),
         id: 'years25',
-        label: 'Vingt-cinq millésimes',
-        hint: '25 années de sortie différentes',
+        label: t('Vingt-cinq millésimes'),
+        hint: t('25 années de sortie différentes'),
         icon: History,
         progress: stats.releaseYears / 25
       },
       {
-        group: 'Époques',
+        group: t('Époques'),
         id: 'winter',
-        label: 'Hiver',
-        hint: 'un titre de la saison d’hiver',
+        label: t('Hiver'),
+        hint: t('un titre de la saison d’hiver'),
         icon: Snowflake,
         progress: stats.airSeasons.has('WINTER') ? 1 : 0
       },
       {
-        group: 'Époques',
+        group: t('Époques'),
         id: 'spring',
-        label: 'Printemps',
-        hint: 'un titre de la saison de printemps',
+        label: t('Printemps'),
+        hint: t('un titre de la saison de printemps'),
         icon: Flower2,
         progress: stats.airSeasons.has('SPRING') ? 1 : 0
       },
       {
-        group: 'Époques',
+        group: t('Époques'),
         id: 'summer',
-        label: 'Été',
-        hint: 'un titre de la saison d’été',
+        label: t('Été'),
+        hint: t('un titre de la saison d’été'),
         icon: Umbrella,
         progress: stats.airSeasons.has('SUMMER') ? 1 : 0
       },
       {
-        group: 'Époques',
+        group: t('Époques'),
         id: 'autumn',
-        label: 'Automne',
-        hint: 'un titre de la saison d’automne',
+        label: t('Automne'),
+        hint: t('un titre de la saison d’automne'),
         icon: Leaf,
         progress: stats.airSeasons.has('FALL') ? 1 : 0
       }

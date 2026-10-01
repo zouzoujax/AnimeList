@@ -3,6 +3,7 @@ import type { Media, MediaDetail } from '@shared/types'
 import { baseAndSeason, compact, searchTitles as sharedSearchTitles, searchVariants, siteSlug } from '@shared/titles'
 import { overrideFor } from '@shared/watch-overrides'
 import { premiereLabel } from '@/lib/format'
+import { t } from '@shared/i18n'
 
 /**
  * `direct`      the URL was verified, hand-checked, or supplied by AniList.
@@ -50,10 +51,10 @@ export interface AnimeSamaTarget {
 
 export const WATCH_BADGE: Record<WatchKind, { label: string; color: string }> = {
   direct: { label: 'direct', color: 'var(--accent-2)' },
-  guess: { label: 'déduit', color: '#ffb038' },
+  guess: { label: t('déduit'), color: '#ffb038' },
   search: { label: 'recherche', color: 'var(--color-faint)' },
   absent: { label: 'absent', color: '#6b7392' },
-  unreleased: { label: 'pas sorti', color: '#6b7392' }
+  unreleased: { label: t('pas sorti'), color: '#6b7392' }
 }
 
 /** Rows that must not be clickable: there is nothing to open. */
@@ -126,10 +127,10 @@ export function watchLinks(
 
   // Nothing is streaming an anime that hasn't aired: every row is dead.
   if (media.status === 'NOT_YET_RELEASED') {
-    const hint = `Pas encore sorti — prévu ${premiereLabel(media.startDate)}`
+    const hint = t('Pas encore sorti — prévu {v0}', { v0: premiereLabel(media.startDate) })
     return (
       [
-        { id: 'crunchyroll', label: 'Crunchyroll', color: '#f47521' },
+        { id: 'crunchyroll', label: t('Crunchyroll'), color: '#f47521' },
         { id: 'anime-sama', label: 'Anime-Sama', color: '#8b5cf6' },
         { id: 'franime', label: 'FrAnime', color: '#34d399' },
         { id: 'adn', label: 'ADN', color: '#00b0f0' }
@@ -140,28 +141,28 @@ export function watchLinks(
   const franimeFixed = override && 'franime' in override ? override.franime : undefined
   const franime: Pick<WatchLink, 'url' | 'kind' | 'hint'> =
     franimeFixed === null
-      ? { url: '', kind: 'absent', hint: 'Absent du catalogue FrAnime' }
+      ? { url: '', kind: 'absent', hint: t('Absent du catalogue FrAnime') }
       : franimeFixed
-        ? { url: franimeFixed, kind: 'direct', hint: 'URL vérifiée à la main' }
+        ? { url: franimeFixed, kind: 'direct', hint: t('URL vérifiée à la main') }
         : {
             url: FRANIME_SERIES + siteSlug(franchiseTitle(media, known)),
             kind: 'guess',
-            hint: 'URL déduite du titre — le site bloque toute vérification automatique'
+            hint: t('URL déduite du titre — le site bloque toute vérification automatique')
           }
 
   // Le site n'a pas d'adresse par épisode : c'est l'app qui pose le numéro dans
   // sa propre fenêtre avant que leur page ne le lise. Voir src/main/watch-window.ts.
-  const pick = episode ? `Ouvre l'épisode ${episode}` : null
+  const pick = episode ? t("Ouvre l'épisode {episode}", { episode }) : null
   // Un film ou un OAV qu'on n'a pas su situer dans leur liste.
   const unplaced = !!animeSama?.side && !animeSama.entry
 
   return [
     {
       id: 'crunchyroll',
-      label: 'Crunchyroll',
+      label: t('Crunchyroll'),
       url: crunchyroll ? toFrenchCrunchyroll(crunchyroll.url) : CRUNCHYROLL_SEARCH + q,
       kind: crunchyroll ? 'direct' : 'search',
-      hint: crunchyroll ? 'Lien officiel fourni par AniList' : 'AniList ne connaît pas de lien : recherche',
+      hint: crunchyroll ? t('Lien officiel fourni par AniList') : t('AniList ne connaît pas de lien : recherche'),
       color: '#f47521',
       pick: null
     },
@@ -171,12 +172,12 @@ export function watchLinks(
       url: animeSama?.absent ? '' : (animeSama?.url ?? ANIME_SAMA_SEARCH + q),
       kind: animeSama?.absent ? 'absent' : unplaced ? 'search' : animeSama?.direct ? 'direct' : 'search',
       hint: animeSama?.absent
-        ? 'Absent du catalogue Anime-Sama'
+        ? t('Absent du catalogue Anime-Sama')
         : unplaced
-          ? 'Introuvable dans leur liste : elle s’ouvre dans le navigateur, choisis dedans'
+          ? t('Introuvable dans leur liste : elle s’ouvre dans le navigateur, choisis dedans')
           : animeSama?.direct
-            ? 'URL vérifiée dans le catalogue du site'
-            : 'Titre introuvable dans le catalogue : recherche',
+            ? t('URL vérifiée dans le catalogue du site')
+            : t('Titre introuvable dans le catalogue : recherche'),
       color: '#8b5cf6',
       /**
        * Un film ou un OAV se nomme.
@@ -187,7 +188,12 @@ export function watchLinks(
        * coche à 90 % aurait marqué vu ce qu'on ne regardait pas. Sans `pick`,
        * le clic ouvre leur liste dans le navigateur.
        */
-      pick: !animeSama?.episodes || unplaced ? null : animeSama.side ? `Ouvre « ${animeSama.entry?.name} »` : pick
+      pick:
+        !animeSama?.episodes || unplaced
+          ? null
+          : animeSama.side
+            ? t('Ouvre « {name} »', { name: animeSama.entry?.name })
+            : pick
     },
     { id: 'franime', label: 'FrAnime', color: '#34d399', pick: null, ...franime },
     {
@@ -195,7 +201,7 @@ export function watchLinks(
       label: 'ADN',
       url: ADN_SEARCH + q,
       kind: 'search',
-      hint: 'Recherche — paramètre non vérifiable, le site bloque les requêtes',
+      hint: t('Recherche — paramètre non vérifiable, le site bloque les requêtes'),
       color: '#00b0f0',
       pick: null
     }

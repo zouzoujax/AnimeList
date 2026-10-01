@@ -18,20 +18,21 @@ import { NdHeader, NdTabs } from '@/components/nd'
 import { ErrorBox, Modal, Poster, PosterSkeletons, Spinner } from '@/components/ui'
 import { toneAccent } from '@/lib/color'
 import { useDebounced, useInView } from '@/lib/hooks'
+import { t } from '@shared/i18n'
 
 const KINDS: { id: MangaKind; label: string }[] = [
-  { id: 'trending', label: 'Tendances' },
-  { id: 'popular', label: 'Populaires' },
-  { id: 'top', label: 'Mieux notés' }
+  { id: 'trending', label: t('Tendances') },
+  { id: 'popular', label: t('Populaires') },
+  { id: 'top', label: t('Mieux notés') }
 ]
 
 type OriginTab = MangaOrigin | 'all'
 
 const ORIGIN_LINES: Record<OriginTab, string> = {
-  all: 'Les trois traditions mélangées, comme AniList les range. Chaque couverture dit de laquelle elle vient.',
-  manga: 'Japon. En noir et blanc, et on lit de droite à gauche.',
-  manhwa: 'Corée du Sud. Souvent en couleur, pensé pour défiler de haut en bas sur un téléphone.',
-  manhua: 'Chine, Taïwan ou Hong Kong. Souvent en couleur.',
+  all: t('Les trois traditions mélangées, comme AniList les range. Chaque couverture dit de laquelle elle vient.'),
+  manga: t('Japon. En noir et blanc, et on lit de droite à gauche.'),
+  manhwa: t('Corée du Sud. Souvent en couleur, pensé pour défiler de haut en bas sur un téléphone.'),
+  manhua: t('Chine, Taïwan ou Hong Kong. Souvent en couleur.'),
   novel: ORIGIN_HINTS.novel,
   other: ORIGIN_HINTS.other
 }
@@ -59,7 +60,7 @@ function Cover({ manga, onOpen }: { manga: Manga; onOpen: () => void }): React.J
       <span className="mt-0.5 block text-[0.72rem] text-muted">{captionOf(manga)}</span>
       {manga.averageScore !== null && (
         <span className="mt-0.5 block text-[0.72rem] font-semibold text-[var(--tone)]">
-          Apprécié à {manga.averageScore} %
+          {t('Apprécié à')} {manga.averageScore} %
         </span>
       )}
     </button>
@@ -135,14 +136,14 @@ export default function NdMangaPage(): React.JSX.Element {
   return (
     <div className="page">
       <NdHeader
-        title="Que lire après l’anime ?"
-        sub="Le catalogue AniList, à consulter : rien de ce que tu ouvres ici n’est ajouté à ta bibliothèque."
+        title={t('Que lire après l’anime ?')}
+        sub={t('Le catalogue AniList, à consulter : rien de ce que tu ouvres ici n’est ajouté à ta bibliothèque.')}
         actions={
           <label className="nd-search !w-[280px]">
             <Search size={15} aria-hidden />
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Chercher un titre" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('Chercher un titre')} />
             {search && (
-              <button onClick={() => setSearch('')} aria-label="Effacer la recherche">
+              <button onClick={() => setSearch('')} aria-label={t('Effacer la recherche')}>
                 <X size={13} />
               </button>
             )}
@@ -151,15 +152,18 @@ export default function NdMangaPage(): React.JSX.Element {
       />
 
       <NdTabs
-        label="Tradition"
-        tabs={[{ id: 'all', label: 'Tout' }, ...ORIGIN_FILTERS.map((f) => ({ id: f.id, label: ORIGIN_LABELS[f.id] }))]}
+        label={t('Tradition')}
+        tabs={[
+          { id: 'all', label: t('Tout') },
+          ...ORIGIN_FILTERS.map((f) => ({ id: f.id, label: ORIGIN_LABELS[f.id] }))
+        ]}
         value={origin}
         onChange={setOrigin}
       />
       <p className="mb-5 mt-1.5 max-w-[70ch] px-1 text-[0.82rem] text-muted">{ORIGIN_LINES[origin]}</p>
 
       {!searching && (
-        <div className="nd-seg mb-6" role="group" aria-label="Classement">
+        <div className="nd-seg mb-6" role="group" aria-label={t('Classement')}>
           {KINDS.map((k) => (
             <button key={k.id} aria-pressed={tab === k.id} onClick={() => setTab(k.id)}>
               {k.label}
@@ -173,7 +177,9 @@ export default function NdMangaPage(): React.JSX.Element {
       ) : held.error ? (
         <ErrorBox message={held.error} />
       ) : items.length === 0 ? (
-        <p className="py-16 text-center text-sm text-muted">Aucun titre ne correspond. Essaie une autre tradition.</p>
+        <p className="py-16 text-center text-sm text-muted">
+          {t('Aucun titre ne correspond. Essaie une autre tradition.')}
+        </p>
       ) : (
         <>
           <div className="card-grid">
@@ -182,7 +188,7 @@ export default function NdMangaPage(): React.JSX.Element {
             ))}
           </div>
           {hasMore && <div ref={sentinel} className="h-4" />}
-          {loadingMore && <Spinner label="Chargement de la suite…" />}
+          {loadingMore && <Spinner label={t('Chargement de la suite…')} />}
         </>
       )}
 

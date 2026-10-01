@@ -5,22 +5,23 @@ import { basename } from 'node:path'
 import type { Entry, ImportReport, LibraryStatus, Snapshot, WatchEvent } from '@shared/types'
 import { mediaByMalIds } from './anilist'
 import { dbPath, importSnapshot, snapshot } from './store'
+import { t as tr } from '@shared/i18n'
 
 export async function exportData(win: BrowserWindow): Promise<ImportReport> {
   const stamp = new Date().toISOString().slice(0, 10)
   const res = await dialog.showSaveDialog(win, {
-    title: 'Exporter ma bibliothèque',
+    title: tr('Exporter ma bibliothèque'),
     defaultPath: `animelist-${stamp}.json`,
     filters: [{ name: 'Sauvegarde AnimeList', extensions: ['json'] }]
   })
   if (res.canceled || !res.filePath) {
-    return { ok: false, message: 'Export annulé', added: 0, updated: 0, episodes: 0, skipped: 0 }
+    return { ok: false, message: tr('Export annulé'), added: 0, updated: 0, episodes: 0, skipped: 0 }
   }
   const data = snapshot()
   await fs.writeFile(res.filePath, JSON.stringify(data, null, 2), 'utf8')
   return {
     ok: true,
-    message: `Sauvegarde écrite dans ${basename(res.filePath)}`,
+    message: tr('Sauvegarde écrite dans {v0}', { v0: basename(res.filePath) }),
     added: data.entries.length,
     updated: 0,
     episodes: data.history.length,
@@ -39,21 +40,21 @@ export async function exportData(win: BrowserWindow): Promise<ImportReport> {
 export async function exportJournal(win: BrowserWindow, name: string, text: string): Promise<ImportReport> {
   const markdown = name.endsWith('.md')
   const res = await dialog.showSaveDialog(win, {
-    title: 'Exporter mon journal',
+    title: tr('Exporter mon journal'),
     defaultPath: name,
     filters: [
       markdown ? { name: 'Texte Markdown', extensions: ['md'] } : { name: 'Tableur (CSV)', extensions: ['csv'] }
     ]
   })
   if (res.canceled || !res.filePath) {
-    return { ok: false, message: 'Export annulé', added: 0, updated: 0, episodes: 0, skipped: 0 }
+    return { ok: false, message: tr('Export annulé'), added: 0, updated: 0, episodes: 0, skipped: 0 }
   }
 
   try {
     await fs.writeFile(res.filePath, text, 'utf8')
     return {
       ok: true,
-      message: `Journal écrit dans ${basename(res.filePath)}`,
+      message: tr('Journal écrit dans {v0}', { v0: basename(res.filePath) }),
       added: 0,
       updated: 0,
       episodes: 0,
@@ -62,7 +63,7 @@ export async function exportJournal(win: BrowserWindow, name: string, text: stri
   } catch (err) {
     return {
       ok: false,
-      message: `Écriture impossible : ${(err as Error).message}`,
+      message: tr('Écriture impossible : {message}', { message: (err as Error).message }),
       added: 0,
       updated: 0,
       episodes: 0,
@@ -73,12 +74,12 @@ export async function exportJournal(win: BrowserWindow, name: string, text: stri
 
 export async function importData(win: BrowserWindow, mode: 'merge' | 'replace'): Promise<ImportReport> {
   const res = await dialog.showOpenDialog(win, {
-    title: 'Restaurer une sauvegarde',
+    title: tr('Restaurer une sauvegarde'),
     properties: ['openFile'],
     filters: [{ name: 'Sauvegarde AnimeList', extensions: ['json'] }]
   })
   if (res.canceled || !res.filePaths[0]) {
-    return { ok: false, message: 'Import annulé', added: 0, updated: 0, episodes: 0, skipped: 0 }
+    return { ok: false, message: tr('Import annulé'), added: 0, updated: 0, episodes: 0, skipped: 0 }
   }
   try {
     const parsed = JSON.parse(await fs.readFile(res.filePaths[0], 'utf8')) as Snapshot
@@ -86,7 +87,7 @@ export async function importData(win: BrowserWindow, mode: 'merge' | 'replace'):
     importSnapshot(parsed, mode)
     return {
       ok: true,
-      message: mode === 'replace' ? 'Bibliothèque remplacée' : 'Sauvegarde fusionnée',
+      message: mode === 'replace' ? tr('Bibliothèque remplacée') : tr('Sauvegarde fusionnée'),
       added: parsed.entries.length,
       updated: 0,
       episodes: parsed.history?.length ?? 0,
@@ -95,7 +96,7 @@ export async function importData(win: BrowserWindow, mode: 'merge' | 'replace'):
   } catch (err) {
     return {
       ok: false,
-      message: `Fichier illisible : ${(err as Error).message}`,
+      message: tr('Fichier illisible : {message}', { message: (err as Error).message }),
       added: 0,
       updated: 0,
       episodes: 0,
@@ -173,12 +174,12 @@ function spreadWatchDates(row: MalRow, count: number, fallback: number): number[
 
 export async function importMal(win: BrowserWindow): Promise<ImportReport> {
   const res = await dialog.showOpenDialog(win, {
-    title: 'Importer un export MyAnimeList',
+    title: tr('Importer un export MyAnimeList'),
     properties: ['openFile'],
     filters: [{ name: 'Export MyAnimeList', extensions: ['xml', 'gz'] }]
   })
   if (res.canceled || !res.filePaths[0]) {
-    return { ok: false, message: 'Import annulé', added: 0, updated: 0, episodes: 0, skipped: 0 }
+    return { ok: false, message: tr('Import annulé'), added: 0, updated: 0, episodes: 0, skipped: 0 }
   }
 
   const path = res.filePaths[0]
@@ -189,7 +190,7 @@ export async function importMal(win: BrowserWindow): Promise<ImportReport> {
   } catch (err) {
     return {
       ok: false,
-      message: `Lecture impossible : ${(err as Error).message}`,
+      message: tr('Lecture impossible : {message}', { message: (err as Error).message }),
       added: 0,
       updated: 0,
       episodes: 0,
@@ -201,7 +202,7 @@ export async function importMal(win: BrowserWindow): Promise<ImportReport> {
   if (!rows.length) {
     return {
       ok: false,
-      message: 'Aucune entrée trouvée — attends-toi à un fichier animelist_*.xml exporté depuis MyAnimeList.',
+      message: tr('Aucune entrée trouvée — attends-toi à un fichier animelist_*.xml exporté depuis MyAnimeList.'),
       added: 0,
       updated: 0,
       episodes: 0,
@@ -215,7 +216,7 @@ export async function importMal(win: BrowserWindow): Promise<ImportReport> {
   } catch (err) {
     return {
       ok: false,
-      message: `AniList injoignable : ${(err as Error).message}`,
+      message: tr('AniList injoignable : {message}', { message: (err as Error).message }),
       added: 0,
       updated: 0,
       episodes: 0,
@@ -264,8 +265,11 @@ export async function importMal(win: BrowserWindow): Promise<ImportReport> {
   return {
     ok: true,
     message: skipped
-      ? `${entries.length} animes importés. ${skipped} sans équivalent AniList ont été ignorés.`
-      : `${entries.length} animes importés depuis MyAnimeList.`,
+      ? tr('{length} animes importés. {skipped} sans équivalent AniList ont été ignorés.', {
+          length: entries.length,
+          skipped
+        })
+      : tr('{length} animes importés depuis MyAnimeList.', { length: entries.length }),
     added: entries.length,
     updated: 0,
     episodes: history.length,

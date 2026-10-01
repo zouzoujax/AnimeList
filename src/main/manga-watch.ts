@@ -15,6 +15,7 @@ import { mangaNews, type MangaNews, type MangaNow } from '@shared/manga-watch'
 import type { Manga } from '@shared/types'
 import { mangaWatch, refreshMedia } from './anilist'
 import { cacheMangas, getPrefs, setEntry, setPrefs, snapshot } from './store'
+import { t } from '@shared/i18n'
 
 export interface MangaSweep {
   news: MangaNews[]
@@ -55,7 +56,7 @@ export async function sweepMangas(win: BrowserWindow | null): Promise<MangaSweep
 }
 
 function nameOf(manga: Manga | undefined): string {
-  if (!manga) return 'Un manga que tu suis'
+  if (!manga) return t('Un manga que tu suis')
   const lang = getPrefs().titleLang
   if (lang === 'native' && manga.title.native) return manga.title.native
   if (lang === 'english' && manga.title.english) return manga.title.english
@@ -70,7 +71,12 @@ function bring(win: BrowserWindow): void {
 
 function announce(win: BrowserWindow, item: MangaNews, manga: Manga | undefined): void {
   if (item.kind === 'finished') {
-    const reste = item.left === null ? '' : item.left === 0 ? ' Tu as tout lu.' : ` Il t’en reste ${item.left} à lire.`
+    const reste =
+      item.left === null
+        ? ''
+        : item.left === 0
+          ? t(' Tu as tout lu.')
+          : t(' Il t’en reste {left} à lire.', { left: item.left })
     const note = new Notification({
       title: `${nameOf(manga)} est terminé`,
       body: `La série a fini de paraître${item.total ? ` : ${item.total} chapitres` : ''}.${reste}`

@@ -5,18 +5,19 @@ import { EmptyState, ErrorBox, Poster, Spinner } from '@/components/ui'
 import { currentSeasonOf, formatLabel, seasonLabel, titleOf } from '@/lib/format'
 import { useBrowse } from '@/lib/hooks'
 import { useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
 type Group = 'sort' | 'watching' | 'planned' | 'skipped'
 
 const GROUPS: { id: Group; title: string; hint: string }[] = [
-  { id: 'sort', title: 'À trier', hint: 'Ni suivies, ni prévues, ni écartées.' },
-  { id: 'watching', title: 'Tu suis', hint: 'En cours, en pause ou déjà terminées.' },
-  { id: 'planned', title: 'Prévues', hint: 'Dans ta liste « À voir ».' },
-  { id: 'skipped', title: 'Écartées', hint: 'Abandonnées ou « pas pour moi ».' }
+  { id: 'sort', title: t('À trier'), hint: t('Ni suivies, ni prévues, ni écartées.') },
+  { id: 'watching', title: t('Tu suis'), hint: t('En cours, en pause ou déjà terminées.') },
+  { id: 'planned', title: t('Prévues'), hint: t('Dans ta liste « À voir ».') },
+  { id: 'skipped', title: t('Écartées'), hint: t('Abandonnées ou « pas pour moi ».') }
 ]
 
 function plural(n: number, one: string, many: string): string {
-  return `${n} ${n > 1 ? many : one}`
+  return `${n} ${t(n > 1 ? many : one)}`
 }
 
 /**
@@ -77,11 +78,16 @@ export default function SeasonPage(): React.JSX.Element {
       <h1 className="title-xl mb-1 text-[1.85rem]">{seasonLabel(season, year)}</h1>
       <p className="mb-6 text-[0.88rem] text-muted">
         {loading && !items.length
-          ? 'Les séries de la saison arrivent…'
-          : `${plural(total, 'série', 'séries')} cette saison. Tu en suis ${grouped.watching.length}, ${plural(grouped.planned.length, 'est prévue', 'sont prévues')}, ${plural(grouped.sort.length, 'reste', 'restent')} à trier.`}
+          ? t('Les séries de la saison arrivent…')
+          : t('{v0} cette saison. Tu en suis {length}, {v2}, {v3} à trier.', {
+              v0: plural(total, 'série', 'séries'),
+              length: grouped.watching.length,
+              v2: plural(grouped.planned.length, 'est prévue', 'sont prévues'),
+              v3: plural(grouped.sort.length, 'reste', 'restent')
+            })}
       </p>
 
-      <div className="mb-6 flex flex-wrap gap-2" role="tablist" aria-label="Groupes">
+      <div className="mb-6 flex flex-wrap gap-2" role="tablist" aria-label={t('Groupes')}>
         {GROUPS.map((g) => (
           <button
             key={g.id}
@@ -101,14 +107,14 @@ export default function SeasonPage(): React.JSX.Element {
       {error && !items.length ? (
         <ErrorBox message={error} onRetry={retry} />
       ) : loading && !items.length ? (
-        <Spinner label="Chargement de la saison…" />
+        <Spinner label={t('Chargement de la saison…')} />
       ) : shown.length === 0 ? (
         <EmptyState
           icon={<Sparkles size={22} />}
-          title={group === 'sort' ? 'Tout est trié' : 'Rien ici'}
+          title={group === 'sort' ? t('Tout est trié') : t('Rien ici')}
           hint={
             group === 'sort'
-              ? 'Chaque série de la saison a sa place. Les nouvelles apparaîtront ici.'
+              ? t('Chaque série de la saison a sa place. Les nouvelles apparaîtront ici.')
               : GROUPS.find((g) => g.id === group)?.hint
           }
         />
@@ -127,7 +133,7 @@ export default function SeasonPage(): React.JSX.Element {
                 <button
                   className="shrink-0"
                   onClick={() => navigate({ name: 'anime', id: media.id })}
-                  aria-label={`Ouvrir ${titleOf(media, lang)}`}
+                  aria-label={t('Ouvrir {v0}', { v0: titleOf(media, lang) })}
                 >
                   <Poster src={media.cover.large} alt="" className="h-[108px] w-[74px]" rounded="rounded-xl" />
                 </button>
@@ -143,10 +149,10 @@ export default function SeasonPage(): React.JSX.Element {
                   </p>
                   <p className="mt-0.5 text-[0.72rem] text-faint">
                     {entry
-                      ? `${seen} vu${seen > 1 ? 's' : ''}${aired ? ` sur ${aired} sorti${aired > 1 ? 's' : ''}` : ''}`
+                      ? `${seen} vu${seen > 1 ? 's' : ''}${aired ? t(' sur {aired} sorti{v1}', { aired, v1: aired > 1 ? 's' : '' }) : ''}`
                       : aired
                         ? `${plural(aired, 'épisode sorti', 'épisodes sortis')}`
-                        : 'Pas encore commencée'}
+                        : t('Pas encore commencée')}
                   </p>
 
                   <div className="mt-auto flex flex-wrap gap-1.5 pt-2">
@@ -157,20 +163,20 @@ export default function SeasonPage(): React.JSX.Element {
                           onClick={() => void saveEntry(media.id, { status: 'watching' }, media)}
                         >
                           <Eye size={13} />
-                          Je regarde
+                          {t('Je regarde')}
                         </button>
                         <button
                           className="btn !h-7 !px-2.5 text-[0.74rem]"
                           onClick={() => void saveEntry(media.id, { status: 'planned' }, media)}
                         >
                           <Clock size={13} />
-                          Plus tard
+                          {t('Plus tard')}
                         </button>
                         <button
                           className="icon-btn !h-7 !w-7"
                           onClick={() => skip(media.id, true)}
-                          aria-label="Pas pour moi"
-                          title="Pas pour moi"
+                          aria-label={t('Pas pour moi')}
+                          title={t('Pas pour moi')}
                         >
                           <X size={14} />
                         </button>
@@ -182,23 +188,23 @@ export default function SeasonPage(): React.JSX.Element {
                         onClick={() => void saveEntry(media.id, { status: 'watching' })}
                       >
                         <Eye size={13} />
-                        Je commence
+                        {t('Je commence')}
                       </button>
                     )}
                     {group === 'watching' && entry && (
                       <span className="flex items-center gap-1 text-[0.72rem] text-muted">
                         <Check size={13} />
-                        Dans ta bibliothèque
+                        {t('Dans ta bibliothèque')}
                       </span>
                     )}
                     {group === 'skipped' && !entry && (
                       <button className="btn !h-7 !px-2.5 text-[0.74rem]" onClick={() => skip(media.id, false)}>
                         <RotateCcw size={13} />
-                        Remettre à trier
+                        {t('Remettre à trier')}
                       </button>
                     )}
                     {group === 'skipped' && entry && (
-                      <span className="text-[0.72rem] text-faint">Abandonnée : à changer depuis sa fiche.</span>
+                      <span className="text-[0.72rem] text-faint">{t('Abandonnée : à changer depuis sa fiche.')}</span>
                     )}
                   </div>
                 </div>
@@ -207,7 +213,7 @@ export default function SeasonPage(): React.JSX.Element {
           })}
         </ul>
       )}
-      {loadingMore && <Spinner label="La suite de la saison…" />}
+      {loadingMore && <Spinner label={t('La suite de la saison…')} />}
     </div>
   )
 }

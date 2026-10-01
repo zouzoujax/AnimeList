@@ -25,6 +25,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useMemo, useState } from 'react'
 import { INTRO_MS, INTRO_REDUCED_MS, motes } from '@shared/intro'
 import { useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
 /** Une seule fois par lancement : un rechargement de la fenêtre n'est pas un lancement. */
 const SEEN = 'animelist-intro'
@@ -166,7 +167,8 @@ export function Intro(): React.JSX.Element | null {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: reduce ? 0.35 : 0.7, delay: reduce ? 0.1 : 0.95, ease: [0.16, 1, 0.3, 1] }}
             >
-              Anime<span className="text-muted">List</span>
+              {t('Anime')}
+              <span className="text-muted">{t('List')}</span>
             </motion.p>
 
             {/* Un trait qui s'ouvre sous le nom, et rien d'autre : pas de

@@ -16,6 +16,7 @@ import { statusBlocked } from '@/lib/status'
 import { useApp } from '@/store/app'
 import { useCatalogue, useForYou, useMangaList, useWeek } from './pages-data'
 import type { DetailHeroProps } from '.'
+import { t as tr, locale } from '@shared/i18n'
 
 /*
  * CONSOLE — le reste du système : une boutique à la une tournante, un agenda
@@ -41,11 +42,11 @@ function SquareTile({ media, badge }: { media: Media; badge?: string }): React.J
 }
 
 const TABS: { kind: BrowseKind; label: string }[] = [
-  { kind: 'trending', label: 'À la une' },
-  { kind: 'season', label: 'Nouveautés' },
-  { kind: 'popular', label: 'Meilleures ventes' },
-  { kind: 'top', label: 'Mieux notés' },
-  { kind: 'upcoming', label: 'Précommandes' }
+  { kind: 'trending', label: tr('À la une') },
+  { kind: 'season', label: tr('Nouveautés') },
+  { kind: 'popular', label: tr('Meilleures ventes') },
+  { kind: 'top', label: tr('Mieux notés') },
+  { kind: 'upcoming', label: tr('Précommandes') }
 ]
 
 export function ConsoleDiscover({ initialSearch }: { initialSearch?: string }): React.JSX.Element {
@@ -60,7 +61,7 @@ export function ConsoleDiscover({ initialSearch }: { initialSearch?: string }): 
   return (
     <div className="px-12 pb-16 pt-28">
       <div className="mb-6 flex flex-wrap items-center gap-3">
-        <h1 className="title-xl mr-4 text-[2.4rem]">Store</h1>
+        <h1 className="title-xl mr-4 text-[2.4rem]">{tr('Store')}</h1>
         {!searching &&
           TABS.map((t) => (
             <button key={t.kind} className="xc-filter" data-on={tab === t.kind} onClick={() => setTab(t.kind)}>
@@ -69,7 +70,11 @@ export function ConsoleDiscover({ initialSearch }: { initialSearch?: string }): 
           ))}
         <label className="xc-search ml-auto">
           <Search size={17} />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Rechercher dans le Store" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={tr('Rechercher dans le Store')}
+          />
         </label>
       </div>
 
@@ -88,12 +93,12 @@ export function ConsoleDiscover({ initialSearch }: { initialSearch?: string }): 
           />
           <span className="xc-shade absolute inset-0" />
           <span className="relative flex h-full flex-col justify-end p-10">
-            <span className="xc-card-kicker">En vedette</span>
+            <span className="xc-card-kicker">{tr('En vedette')}</span>
             <span className="title-xl clamp-2 mt-2 max-w-[640px] text-[2.8rem] leading-[1.02]">
               {titleOf(featured, lang)}
             </span>
             <span className="xc-primary mt-6 w-fit">
-              <Play size={18} fill="currentColor" strokeWidth={0} /> Découvrir
+              <Play size={18} fill="currentColor" strokeWidth={0} /> {tr('Découvrir')}
             </span>
           </span>
         </motion.button>
@@ -101,7 +106,7 @@ export function ConsoleDiscover({ initialSearch }: { initialSearch?: string }): 
 
       {!searching && rec && rec.picks.length > 0 && (
         <>
-          <h2 className="title-xl mb-4 mt-10 text-[1.5rem]">Recommandé pour toi</h2>
+          <h2 className="title-xl mb-4 mt-10 text-[1.5rem]">{tr('Recommandé pour toi')}</h2>
           <div className="scroll-x flex gap-4 pb-2">
             {rec.picks.slice(0, 12).map((pick) => (
               <div key={pick.media.id} className="w-[176px] shrink-0">
@@ -112,7 +117,7 @@ export function ConsoleDiscover({ initialSearch }: { initialSearch?: string }): 
         </>
       )}
 
-      <h2 className="title-xl mb-4 mt-10 text-[1.5rem]">{searching ? 'Résultats' : 'Parcourir'}</h2>
+      <h2 className="title-xl mb-4 mt-10 text-[1.5rem]">{searching ? tr('Résultats') : tr('Parcourir')}</h2>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(176px,1fr))] gap-5">
         {items.slice(featured ? 1 : 0).map((media) => (
           <SquareTile
@@ -122,12 +127,12 @@ export function ConsoleDiscover({ initialSearch }: { initialSearch?: string }): 
           />
         ))}
       </div>
-      {loading && items.length === 0 && <p className="text-faint">Chargement du Store…</p>}
+      {loading && items.length === 0 && <p className="text-faint">{tr('Chargement du Store…')}</p>}
       {error && <p className="text-faint">{error}</p>}
       {hasMore && !loading && (
         <div className="mt-10 flex justify-center">
           <button className="xc-secondary" onClick={loadMore}>
-            Charger plus
+            {tr('Charger plus')}
           </button>
         </div>
       )}
@@ -135,8 +140,8 @@ export function ConsoleDiscover({ initialSearch }: { initialSearch?: string }): 
   )
 }
 
-const weekday = new Intl.DateTimeFormat('fr-FR', { weekday: 'long' })
-const dayMonth = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long' })
+const weekday = new Intl.DateTimeFormat(locale(), { weekday: 'long' })
+const dayMonth = new Intl.DateTimeFormat(locale(), { day: 'numeric', month: 'long' })
 
 export function ConsoleCalendar(): React.JSX.Element {
   const navigate = useApp((s) => s.navigate)
@@ -149,21 +154,21 @@ export function ConsoleCalendar(): React.JSX.Element {
   return (
     <div className="px-12 pb-16 pt-28">
       <div className="mb-8 flex flex-wrap items-center gap-3">
-        <h1 className="title-xl mr-4 text-[2.4rem]">Agenda</h1>
+        <h1 className="title-xl mr-4 text-[2.4rem]">{tr('Agenda')}</h1>
         <button className="xc-filter" data-on={scope === 'library'} onClick={() => setScope('library')}>
-          Ma collection
+          {tr('Ma collection')}
         </button>
         <button className="xc-filter" data-on={scope === 'all'} onClick={() => setScope('all')}>
-          Tout le catalogue
+          {tr('Tout le catalogue')}
         </button>
         <div className="ml-auto flex items-center gap-2">
-          <button className="xc-round" onClick={() => setOffset((o) => o - 1)} aria-label="Semaine précédente">
+          <button className="xc-round" onClick={() => setOffset((o) => o - 1)} aria-label={tr('Semaine précédente')}>
             <ChevronLeft size={19} />
           </button>
           <button className="xc-filter" data-on={offset === 0} onClick={() => setOffset(0)}>
-            Cette semaine
+            {tr('Cette semaine')}
           </button>
-          <button className="xc-round" onClick={() => setOffset((o) => o + 1)} aria-label="Semaine suivante">
+          <button className="xc-round" onClick={() => setOffset((o) => o + 1)} aria-label={tr('Semaine suivante')}>
             <ChevronRight size={19} />
           </button>
         </div>
@@ -197,12 +202,12 @@ export function ConsoleCalendar(): React.JSX.Element {
                     <img src={slot.media.cover.large} alt="" className="h-full w-full object-cover" />
                   </span>
                   <span className="mt-1 block text-center text-[0.72rem] font-semibold">
-                    {formatTime(slot.airingAt * 1000)} · ép. {slot.episode}
+                    {formatTime(slot.airingAt * 1000)} {tr('· ép.')} {slot.episode}
                   </span>
                 </motion.button>
               ))}
               {day.items.length === 0 && (
-                <p className="text-[0.9rem] text-faint">{week.loading ? 'Chargement…' : 'Aucune sortie'}</p>
+                <p className="text-[0.9rem] text-faint">{week.loading ? tr('Chargement…') : tr('Aucune sortie')}</p>
               )}
             </div>
           </motion.section>
@@ -213,9 +218,9 @@ export function ConsoleCalendar(): React.JSX.Element {
 }
 
 const MANGA_TABS: { kind: MangaKind; label: string }[] = [
-  { kind: 'trending', label: 'Tendances' },
-  { kind: 'popular', label: 'Populaires' },
-  { kind: 'top', label: 'Mieux notés' }
+  { kind: 'trending', label: tr('Tendances') },
+  { kind: 'popular', label: tr('Populaires') },
+  { kind: 'top', label: tr('Mieux notés') }
 ]
 
 export function ConsoleManga(): React.JSX.Element {
@@ -227,7 +232,7 @@ export function ConsoleManga(): React.JSX.Element {
   return (
     <div className="px-12 pb-16 pt-28">
       <div className="mb-8 flex flex-wrap items-center gap-3">
-        <h1 className="title-xl mr-4 text-[2.4rem]">Manga</h1>
+        <h1 className="title-xl mr-4 text-[2.4rem]">{tr('Manga')}</h1>
         {MANGA_TABS.map((t) => (
           <button key={t.kind} className="xc-filter" data-on={tab === t.kind} onClick={() => setTab(t.kind)}>
             {t.label}
@@ -235,7 +240,7 @@ export function ConsoleManga(): React.JSX.Element {
         ))}
         <label className="xc-search ml-auto">
           <Search size={17} />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Rechercher un manga" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={tr('Rechercher un manga')} />
         </label>
       </div>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(176px,1fr))] gap-5">
@@ -259,7 +264,7 @@ export function ConsoleManga(): React.JSX.Element {
           </motion.button>
         ))}
       </div>
-      {loading && <p className="mt-6 text-faint">Chargement…</p>}
+      {loading && <p className="mt-6 text-faint">{tr('Chargement…')}</p>}
       {error && <p className="mt-6 text-faint">{error}</p>}
       <Modal open={open !== null} onClose={() => setOpen(null)} width={640}>
         {open && <MangaSheet manga={open} onClose={() => setOpen(null)} />}
@@ -280,7 +285,7 @@ export function ConsoleDetailHero(props: DetailHeroProps): React.JSX.Element {
       <img src={media.banner ?? media.cover.xl} alt="" className="absolute inset-0 h-full w-full object-cover" />
       <div className="xc-shade absolute inset-0" />
       <button className="xc-secondary relative mb-8 !h-10 !px-4" onClick={props.onBack}>
-        <ArrowLeft size={16} /> Retour
+        <ArrowLeft size={16} /> {tr('Retour')}
       </button>
 
       <div className="relative flex items-end gap-10">
@@ -302,7 +307,10 @@ export function ConsoleDetailHero(props: DetailHeroProps): React.JSX.Element {
           </p>
           <h1 className="title-xl clamp-2 mt-2 text-[3.2rem] leading-[1.02]">{titleOf(media, lang)}</h1>
           {media.averageScore !== null && (
-            <p className="mt-2 text-[1rem] text-muted">{media.averageScore}% des joueurs ont aimé</p>
+            <p className="mt-2 text-[1rem] text-muted">
+              {media.averageScore}
+              {tr('% des joueurs ont aimé')}
+            </p>
           )}
 
           {entry && total ? (
@@ -318,19 +326,29 @@ export function ConsoleDetailHero(props: DetailHeroProps): React.JSX.Element {
           <div className="mt-6 flex flex-wrap items-center gap-3">
             {next !== null && (
               <button className="xc-primary" onClick={props.onMark}>
-                <Play size={20} fill="currentColor" strokeWidth={0} /> Épisode {next}
+                <Play size={20} fill="currentColor" strokeWidth={0} /> {tr('Épisode')} {next}
               </button>
             )}
             {!entry && (
               <button className="xc-primary" onClick={props.onAdd}>
-                <Plus size={20} /> Ajouter à la collection
+                <Plus size={20} /> {tr('Ajouter à la collection')}
               </button>
             )}
-            <button className="xc-round" onClick={props.onFavorite} aria-label="Favori" data-on={!!entry?.favorite}>
+            <button
+              className="xc-round"
+              onClick={props.onFavorite}
+              aria-label={tr('Favori')}
+              data-on={!!entry?.favorite}
+            >
               <Heart size={18} fill={entry?.favorite ? 'currentColor' : 'none'} />
             </button>
             {entry && (
-              <button className="xc-round" onClick={props.onLists} aria-label="Listes" data-on={props.inLists > 0}>
+              <button
+                className="xc-round"
+                onClick={props.onLists}
+                aria-label={tr('Listes')}
+                data-on={props.inLists > 0}
+              >
                 <FolderPlus size={18} />
               </button>
             )}

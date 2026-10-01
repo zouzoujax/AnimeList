@@ -23,6 +23,7 @@ import { canTick } from '@shared/airing'
 import { resumeTargets, shortcutLabel } from '@shared/resume'
 import { TICK_ARG } from './quick-tick'
 import { snapshot } from './store'
+import { t } from '@shared/i18n'
 
 const isWindows = process.platform === 'win32'
 
@@ -101,7 +102,7 @@ export function refreshJumpList(): void {
         items: targets.map((target) => ({
           type: 'task' as const,
           title: shortcutLabel(target),
-          description: `Ouvrir ${target.title}`,
+          description: t('Ouvrir {title}', { title: target.title }),
           program: process.execPath,
           args: argsFor(target.animeId)
         }))
@@ -113,8 +114,11 @@ export function refreshJumpList(): void {
               name: 'Marquer vu',
               items: tickable.map((target) => ({
                 type: 'task' as const,
-                title: `Vu : ${shortcutLabel(target, 44)}`,
-                description: `Cocher l'épisode ${target.episode} de ${target.title} sans ouvrir l'app`,
+                title: t('Vu : {v0}', { v0: shortcutLabel(target, 44) }),
+                description: t("Cocher l'épisode {episode} de {title} sans ouvrir l'app", {
+                  episode: target.episode,
+                  title: target.title
+                }),
                 program: process.execPath,
                 args: argsFor(target.animeId, target.episode)
               }))

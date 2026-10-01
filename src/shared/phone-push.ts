@@ -1,3 +1,4 @@
+import { t } from './i18n'
 /**
  * Les notifications sur le téléphone, par ntfy.
  *
@@ -67,7 +68,7 @@ export function checkServer(raw: string): ServerCheck {
   if (url.protocol === 'https:' || (url.protocol === 'http:' && privateHost)) {
     return { ok: true, server: `${url.protocol}//${url.host}` }
   }
-  return { ok: false, error: 'En https, ou en http sur le réseau local seulement.' }
+  return { ok: false, error: t('En https, ou en http sur le réseau local seulement.') }
 }
 
 /** L'adresse du sujet, à ouvrir dans l'app ntfy ou dans un navigateur. */

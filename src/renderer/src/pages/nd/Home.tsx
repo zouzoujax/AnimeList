@@ -14,13 +14,14 @@ import { airingLabel, formatTime, isUnaired, startOfDay, titleOf } from '@/lib/f
 import { useBrowse, useNow } from '@/lib/hooks'
 import { setLume } from '@/lib/lume'
 import { nextEpisodeOf, useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
 function greeting(): string {
   const h = new Date().getHours()
-  if (h < 6) return 'Bonne nuit'
-  if (h < 12) return 'Bonjour'
-  if (h < 18) return 'Bon après-midi'
-  return 'Bonsoir'
+  if (h < 6) return t('Bonne nuit')
+  if (h < 12) return t('Bonjour')
+  if (h < 18) return t('Bon après-midi')
+  return t('Bonsoir')
 }
 
 function Spotlight({ media, resumeAt }: { media: Media; resumeAt: number | null }): React.JSX.Element {
@@ -95,8 +96,16 @@ function Spotlight({ media, resumeAt }: { media: Media; resumeAt: number | null 
             <>
               <p className="mt-3 text-[0.86rem] text-muted">
                 {pending && media.nextAiring
-                  ? `Tu es à jour. L'épisode ${resumeAt} sort ${airingLabel(media.nextAiring.airingAt).toLowerCase()}.`
-                  : `${plural(seenCount, 'épisode')} vu${seenCount > 1 ? 's' : ''}${media.episodes ? ` sur ${media.episodes}` : ''}. Le suivant est l'épisode ${resumeAt}.`}
+                  ? t("Tu es à jour. L'épisode {resumeAt} sort {v1}.", {
+                      resumeAt,
+                      v1: airingLabel(media.nextAiring.airingAt).toLowerCase()
+                    })
+                  : t("{v0} vu{v1}{v2}. Le suivant est l'épisode {resumeAt}.", {
+                      v0: plural(seenCount, 'épisode'),
+                      v1: seenCount > 1 ? 's' : '',
+                      v2: media.episodes ? ` sur ${media.episodes}` : '',
+                      resumeAt
+                    })}
               </p>
               <div className="mt-3 max-w-2xl">
                 <EpisodeStrip media={media} next={resumeAt} size="lg" />
@@ -114,18 +123,18 @@ function Spotlight({ media, resumeAt }: { media: Media; resumeAt: number | null 
                 className="btn btn-primary"
                 onClick={async () => {
                   await toggleEpisode(media.id, resumeAt)
-                  toast(`Épisode ${resumeAt} coché · ${titleOf(media, lang)}`)
+                  toast(t('Épisode {resumeAt} coché · {v1}', { resumeAt, v1: titleOf(media, lang) }))
                 }}
               >
                 <Check size={15} />
-                Cocher l'épisode {resumeAt}
+                {t("Cocher l'épisode")} {resumeAt}
               </button>
             )}
             <button
               className={resumeAt === null ? 'btn btn-primary' : 'btn'}
               onClick={() => navigate({ name: 'anime', id: media.id })}
             >
-              Voir la fiche
+              {t('Voir la fiche')}
             </button>
           </div>
         </div>
@@ -185,7 +194,7 @@ function WeekGrid({
                 <span className="min-w-0">
                   <span className="clamp-2 text-[0.76rem] font-semibold leading-snug">{titleOf(media, lang)}</span>
                   <span className="mt-0.5 block text-[0.7rem] text-faint">
-                    Ép. {media.nextAiring!.episode}, {formatTime(media.nextAiring!.airingAt * 1000)}
+                    {t('Ép.')} {media.nextAiring!.episode}, {formatTime(media.nextAiring!.airingAt * 1000)}
                   </span>
                 </span>
               </button>
@@ -349,7 +358,7 @@ export default function HomePage(): React.JSX.Element {
     : behindTotal > 0
       ? `${greeting()}, ${plural(behindTotal, 'épisode')} ${behindTotal > 1 ? "t'attendent" : "t'attend"}.`
       : continueList.length > 0
-        ? `${greeting()}, tu es à jour.`
+        ? t('{v0}, tu es à jour.', { v0: greeting() })
         : `${greeting()}.`
 
   const behindSeries = continueList.filter((m) => (behindOf.get(m.id) ?? 0) > 0)
@@ -370,15 +379,17 @@ export default function HomePage(): React.JSX.Element {
           <div className="span-all mb-9">
             <EmptyState
               icon={<Compass size={24} />}
-              title="Ta bibliothèque est vide"
-              hint="Cherche un anime avec Ctrl+K, ou pioche dans les tendances ci-dessous. Tu peux aussi importer ta liste MyAnimeList depuis les réglages."
+              title={t('Ta bibliothèque est vide')}
+              hint={t(
+                'Cherche un anime avec Ctrl+K, ou pioche dans les tendances ci-dessous. Tu peux aussi importer ta liste MyAnimeList depuis les réglages.'
+              )}
               action={
                 <div className="mt-1 flex gap-2">
                   <button className="btn btn-primary" onClick={() => navigate({ name: 'discover' })}>
-                    Explorer
+                    {t('Explorer')}
                   </button>
                   <button className="btn" onClick={() => navigate({ name: 'settings' })}>
-                    Importer ma liste
+                    {t('Importer ma liste')}
                   </button>
                 </div>
               }
@@ -388,13 +399,13 @@ export default function HomePage(): React.JSX.Element {
 
         {queue.length > 0 && (
           <Section
-            title="À regarder"
-            subtitle={`Tes autres séries en cours, de la plus récente à la plus ancienne`}
+            title={t('À regarder')}
+            subtitle={t('Tes autres séries en cours, de la plus récente à la plus ancienne')}
             action={
               behindSeries.length > 1 ? (
                 <button
                   className="chip shrink-0"
-                  title="Ouvre une série au hasard parmi celles où des épisodes t'attendent"
+                  title={t("Ouvre une série au hasard parmi celles où des épisodes t'attendent")}
                   onClick={() => {
                     // Choisir est un travail aussi : trente-trois séries en
                     // retard, ce sont trente-trois décisions avant de regarder.
@@ -403,7 +414,7 @@ export default function HomePage(): React.JSX.Element {
                   }}
                 >
                   <Dices size={13} />
-                  Au hasard
+                  {t('Au hasard')}
                 </button>
               ) : undefined
             }
@@ -415,7 +426,7 @@ export default function HomePage(): React.JSX.Element {
             </ul>
             {queue.length > QUEUE_FOLD && (
               <button className="btn btn-ghost mt-2" onClick={() => setQueueOpen((open) => !open)}>
-                {queueOpen ? 'Replier la liste' : `Afficher les ${queue.length - QUEUE_FOLD} autres`}
+                {queueOpen ? t('Replier la liste') : t('Afficher les {v0} autres', { v0: queue.length - QUEUE_FOLD })}
               </button>
             )}
           </Section>
@@ -430,14 +441,14 @@ export default function HomePage(): React.JSX.Element {
             <header className="mb-3.5 flex items-end justify-between gap-4 px-1">
               <div>
                 {planWorth ? (
-                  <div className="flex items-center gap-3" role="tablist" aria-label="Que montrer de la semaine">
+                  <div className="flex items-center gap-3" role="tablist" aria-label={t('Que montrer de la semaine')}>
                     <button
                       role="tab"
                       aria-selected={!showPlan}
                       className="home-tab title-xl"
                       onClick={() => setWeekTab('airing')}
                     >
-                      Cette semaine
+                      {t('Cette semaine')}
                     </button>
                     <button
                       role="tab"
@@ -445,18 +456,18 @@ export default function HomePage(): React.JSX.Element {
                       className="home-tab title-xl"
                       onClick={() => setWeekTab('plan')}
                     >
-                      Rattrapage
+                      {t('Rattrapage')}
                     </button>
                   </div>
                 ) : (
-                  <h2 className="title-xl text-[1.32rem] leading-tight">Cette semaine</h2>
+                  <h2 className="title-xl text-[1.32rem] leading-tight">{t('Cette semaine')}</h2>
                 )}
                 <p className="mt-0.5 text-[0.8rem] text-muted">
-                  {showPlan ? planSentence(plan, now) : 'Les prochains épisodes de tes séries, jour par jour'}
+                  {showPlan ? planSentence(plan, now) : t('Les prochains épisodes de tes séries, jour par jour')}
                 </p>
               </div>
               <button className="btn btn-ghost" onClick={() => navigate({ name: 'calendar' })}>
-                Calendrier <ArrowUpRight size={14} />
+                {t('Calendrier')} <ArrowUpRight size={14} />
               </button>
             </header>
             {showPlan ? (
@@ -471,16 +482,16 @@ export default function HomePage(): React.JSX.Element {
 
         {news.length > 0 && (
           <Section
-            title="Chez ceux que tu suis"
+            title={t('Chez ceux que tu suis')}
             subtitle={
               newsTotal > 1
-                ? `${newsTotal} nouveautés depuis ta dernière visite`
-                : 'Une nouveauté depuis ta dernière visite'
+                ? t('{newsTotal} nouveautés depuis ta dernière visite', { newsTotal })
+                : t('Une nouveauté depuis ta dernière visite')
             }
             action={
               <button
                 className="chip shrink-0"
-                title="Ne plus les faire remonter ici"
+                title={t('Ne plus les faire remonter ici')}
                 onClick={() => {
                   // Vidé tout de suite à l'écran : attendre la réponse ferait
                   // rester la rangée une seconde de trop après le clic.
@@ -489,7 +500,7 @@ export default function HomePage(): React.JSX.Element {
                 }}
               >
                 <Check size={13} />
-                J’ai vu
+                {t('J’ai vu')}
               </button>
             }
           >
@@ -512,15 +523,15 @@ export default function HomePage(): React.JSX.Element {
 
         {pinned.length > 0 && (
           <Section
-            title="À revoir"
-            subtitle="Les épisodes que tu as mis de côté"
+            title={t('À revoir')}
+            subtitle={t('Les épisodes que tu as mis de côté')}
             action={
               <button
                 className="chip shrink-0"
-                title="Tout ce que tu as regardé, avec tes notes"
+                title={t('Tout ce que tu as regardé, avec tes notes')}
                 onClick={() => navigate({ name: 'journal' })}
               >
-                Le journal
+                {t('Le journal')}
               </button>
             }
           >
@@ -531,7 +542,7 @@ export default function HomePage(): React.JSX.Element {
                   id={row.media.id}
                   title={titleOf(row.media, lang)}
                   cover={row.media.cover.large}
-                  caption={`Épisode ${row.ev.episode}`}
+                  caption={t('Épisode {episode}', { episode: row.ev.episode })}
                   index={i}
                 />
               ))}
@@ -541,14 +552,14 @@ export default function HomePage(): React.JSX.Element {
 
         <section className="span-all mb-9">
           <header className="mb-3.5 flex flex-wrap items-end justify-between gap-3 px-1">
-            <div className="flex items-center gap-2" role="tablist" aria-label="Que montrer">
+            <div className="flex items-center gap-2" role="tablist" aria-label={t('Que montrer')}>
               <button
                 role="tab"
                 aria-selected={discoverTab === 'trending'}
                 className="home-tab title-xl"
                 onClick={() => setDiscoverTab('trending')}
               >
-                Tendances
+                {t('Tendances')}
               </button>
               <button
                 role="tab"
@@ -556,11 +567,11 @@ export default function HomePage(): React.JSX.Element {
                 className="home-tab title-xl"
                 onClick={() => setDiscoverTab('season')}
               >
-                Cette saison
+                {t('Cette saison')}
               </button>
             </div>
             <button className="btn btn-ghost" onClick={() => navigate({ name: 'discover' })}>
-              Tout voir <ArrowUpRight size={14} />
+              {t('Tout voir')} <ArrowUpRight size={14} />
             </button>
           </header>
           {shelf.loading ? (

@@ -10,6 +10,7 @@
 import { Notification } from 'electron'
 import { canTick } from '@shared/airing'
 import { isWatched, setWatched, snapshot } from './store'
+import { t } from '@shared/i18n'
 
 /** L'argument qui porte l'épisode à cocher, quand un raccourci relance l'app. */
 export const TICK_ARG = '--animelist-tick='
@@ -32,7 +33,7 @@ export function quickTick(animeId: number, episode: number): boolean {
   const data = snapshot()
   const media = data.media.find((m) => m.id === animeId)
   const already = isWatched(animeId, episode)
-  const title = media ? (media.title.english ?? media.title.romaji) : 'Cette série'
+  const title = media ? (media.title.english ?? media.title.romaji) : t('Cette série')
 
   const ok = !already && (!media || canTick(media, episode, false))
   if (ok) setWatched(animeId, episode, true)

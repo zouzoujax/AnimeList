@@ -37,6 +37,7 @@ import { firstInventory, freshBadges, MAX_CHEERS, withUnlocked } from '@shared/b
 import { useBadgeWall } from '@/lib/badges'
 import { playBadgeChime } from '@/lib/chime'
 import { useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
 /** Le temps d'un carton : assez pour lire trois lignes, pas pour gêner. */
 const SHOWN_MS = 4600
@@ -188,11 +189,11 @@ export function BadgeUnlocked(): React.JSX.Element | null {
                 centré, c'est elle.
               */}
               <div className="badge-name">
-                <span className="badge-kicker">Badge obtenu</span>
+                <span className="badge-kicker">{t('Badge obtenu')}</span>
                 <span className="badge-label">{current.label}</span>
                 <span className="badge-hint">
                   {current.hint}
-                  {others > 0 ? ` · et ${others} autre${others > 1 ? 's' : ''}` : ''}
+                  {others > 0 ? t(' · et {others} autre{v1}', { others, v1: others > 1 ? 's' : '' }) : ''}
                 </span>
               </div>
             </div>

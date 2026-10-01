@@ -13,6 +13,7 @@
 import { useEffect } from 'react'
 import { Keyboard } from 'lucide-react'
 import { Modal } from './ui'
+import { t } from '@shared/i18n'
 
 interface Shortcut {
   keys: string[]
@@ -23,42 +24,46 @@ interface Shortcut {
 
 const GROUPS: { title: string; rows: Shortcut[] }[] = [
   {
-    title: 'Partout',
+    title: t('Partout'),
     rows: [
-      { keys: ['Ctrl', 'K'], label: 'Ouvrir la recherche', hint: 'Ta bibliothèque, AniList et la navigation' },
+      { keys: ['Ctrl', 'K'], label: t('Ouvrir la recherche'), hint: t('Ta bibliothèque, AniList et la navigation') },
       {
         keys: ['Ctrl', '1…8'],
-        label: 'Aller à une page du menu',
-        hint: 'Accueil, Découvrir, Bibliothèque, Manga, Calendrier, Statistiques, Journal, Réglages'
+        label: t('Aller à une page du menu'),
+        hint: t('Accueil, Découvrir, Bibliothèque, Manga, Calendrier, Statistiques, Journal, Réglages')
       },
-      { keys: ['Alt', '←'], label: 'Revenir en arrière', hint: 'Ou le bouton « précédent » de la souris' },
-      { keys: ['Alt', '→'], label: 'Revenir en avant', hint: 'Ou le bouton « suivant » de la souris' },
-      { keys: ['Ctrl', 'Z'], label: 'Annuler la dernière coche', hint: 'Cocher, cocher jusque-là, réinitialiser' },
-      { keys: ['?'], label: 'Cette fenêtre' },
-      { keys: ['Échap'], label: 'Fermer ce qui est ouvert' }
+      { keys: ['Alt', '←'], label: t('Revenir en arrière'), hint: t('Ou le bouton « précédent » de la souris') },
+      { keys: ['Alt', '→'], label: t('Revenir en avant'), hint: t('Ou le bouton « suivant » de la souris') },
+      {
+        keys: ['Ctrl', 'Z'],
+        label: t('Annuler la dernière coche'),
+        hint: t('Cocher, cocher jusque-là, réinitialiser')
+      },
+      { keys: ['?'], label: t('Cette fenêtre') },
+      { keys: ['Échap'], label: t('Fermer ce qui est ouvert') }
     ]
   },
   {
-    title: 'Dans la recherche',
+    title: t('Dans la recherche'),
     rows: [
-      { keys: ['↑', '↓'], label: 'Parcourir les résultats' },
-      { keys: ['⏎'], label: 'Ouvrir le résultat choisi' }
+      { keys: ['↑', '↓'], label: t('Parcourir les résultats') },
+      { keys: ['⏎'], label: t('Ouvrir le résultat choisi') }
     ]
   },
   {
-    title: 'Sur la grille des épisodes',
+    title: t('Sur la grille des épisodes'),
     rows: [
-      { keys: ['Clic'], label: 'Cocher ou décocher un épisode' },
-      { keys: ['Maj', 'Clic'], label: 'Cocher tout jusqu’à cet épisode' },
-      { keys: ['Clic droit'], label: 'Éditer un visionnage', hint: 'Date, durée, ressenti, note' },
-      { keys: ['▶'], label: 'Ouvrir l’épisode chez une plateforme', hint: 'Au survol d’un épisode diffusé' }
+      { keys: ['Clic'], label: t('Cocher ou décocher un épisode') },
+      { keys: ['Maj', 'Clic'], label: t('Cocher tout jusqu’à cet épisode') },
+      { keys: ['Clic droit'], label: t('Éditer un visionnage'), hint: t('Date, durée, ressenti, note') },
+      { keys: ['▶'], label: t('Ouvrir l’épisode chez une plateforme'), hint: t('Au survol d’un épisode diffusé') }
     ]
   },
   {
-    title: 'Dans le lecteur',
+    title: t('Dans le lecteur'),
     rows: [
-      { keys: ['Espace'], label: 'Lecture ou pause' },
-      { keys: ['Échap'], label: 'Fermer', hint: 'Un clic à côté de la vidéo ferme aussi' }
+      { keys: ['Espace'], label: t('Lecture ou pause') },
+      { keys: ['Échap'], label: t('Fermer'), hint: t('Un clic à côté de la vidéo ferme aussi') }
     ]
   }
 ]
@@ -80,8 +85,8 @@ export default function Shortcuts({ open, onClose }: { open: boolean; onClose: (
       <div className="flex items-center gap-2.5 border-b px-5 py-4" style={{ borderColor: 'var(--line)' }}>
         <Keyboard size={17} style={{ color: 'var(--accent)' }} />
         <div>
-          <p className="text-[1rem] font-semibold">Raccourcis</p>
-          <p className="mt-0.5 text-[0.75rem] text-faint">Clavier et souris</p>
+          <p className="text-[1rem] font-semibold">{t('Raccourcis')}</p>
+          <p className="mt-0.5 text-[0.75rem] text-faint">{t('Clavier et souris')}</p>
         </div>
       </div>
 
@@ -110,7 +115,7 @@ export default function Shortcuts({ open, onClose }: { open: boolean; onClose: (
 
       <div className="flex justify-end border-t px-5 py-3" style={{ borderColor: 'var(--line)' }}>
         <button className="btn" onClick={onClose}>
-          Fermer
+          {t('Fermer')}
         </button>
       </div>
     </Modal>

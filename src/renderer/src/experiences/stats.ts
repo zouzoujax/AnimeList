@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { GENRE_LABELS, type Media } from '@shared/types'
 import { useApp } from '@/store/app'
+import { locale, dayNames, uiLang } from '@shared/i18n'
 
 /*
  * Les chiffres des pages Statistiques des expériences.
@@ -31,7 +32,11 @@ export interface StatsData {
 }
 
 const DAY = 86_400_000
-export const WEEKDAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
+// Lundi d'abord, en abrégé : « Lun », « Mon », « 月 »…
+export const WEEKDAYS =
+  uiLang() === 'fr'
+    ? ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
+    : [...dayNames('short').slice(1), dayNames('short')[0]]
 
 export function useStats(): StatsData {
   const events = useApp((s) => s.events)
@@ -98,7 +103,7 @@ export function useStats(): StatsData {
         episodes += 1
         mins += ev.minutes
       }
-      return { label: start.toLocaleDateString('fr-FR', { month: 'short' }), episodes, minutes: mins }
+      return { label: start.toLocaleDateString(locale(), { month: 'short' }), episodes, minutes: mins }
     })
 
     const scores = [...entries.values()].map((e) => e.score).filter((s): s is number => s !== null)

@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight, LoaderCircle, TriangleAlert } from 'lucide-r
 import { AnimatePresence, animate, motion } from 'motion/react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import { t } from '@shared/i18n'
 
 export function Section({
   id,
@@ -67,7 +68,7 @@ export function RowScroller({ children }: { children: ReactNode }): React.JSX.El
           <button
             key={side}
             onClick={() => scrollBy(side === 'left' ? -1 : 1)}
-            aria-label={side === 'left' ? 'Précédent' : 'Suivant'}
+            aria-label={side === 'left' ? t('Précédent') : t('Suivant')}
             className="glass-blur absolute top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full opacity-0 transition group-hover/row:opacity-100 hover:!bg-white/12"
             style={{ [side]: '-6px' }}
           >
@@ -139,7 +140,7 @@ export function PosterSkeletons({ count = 8 }: { count?: number }): React.JSX.El
  */
 export function FicheSkeleton({ children }: { children?: ReactNode }): React.JSX.Element {
   return (
-    <div className="fiche-skeleton pb-14" aria-busy="true" aria-label="Chargement de la fiche">
+    <div className="fiche-skeleton pb-14" aria-busy="true" aria-label={t('Chargement de la fiche')}>
       <div className="relative">
         {children && <div className="absolute inset-x-0 top-0 z-10 mx-auto max-w-[1400px] px-7 pt-5">{children}</div>}
         <div className="skeleton absolute inset-x-0 top-0 h-[330px] !rounded-none opacity-60" />
@@ -193,7 +194,7 @@ export function Spinner({ label }: { label?: string }): React.JSX.Element {
   return (
     <div className="flex items-center justify-center gap-2.5 py-10 text-sm text-muted">
       <LoaderCircle size={17} className="animate-spin" />
-      {label ?? 'Chargement…'}
+      {label ?? t('Chargement…')}
     </div>
   )
 }
@@ -208,7 +209,7 @@ export function ErrorBox({ message, onRetry }: { message: string; onRetry?: () =
       <span className="min-w-[10rem] flex-1 text-muted">{message}</span>
       {onRetry && (
         <button className="btn" onClick={onRetry}>
-          Réessayer
+          {t('Réessayer')}
         </button>
       )}
     </div>

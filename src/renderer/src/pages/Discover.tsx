@@ -32,13 +32,14 @@ import { monthBucket, premiereLabel, premiereOf, premiereSort } from '@/lib/form
 import { useBrowse, useDebounced, useInView } from '@/lib/hooks'
 import { StaleNote } from '@/components/StaleNote'
 import { useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
 const TABS: { kind: BrowseKind; label: string; icon: typeof Flame }[] = [
-  { kind: 'trending', label: 'Tendances', icon: Flame },
-  { kind: 'season', label: 'Cette saison', icon: Sparkles },
-  { kind: 'popular', label: 'Populaires', icon: TrendingUp },
-  { kind: 'top', label: 'Mieux notés', icon: Star },
-  { kind: 'upcoming', label: 'À venir', icon: Rocket }
+  { kind: 'trending', label: t('Tendances'), icon: Flame },
+  { kind: 'season', label: t('Cette saison'), icon: Sparkles },
+  { kind: 'popular', label: t('Populaires'), icon: TrendingUp },
+  { kind: 'top', label: t('Mieux notés'), icon: Star },
+  { kind: 'upcoming', label: t('À venir'), icon: Rocket }
 ]
 
 const FORMATS: MediaFormat[] = ['TV', 'MOVIE', 'OVA', 'ONA', 'SPECIAL', 'TV_SHORT']
@@ -51,10 +52,10 @@ const FORMATS: MediaFormat[] = ['TV', 'MOVIE', 'OVA', 'ONA', 'SPECIAL', 'TV_SHOR
  * dire, mieux vaut se taire qu'inventer une raison.
  */
 function reasonOf(pick: ForYouPick): string {
-  if (pick.reasons.length) return `parce que ${pick.reasons.join(' ')}`
+  if (pick.reasons.length) return t('parce que {v0}', { v0: pick.reasons.join(' ') })
   if (pick.from.length) {
     const extra = pick.from.length > 2 ? ` +${pick.from.length - 2}` : ''
-    return `parce que tu as aimé ${pick.from.slice(0, 2).join(', ')}${extra}`
+    return t('parce que tu as aimé {v0}{extra}', { v0: pick.from.slice(0, 2).join(', '), extra })
   }
   return ''
 }
@@ -87,7 +88,9 @@ function UpcomingSchedule({ items }: { items: Media[] }): React.JSX.Element {
           <header className="mb-3.5 flex items-center gap-3 px-1">
             <CalendarClock size={15} style={{ color: 'var(--accent-2)' }} />
             <h2 className="title-xl text-[1.12rem] capitalize">{group.label}</h2>
-            <span className="text-[0.74rem] text-faint">{group.items.length} titres</span>
+            <span className="text-[0.74rem] text-faint">
+              {group.items.length} {t('titres')}
+            </span>
             <div className="hairline ml-2 flex-1" />
           </header>
 
@@ -96,7 +99,7 @@ function UpcomingSchedule({ items }: { items: Media[] }): React.JSX.Element {
               <div key={media.id}>
                 <AnimeCard media={media} width="100%" index={i % 24} />
                 <p className="mt-1 px-0.5 text-[0.68rem] font-semibold" style={{ color: 'var(--accent-2)' }}>
-                  {media.status === 'RELEASING' && <span style={{ color: '#ffb038' }}>Reprise · </span>}
+                  {media.status === 'RELEASING' && <span style={{ color: '#ffb038' }}>{t('Reprise ·')} </span>}
                   {premiereLabel(premiereOf(media))}
                 </p>
               </div>
@@ -214,15 +217,17 @@ export default function DiscoverPage({
 
   return (
     <div className="page">
-      <h1 className="title-xl mb-1 text-[1.85rem]">Découvrir</h1>
+      <h1 className="title-xl mb-1 text-[1.85rem]">{t('Découvrir')}</h1>
       <p className="mb-6 text-[0.85rem] text-muted">
         {searching
-          ? `Résultats pour « ${debounced} »`
+          ? t('Résultats pour « {debounced} »', { debounced })
           : showSchedule
-            ? 'Calendrier des sorties, du plus proche au plus lointain. Les titres sans date annoncée ne sont pas listés.'
+            ? t(
+                'Calendrier des sorties, du plus proche au plus lointain. Les titres sans date annoncée ne sont pas listés.'
+              )
             : tag
-              ? `Les séries marquées « ${tag} ».`
-              : 'Tout le catalogue AniList — sans compte, sans pub.'}
+              ? t('Les séries marquées « {tag} ».', { tag })
+              : t('Tout le catalogue AniList — sans compte, sans pub.')}
       </p>
 
       <div className="glass sticky top-0 z-20 mb-7 rounded-[20px] p-3 backdrop-blur-xl">
@@ -232,13 +237,13 @@ export default function DiscoverPage({
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher un titre…"
+              placeholder={t('Rechercher un titre…')}
               className="field w-full !pl-9 !pr-9"
             />
             {search && (
               <button
                 onClick={() => setSearch('')}
-                aria-label="Effacer"
+                aria-label={t('Effacer')}
                 className="icon-btn absolute right-1 top-1/2 !h-7 !w-7 -translate-y-1/2"
               >
                 <X size={13} />
@@ -248,11 +253,11 @@ export default function DiscoverPage({
 
           <button
             className="chip !h-[38px] !px-3.5 shrink-0"
-            title="Trouver de quel anime vient une capture d’écran"
+            title={t('Trouver de quel anime vient une capture d’écran')}
             onClick={() => setIdentify({ open: true, file: null })}
           >
             <ScanSearch size={14} />
-            Identifier une image
+            {t('Identifier une image')}
           </button>
 
           <div className="flex flex-wrap gap-1.5">
@@ -276,7 +281,7 @@ export default function DiscoverPage({
         <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
           {tag && (
             <>
-              <button data-on className="chip" onClick={() => setTag(null)} title="Retirer ce tag">
+              <button data-on className="chip" onClick={() => setTag(null)} title={t('Retirer ce tag')}>
                 <Tag size={12} />
                 {tag}
                 <X size={12} />
@@ -285,7 +290,7 @@ export default function DiscoverPage({
             </>
           )}
           <button data-on={!genre} className="chip" onClick={() => setGenre(null)}>
-            Tous genres
+            {t('Tous genres')}
           </button>
           {GENRES.map((g) => (
             <button key={g} data-on={genre === g} className="chip" onClick={() => setGenre(genre === g ? null : g)}>
@@ -310,8 +315,8 @@ export default function DiscoverPage({
         >
           <ListChecks size={18} className="shrink-0 text-[var(--accent-2)]" />
           <span className="flex-1 text-[0.85rem]">
-            <span className="font-semibold">Faire le tri de la saison</span>
-            <span className="text-muted"> : ce que tu suis, ce que tu prévois, ce que tu écartes.</span>
+            <span className="font-semibold">{t('Faire le tri de la saison')}</span>
+            <span className="text-muted"> {t(': ce que tu suis, ce que tu prévois, ce que tu écartes.')}</span>
           </span>
           <ArrowRight size={16} className="shrink-0 text-faint" />
         </button>
@@ -324,16 +329,29 @@ export default function DiscoverPage({
       {!searching && !tag && !genre && !format && tab === 'trending' && rec && rec.picks.length > 0 && (
         <section className="mb-9">
           <div className="mb-3.5 px-1">
-            <h2 className="title-xl text-[1.32rem] leading-tight">Pour toi</h2>
+            <h2 className="title-xl text-[1.32rem] leading-tight">{t('Pour toi')}</h2>
             {/* La phrase dit sur quoi le classement repose. Sans note donnée,
                 il repose sur ce qui est le plus regardé — et le dire tient
                 lieu d'invitation à noter, ce qui l'affinerait vraiment. */}
             <p className="mt-0.5 text-[0.8rem] text-muted">
               {rec.weak
-                ? `Ton profil ne tient encore que sur ${rec.profile.sample} série${rec.profile.sample > 1 ? 's' : ''} regardée${rec.profile.sample > 1 ? 's' : ''} — il s’affinera à mesure que tu en ajoutes.`
+                ? t(
+                    'Ton profil ne tient encore que sur {sample} série{v1} regardée{v2} — il s’affinera à mesure que tu en ajoutes.',
+                    {
+                      sample: rec.profile.sample,
+                      v1: rec.profile.sample > 1 ? 's' : '',
+                      v2: rec.profile.sample > 1 ? 's' : ''
+                    }
+                  )
                 : rec.profile.scored === 0
-                  ? `D’après les ${rec.profile.sample} séries que tu regardes. Note-les et le classement suivra tes notes plutôt que tes habitudes.`
-                  : `D’après tes ${rec.profile.scored} notes, sur les ${rec.profile.sample} séries que tu as regardées`}
+                  ? t(
+                      'D’après les {sample} séries que tu regardes. Note-les et le classement suivra tes notes plutôt que tes habitudes.',
+                      { sample: rec.profile.sample }
+                    )
+                  : t('D’après tes {scored} notes, sur les {sample} séries que tu as regardées', {
+                      scored: rec.profile.scored,
+                      sample: rec.profile.sample
+                    })}
             </p>
             {/* Ce que l'app croit avoir compris, affiché : un classement dont
                 on ne voit pas la règle ne se conteste pas. */}
@@ -366,7 +384,7 @@ export default function DiscoverPage({
         <ErrorBox message={error} onRetry={retry} />
       ) : items.length === 0 ? (
         <p className="py-16 text-center text-sm text-faint">
-          {showSchedule ? 'Rien d’annoncé pour cette saison.' : 'Aucun anime ne correspond à ces filtres.'}
+          {showSchedule ? t('Rien d’annoncé pour cette saison.') : t('Aucun anime ne correspond à ces filtres.')}
         </p>
       ) : (
         <>
@@ -380,7 +398,7 @@ export default function DiscoverPage({
             </div>
           )}
           {hasMore && <div ref={sentinel} className="h-4" />}
-          {loadingMore && <Spinner label="Chargement de la suite…" />}
+          {loadingMore && <Spinner label={t('Chargement de la suite…')} />}
         </>
       )}
 

@@ -21,6 +21,7 @@ import { BRANCH_LABELS, type Node, type Tree } from '@shared/franchise'
 import { humanMessage } from '@shared/api-outage'
 import { Poster, Spinner } from '@/components/ui'
 import { rgba, toneAccent } from '@/lib/color'
+import { t as tr } from '@shared/i18n'
 
 /** L'avancement d'une série, en une barre et un chiffre. */
 function Bar({ seen, total }: { seen: number; total: number | null }): React.JSX.Element | null {
@@ -65,7 +66,9 @@ function Leaf({ node, onOpen }: { node: Node; onOpen: (id: number) => void }): R
   return (
     <button
       onClick={() => onOpen(node.id)}
-      title={node.tracked ? `${node.seen} vu${node.seen > 1 ? 's' : ''}` : 'Pas dans ta bibliothèque'}
+      title={
+        node.tracked ? tr('{n} vu{s}', { n: node.seen, s: node.seen > 1 ? 's' : '' }) : tr('Pas dans ta bibliothèque')
+      }
       className="fr-leaf flex w-full items-center gap-2 rounded-lg px-2 py-1 text-left transition-colors hover:bg-white/6"
     >
       <span className="h-[6px] w-[6px] shrink-0 rounded-full" style={pastille} />
@@ -115,12 +118,14 @@ export function Franchise({ animeId, onOpen }: { animeId: number; onOpen: (id: n
     )
   }
 
-  if (tree === null) return <Spinner label="Construction de l’arbre…" />
+  if (tree === null) return <Spinner label={tr('Construction de l’arbre…')} />
 
   if (tree.trunk.length === 0) {
     return (
       <p className="p-8 text-sm text-muted">
-        Rien à dessiner : AniList ne rattache cette série à aucune autre, ou sa fiche n’a pas encore été chargée.
+        {tr(
+          'Rien à dessiner : AniList ne rattache cette série à aucune autre, ou sa fiche n’a pas encore été chargée.'
+        )}
       </p>
     )
   }
@@ -135,14 +140,18 @@ export function Franchise({ animeId, onOpen }: { animeId: number; onOpen: (id: n
           <GitBranch size={17} />
         </span>
         <div>
-          <p className="text-[0.95rem] font-semibold">Arbre de la franchise</p>
+          <p className="text-[0.95rem] font-semibold">{tr('Arbre de la franchise')}</p>
           {/* Pas de pourcentage : il ne porterait que sur les séries suivies,
               dont le total est connu, et annoncerait « 100 % » d'une franchise
               dont vingt titres n'ont jamais été ouverts. Le compte de ce qui
               manque dit la vraie histoire. */}
           <p className="text-[0.78rem] text-faint">
-            {tree.count} séries · {tree.seen} épisode{tree.seen > 1 ? 's' : ''} vu{tree.seen > 1 ? 's' : ''}
-            {dehors > 0 ? ` · ${dehors} hors de ta bibliothèque` : ''}
+            {tr('{count} séries · {seen} épisode{s} vu{s}', {
+              count: tree.count,
+              seen: tree.seen,
+              s: tree.seen > 1 ? 's' : ''
+            })}
+            {dehors > 0 ? tr(' · {dehors} hors de ta bibliothèque', { dehors }) : ''}
           </p>
         </div>
       </div>
@@ -154,8 +163,9 @@ export function Franchise({ animeId, onOpen }: { animeId: number; onOpen: (id: n
           className="mb-4 rounded-2xl px-3.5 py-2.5 text-[0.78rem] text-muted"
           style={{ background: 'rgba(255,255,255,.04)', border: '1px solid var(--line)' }}
         >
-          L’arbre est incomplet : le catalogue n’a pas répondu, et il manque peut-être des branches. Les séries hors de
-          ta bibliothèque ne pourront pas s’ouvrir tant qu’il ne répond pas.
+          {tr(
+            'L’arbre est incomplet : le catalogue n’a pas répondu, et il manque peut-être des branches. Les séries hors de ta bibliothèque ne pourront pas s’ouvrir tant qu’il ne répond pas.'
+          )}
         </p>
       )}
 
@@ -190,7 +200,7 @@ export function Franchise({ animeId, onOpen }: { animeId: number; onOpen: (id: n
                   {season.tracked ? (
                     <Bar seen={season.seen} total={season.total} />
                   ) : (
-                    <span className="mt-1 block text-[0.7rem] text-faint">Pas dans ta bibliothèque</span>
+                    <span className="mt-1 block text-[0.7rem] text-faint">{tr('Pas dans ta bibliothèque')}</span>
                   )}
                 </span>
               </button>
@@ -215,8 +225,9 @@ export function Franchise({ animeId, onOpen }: { animeId: number; onOpen: (id: n
       </ol>
 
       <p className="fr-legend mt-2 text-[0.7rem] text-faint">
-        Les branches viennent des relations qu’AniList déclare. Point plein : série finie. Point à demi rempli :
-        commencée. Cercle vide : suivie mais pas entamée. Point gris : absente de ta bibliothèque.
+        {tr(
+          'Les branches viennent des relations qu’AniList déclare. Point plein : série finie. Point à demi rempli : commencée. Cercle vide : suivie mais pas entamée. Point gris : absente de ta bibliothèque.'
+        )}
       </p>
     </div>
   )

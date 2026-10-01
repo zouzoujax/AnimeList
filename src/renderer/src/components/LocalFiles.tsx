@@ -14,10 +14,13 @@ import Player from './Player'
 import { Section } from './ui'
 import { rgba } from '@/lib/color'
 import { useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
 function weight(bytes: number): string {
   const mo = bytes / 1024 / 1024
-  return mo >= 1024 ? `${(mo / 1024).toFixed(1).replace('.', ',')} Go` : `${Math.round(mo)} Mo`
+  return mo >= 1024
+    ? t('{v0} Go', { v0: (mo / 1024).toFixed(1).replace('.', ',') })
+    : t('{v0} Mo', { v0: Math.round(mo) })
 }
 
 export default function LocalFiles({
@@ -74,10 +77,10 @@ export default function LocalFiles({
 
   if (!folder) {
     return (
-      <Section title="Fichiers locaux" subtitle="Regarde tes épisodes depuis l'app">
+      <Section title={t('Fichiers locaux')} subtitle={t("Regarde tes épisodes depuis l'app")}>
         <button className="btn" onClick={() => void choose()}>
           <FolderSearch size={14} />
-          Associer un dossier
+          {t('Associer un dossier')}
         </button>
       </Section>
     )
@@ -87,24 +90,30 @@ export default function LocalFiles({
 
   return (
     <Section
-      title="Fichiers locaux"
+      title={t('Fichiers locaux')}
       subtitle={
         folder.missing
-          ? 'Le dossier a disparu'
-          : `${folder.episodes.length} fichier${folder.episodes.length > 1 ? 's' : ''}, ${matched} épisode${matched > 1 ? 's' : ''} reconnu${matched > 1 ? 's' : ''}`
+          ? t('Le dossier a disparu')
+          : t('{length} fichier{v1}, {matched} épisode{v3} reconnu{v4}', {
+              length: folder.episodes.length,
+              v1: folder.episodes.length > 1 ? 's' : '',
+              matched,
+              v3: matched > 1 ? 's' : '',
+              v4: matched > 1 ? 's' : ''
+            })
       }
       action={
         <div className="flex shrink-0 gap-1.5">
-          <button className="chip" onClick={() => void load()} title="Relire le dossier">
+          <button className="chip" onClick={() => void load()} title={t('Relire le dossier')}>
             <RefreshCw size={12} />
           </button>
           <button className="chip" onClick={() => void choose()}>
             <FolderOpen size={12} />
-            Changer
+            {t('Changer')}
           </button>
           <button className="chip" onClick={() => void forget()}>
             <Unlink size={12} />
-            Oublier
+            {t('Oublier')}
           </button>
         </div>
       }
@@ -116,11 +125,11 @@ export default function LocalFiles({
       {folder.missing ? (
         <p className="flex items-center gap-2 px-1 text-[0.82rem] text-muted">
           <TriangleAlert size={14} style={{ color: '#ffb038' }} />
-          Ce dossier n’existe plus. Choisis-en un autre, ou oublie-le.
+          {t('Ce dossier n’existe plus. Choisis-en un autre, ou oublie-le.')}
         </p>
       ) : folder.episodes.length === 0 ? (
         <p className="px-1 text-[0.82rem] text-muted">
-          Aucune vidéo dans ce dossier, ni dans ses sous-dossiers directs.
+          {t('Aucune vidéo dans ce dossier, ni dans ses sous-dossiers directs.')}
         </p>
       ) : (
         <div className="flex flex-col gap-1.5">
@@ -149,9 +158,9 @@ export default function LocalFiles({
                   <span className="block truncate text-[0.8rem]">{file.name}</span>
                   <span className="text-[0.68rem] text-faint">
                     {weight(file.size)}
-                    {file.subtitleUrl && ' · sous-titres'}
-                    {!file.playable && ' · lecteur système'}
-                    {resume !== null && ` · reprendre à ${clock(resume)}`}
+                    {file.subtitleUrl && t(' · sous-titres')}
+                    {!file.playable && t(' · lecteur système')}
+                    {resume !== null && t(' · reprendre à {v0}', { v0: clock(resume) })}
                   </span>
                   {/* La barre ne s'affiche que s'il y a une durée : sans elle,
                       la part vue est inconnue et une barre vide mentirait. */}

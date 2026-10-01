@@ -12,6 +12,7 @@
  */
 
 import type { Media, MediaFormat, MediaStatus, SeasonName } from './types'
+import { t, lazy, monthNames } from './i18n'
 
 /** Port par défaut. Haut, peu disputé, facile à retenir. */
 export const REMOTE_PORT = 8787
@@ -74,10 +75,10 @@ export type TokenCheck = { ok: true; token: string } | { ok: false; error: strin
  */
 export function checkChosen(raw: string): TokenCheck {
   const token = raw.trim()
-  if (token.length < MIN_CHOSEN) return { ok: false, error: `Au moins ${MIN_CHOSEN} caractères.` }
-  if (token.length > MAX_CHOSEN) return { ok: false, error: `Pas plus de ${MAX_CHOSEN} caractères.` }
+  if (token.length < MIN_CHOSEN) return { ok: false, error: t('Au moins {MIN_CHOSEN} caractères.', { MIN_CHOSEN }) }
+  if (token.length > MAX_CHOSEN) return { ok: false, error: t('Pas plus de {MAX_CHOSEN} caractères.', { MAX_CHOSEN }) }
   if (!CHOSEN_OK.test(token)) {
-    return { ok: false, error: 'Lettres, chiffres, et . _ ~ - seulement : le mot de passe voyage dans l’adresse.' }
+    return { ok: false, error: t('Lettres, chiffres, et . _ ~ - seulement : le mot de passe voyage dans l’adresse.') }
   }
   return { ok: true, token }
 }
@@ -223,40 +224,32 @@ export function isRemoteStatus(value: unknown): value is (typeof STATUSES)[numbe
 
 // ---------------------------------------------------------------- mini-fiche
 
-const FORMATS: Record<MediaFormat, string> = {
-  TV: 'Série TV',
-  TV_SHORT: 'Format court',
-  MOVIE: 'Film',
-  SPECIAL: 'Spécial',
+const FORMATS: Record<MediaFormat, string> = lazy(() => ({
+  TV: t('Série TV'),
+  TV_SHORT: t('Format court'),
+  MOVIE: t('Film'),
+  SPECIAL: t('Spécial'),
   OVA: 'OVA',
   ONA: 'ONA',
-  MUSIC: 'Clip'
-}
+  MUSIC: t('Clip')
+}))
 
-const STATES: Record<MediaStatus, string> = {
-  FINISHED: 'Terminé',
-  RELEASING: 'En diffusion',
-  NOT_YET_RELEASED: 'Pas encore sorti',
-  CANCELLED: 'Annulé',
-  HIATUS: 'En pause'
-}
+const STATES: Record<MediaStatus, string> = lazy(() => ({
+  FINISHED: t('Terminé'),
+  RELEASING: t('En diffusion'),
+  NOT_YET_RELEASED: t('Pas encore sorti'),
+  CANCELLED: t('Annulé'),
+  HIATUS: t('En pause')
+}))
 
-const SEASONS: Record<SeasonName, string> = { WINTER: 'Hiver', SPRING: 'Printemps', SUMMER: 'Été', FALL: 'Automne' }
+const SEASONS: Record<SeasonName, string> = lazy(() => ({
+  WINTER: t('Hiver'),
+  SPRING: t('Printemps'),
+  SUMMER: t('Été'),
+  FALL: t('Automne')
+}))
 
-const MONTHS = [
-  'janvier',
-  'février',
-  'mars',
-  'avril',
-  'mai',
-  'juin',
-  'juillet',
-  'août',
-  'septembre',
-  'octobre',
-  'novembre',
-  'décembre'
-]
+const MONTHS = lazy(() => monthNames())
 
 /** « 1 h 42 », « 24 min ». */
 function runtime(minutes: number): string {
@@ -306,9 +299,14 @@ export function cardOf(media: Media): RemoteCard {
     facts.push(String(start.year))
   }
 
-  if (!film && media.episodes) facts.push(media.episodes > 1 ? `${media.episodes} épisodes` : '1 épisode')
+  if (!film && media.episodes)
+    facts.push(media.episodes > 1 ? t('{episodes} épisodes', { episodes: media.episodes }) : t('1 épisode'))
   if (media.duration)
-    facts.push(film || media.episodes === 1 ? runtime(media.duration) : `${media.duration} min par épisode`)
+    facts.push(
+      film || media.episodes === 1
+        ? runtime(media.duration)
+        : t('{duration} min par épisode', { duration: media.duration })
+    )
 
   return {
     id: media.id,

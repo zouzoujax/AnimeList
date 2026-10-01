@@ -46,6 +46,7 @@ import { isSideFormat, type Entry } from '@shared/as-sections'
 import { searchTitles } from '@shared/titles'
 import { cachedSideTarget, knownSlug, resolve as resolveAnimeSama } from './animesama'
 import { getMedia, getPrefs, isTracked, isWatched, setWatched, snapshot } from './store'
+import { t as tr } from '@shared/i18n'
 
 /**
  * Ce que le suivi a compris d'une lecture : de quoi expliquer une coche qui ne
@@ -479,7 +480,7 @@ function onSample(sample: Sample, urls: string[]): Detection | null {
 
   if (seen.site === 'crunchyroll') {
     note(sample.title)
-    return { ...report, state: 'Crunchyroll : format pas encore connu, rien n’est coché' }
+    return { ...report, state: tr('Crunchyroll : format pas encore connu, rien n’est coché') }
   }
 
   const key = `${sample.app}|${sample.title}`
@@ -510,11 +511,11 @@ function onSample(sample: Sample, urls: string[]): Detection | null {
   if (report.episode === null) {
     if (seen.site === 'anime-sama' && (ending || monitorOpen())) {
       report.episode = animeSamaEpisode(sample.app, seen, animeId)
-      report.source = 'stockage du navigateur'
+      report.source = tr('stockage du navigateur')
     } else if (seen.site === 'franime') {
       const pinned = armed.get(key)
       report.episode = pinned ?? franimeEpisodeFromUrls(urls, seen)
-      report.source = pinned !== undefined ? 'adresse, retenue pendant la lecture' : 'adresse'
+      report.source = pinned !== undefined ? tr('adresse, retenue pendant la lecture') : 'adresse'
     }
     if (report.episode === null) report.source = null
   }
@@ -523,33 +524,36 @@ function onSample(sample: Sample, urls: string[]): Detection | null {
     reported.delete(key)
     const state =
       animeId === null
-        ? 'Pas dans ta bibliothèque'
+        ? tr('Pas dans ta bibliothèque')
         : !(now.duration > 0)
-          ? 'Vidéo pas encore chargée'
+          ? tr('Vidéo pas encore chargée')
           : !now.playing
-            ? 'En pause'
-            : 'En cours — cochera à 90 %'
+            ? tr('En pause')
+            : tr('En cours — cochera à 90 %')
     return { ...report, state }
   }
   // Une vidéo finie ou en pause reste dans la liste de Windows : seule une
   // lecture en cours dit qu'on regarde.
-  if (!sample.playing) return { ...report, state: 'Fin atteinte, mais en pause : rien n’est coché' }
+  if (!sample.playing) return { ...report, state: tr('Fin atteinte, mais en pause : rien n’est coché') }
 
   if (animeId === null) {
-    once(key, `« ${seen.title} » n'est pas dans la bibliothèque`, seen)
-    if (report.episode === null) return { ...report, state: 'Pas dans ta bibliothèque, épisode introuvable' }
+    once(key, tr("« {title} » n'est pas dans la bibliothèque", { title: seen.title }), seen)
+    if (report.episode === null) return { ...report, state: tr('Pas dans ta bibliothèque, épisode introuvable') }
     propose(seen, report.episode)
-    return { ...report, state: 'Pas dans ta bibliothèque : proposée à ton retour dans l’app' }
+    return { ...report, state: tr('Pas dans ta bibliothèque : proposée à ton retour dans l’app') }
   }
 
   // Jamais deviner : « le suivant de la progression » cochait le 3 quand on
   // avait sauté au 4. Mieux vaut le dire et laisser cocher à la main.
   const episode = report.episode
   if (episode === null) {
-    if (once(key, `épisode introuvable pour « ${seen.title} »`, seen)) {
-      notify('Épisode non reconnu', `${title} — fini sur ${SITE_LABELS[seen.site]}, mais lequel ? Coche-le dans l’app.`)
+    if (once(key, tr('épisode introuvable pour « {title} »', { title: seen.title }), seen)) {
+      notify(
+        tr('Épisode non reconnu'),
+        tr('{title} — fini sur {v1}, mais lequel ? Coche-le dans l’app.', { title, v1: SITE_LABELS[seen.site] })
+      )
     }
-    return { ...report, state: 'Épisode introuvable : rien n’est coché' }
+    return { ...report, state: tr('Épisode introuvable : rien n’est coché') }
   }
 
   return tickEpisode(animeId, episode, media, title, seen, report)
@@ -564,16 +568,17 @@ function tickEpisode(
   seen: Seen,
   report: Detection
 ): Detection {
-  const done = seen.section ? 'Film coché' : `Épisode ${episode} coché`
+  const done = seen.section ? tr('Film coché') : tr('Épisode {episode} coché', { episode })
   const tick = `${animeId}:${episode}`
   if (ticked.has(tick)) return { ...report, state: done }
   ticked.add(tick)
-  if (isWatched(animeId, episode)) return { ...report, state: seen.section ? 'Déjà vu' : `Épisode ${episode} déjà vu` }
-  if (media && !canTick(media, episode, false)) return { ...report, state: 'Pas encore diffusé : rien n’est coché' }
+  if (isWatched(animeId, episode))
+    return { ...report, state: seen.section ? tr('Déjà vu') : tr('Épisode {episode} déjà vu', { episode }) }
+  if (media && !canTick(media, episode, false)) return { ...report, state: tr('Pas encore diffusé : rien n’est coché') }
 
   setWatched(animeId, episode, true)
   console.warn(`[browser-watch] ${SITE_LABELS[seen.site]} : épisode ${episode} de ${animeId} coché`)
-  notify(done, `${title} — vu sur ${SITE_LABELS[seen.site]}`)
+  notify(done, tr('{title} — vu sur {v1}', { title, v1: SITE_LABELS[seen.site] }))
   review.push({ animeId, episode, site: SITE_LABELS[seen.site], at: Date.now() })
   announce()
   return { ...report, state: done }
@@ -594,7 +599,7 @@ function onSide(sample: Sample, seen: Seen, now: Playing, report: Detection, key
   report.episode = null
   report.season = null
   report.film = entry ? (entry.name ?? `n° ${entry.index}`) : '?'
-  report.source = entry ? 'stockage du navigateur' : null
+  report.source = entry ? tr('stockage du navigateur') : null
 
   const found = entry ? sideMedia(seen.title, section, entry) : undefined
   const media = found?.media ?? undefined
@@ -604,36 +609,42 @@ function onSide(sample: Sample, seen: Seen, now: Playing, report: Detection, key
   if (!ending) {
     reported.delete(key)
     const state = !(now.duration > 0)
-      ? 'Vidéo pas encore chargée'
+      ? tr('Vidéo pas encore chargée')
       : !now.playing
-        ? 'En pause'
+        ? tr('En pause')
         : media && !tracked
-          ? 'Pas dans ta bibliothèque'
-          : 'En cours — cochera à 90 %'
+          ? tr('Pas dans ta bibliothèque')
+          : tr('En cours — cochera à 90 %')
     return { ...report, state }
   }
-  if (!sample.playing) return { ...report, state: 'Fin atteinte, mais en pause : rien n’est coché' }
+  if (!sample.playing) return { ...report, state: tr('Fin atteinte, mais en pause : rien n’est coché') }
 
   if (!entry) {
-    if (once(key, `entrée introuvable pour « ${seen.title} »`, seen)) {
-      notify('Film non reconnu', `${seen.title} — fini sur Anime-Sama, mais lequel ? Coche-le dans l’app.`)
-    }
-    return { ...report, state: 'Film introuvable dans le stockage : rien n’est coché' }
-  }
-  if (!found || found.pending) return { ...report, state: 'Recherche du film sur AniList…' }
-  if (!media) {
-    if (once(key, `film introuvable pour « ${entry.name ?? entry.index} »`, seen)) {
+    if (once(key, tr('entrée introuvable pour « {title} »', { title: seen.title }), seen)) {
       notify(
-        'Film non reconnu',
-        `${seen.title} — « ${entry.name ?? ''} » introuvable sur AniList. Coche-le dans l’app.`
+        tr('Film non reconnu'),
+        tr('{title} — fini sur Anime-Sama, mais lequel ? Coche-le dans l’app.', { title: seen.title })
       )
     }
-    return { ...report, state: 'Film introuvable sur AniList : rien n’est coché' }
+    return { ...report, state: tr('Film introuvable dans le stockage : rien n’est coché') }
+  }
+  if (!found || found.pending) return { ...report, state: tr('Recherche du film sur AniList…') }
+  if (!media) {
+    if (once(key, tr('film introuvable pour « {v0} »', { v0: entry.name ?? entry.index }), seen)) {
+      notify(
+        tr('Film non reconnu'),
+        tr('{title} — « {v1} » introuvable sur AniList. Coche-le dans l’app.', {
+          title: seen.title,
+          v1: entry.name ?? ''
+        })
+      )
+    }
+    return { ...report, state: tr('Film introuvable sur AniList : rien n’est coché') }
   }
 
   if (!tracked) {
     offer(media, 1, seen)
-    return { ...report, state: 'Pas dans ta bibliothèque : proposé à ton retour dans l’app' }
+    return { ...report, state: tr('Pas dans ta bibliothèque : proposé à ton retour dans l’app') }
   }
   return tickEpisode(media.id, 1, getMedia(media.id) ?? media, report.series ?? seen.title, seen, report)
 }

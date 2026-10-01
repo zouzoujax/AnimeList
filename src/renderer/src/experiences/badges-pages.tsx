@@ -1,6 +1,7 @@
 import { motion } from 'motion/react'
 import { useState } from 'react'
 import { BADGE_GROUPS, badgeTitle, useBadgeWall, type Badge } from '@/lib/badges'
+import { t } from '@shared/i18n'
 
 /*
  * Le mur des badges, une fois par expérience.
@@ -39,9 +40,9 @@ function useWall(filter: Filter): {
 }
 
 const FILTERS: { id: Filter; label: string }[] = [
-  { id: 'all', label: 'Tous' },
-  { id: 'done', label: 'Débloqués' },
-  { id: 'todo', label: 'À faire' }
+  { id: 'all', label: t('Tous') },
+  { id: 'done', label: t('Débloqués') },
+  { id: 'todo', label: t('À faire') }
 ]
 
 const pct = (b: Badge): number => Math.round(Math.min(1, Math.max(0, b.progress)) * 100)
@@ -53,9 +54,11 @@ export function StreamingBadges(): React.JSX.Element {
   return (
     <div className="xs-page pb-16 pt-24">
       <div className="px-10">
-        <p className="xs-kicker">Ta collection de badges</p>
+        <p className="xs-kicker">{t('Ta collection de badges')}</p>
         <p className="xs-mega !text-[8rem]">{unlocked}</p>
-        <p className="text-[1.5rem] font-bold">sur {badges.length} débloqués</p>
+        <p className="text-[1.5rem] font-bold">
+          {t('sur')} {badges.length} {t('débloqués')}
+        </p>
         <div className="mt-6 flex gap-2">
           {FILTERS.map((f) => (
             <button key={f.id} className="xs-tab" data-on={filter === f.id} onClick={() => setFilter(f.id)}>
@@ -110,9 +113,9 @@ export function ConsoleBadges(): React.JSX.Element {
       <section className="xc-card flex items-center gap-8 !p-7">
         <span className="xc-cup xc-platinum !h-20 !w-20" aria-hidden />
         <div className="flex-1">
-          <p className="xc-card-kicker">Progression des trophées</p>
+          <p className="xc-card-kicker">{t('Progression des trophées')}</p>
           <p className="title-xl mt-1 text-[2.2rem]">
-            {unlocked} / {badges.length} trophées
+            {unlocked} / {badges.length} {t('trophées')}
           </p>
           <div className="xc-meter mt-3 !max-w-none">
             <motion.span
@@ -180,10 +183,11 @@ export function MagazineBadges(): React.JSX.Element {
   const { badges, unlocked, groups } = useWall(filter)
   return (
     <div className="px-12 pb-16 pt-8">
-      <p className="xm-kicker">Hors-série</p>
-      <h1 className="xm-headline mt-2">Le palmarès</h1>
+      <p className="xm-kicker">{t('Hors-série')}</p>
+      <h1 className="xm-headline mt-2">{t('Le palmarès')}</h1>
       <p className="xm-deck mt-3">
-        {unlocked} distinctions obtenues sur {badges.length}, et celles qui restent à conquérir.
+        {unlocked} {t('distinctions obtenues sur')} {badges.length}
+        {t(', et celles qui restent à conquérir.')}
       </p>
       <div className="xm-rule-double mt-6 flex gap-8 py-2">
         {FILTERS.map((f) => (
@@ -236,7 +240,7 @@ export function HudBadges(): React.JSX.Element {
     <div className="xh-screen grid grid-cols-12 gap-3 p-5">
       <section className="xh-panel relative col-span-12 flex items-center gap-6 p-4">
         <div>
-          <p className="xh-code">DÉCORATIONS OBTENUES</p>
+          <p className="xh-code">{t('DÉCORATIONS OBTENUES')}</p>
           <p className="xh-value xh-value-big mt-1">
             {unlocked} / {badges.length}
           </p>
@@ -302,10 +306,10 @@ export function CarnetBadges(): React.JSX.Element {
     <div className="px-8 py-8">
       <div className="xk-page relative mx-auto max-w-[1180px] px-16 py-12">
         <span className="xk-rings" aria-hidden />
-        <p className="xk-note">Album d’autocollants</p>
-        <h1 className="xk-title">Mes badges</h1>
+        <p className="xk-note">{t('Album d’autocollants')}</p>
+        <h1 className="xk-title">{t('Mes badges')}</h1>
         <p className="xk-hand mt-1">
-          {unlocked} collés sur {badges.length} emplacements
+          {unlocked} {t('collés sur')} {badges.length} {t('emplacements')}
         </p>
         <div className="mt-5 flex gap-3">
           {FILTERS.map((f, i) => (

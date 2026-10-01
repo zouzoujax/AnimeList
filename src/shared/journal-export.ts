@@ -1,3 +1,4 @@
+import { t, lazy, monthNames, dayNames } from './i18n'
 /**
  * Le journal, hors de l'app.
  *
@@ -25,22 +26,9 @@ export interface ExportRow {
   pass?: number
 }
 
-const MOIS = [
-  'janvier',
-  'février',
-  'mars',
-  'avril',
-  'mai',
-  'juin',
-  'juillet',
-  'août',
-  'septembre',
-  'octobre',
-  'novembre',
-  'décembre'
-]
+const MOIS = lazy(() => monthNames())
 
-const JOURS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi']
+const JOURS = lazy(() => dayNames())
 
 const two = (n: number): string => String(n).padStart(2, '0')
 
@@ -89,15 +77,19 @@ export function ofYear(rows: ExportRow[], year: number | null): ExportRow[] {
  * citées sous leur épisode, seule forme qui survive à une relecture six mois
  * plus tard.
  */
-export function toMarkdown(rows: ExportRow[], title = 'Journal'): string {
+export function toMarkdown(rows: ExportRow[], title = t('Journal')): string {
   const sorted = [...rows].sort((a, b) => b.at - a.at)
   const minutes = sorted.reduce((sum, row) => sum + (row.minutes || 0), 0)
 
   const out: string[] = [`# ${title}`, '']
   out.push(
     sorted.length === 0
-      ? '_Rien à montrer._'
-      : `_${sorted.length} épisode${sorted.length > 1 ? 's' : ''}, ${spokenHours(minutes)} de visionnage._`
+      ? t('_Rien à montrer._')
+      : t('_{length} épisode{v1}, {v2} de visionnage._', {
+          length: sorted.length,
+          v1: sorted.length > 1 ? 's' : '',
+          v2: spokenHours(minutes)
+        })
   )
 
   let day = ''
@@ -107,9 +99,9 @@ export function toMarkdown(rows: ExportRow[], title = 'Journal'): string {
       day = key
       out.push('', `## ${dayTitle(row.at)}`, '')
     }
-    const parts = [`**${row.title}**`, `épisode ${row.episode}`]
+    const parts = [`**${row.title}**`, t('épisode {episode}', { episode: row.episode })]
     if (row.minutes > 0) parts.push(`${row.minutes} min`)
-    if (row.pass) parts.push(`${row.pass + 1}ᵉ visionnage`)
+    if (row.pass) parts.push(t('{v0}ᵉ visionnage', { v0: row.pass + 1 }))
     if (row.emotions?.length) parts.push(row.emotions.join(' '))
     out.push(`- ${clock(row.at)} — ${parts.join(' · ')}`)
     // La note sur sa propre ligne, en citation : une note de trois phrases

@@ -5,6 +5,7 @@ import { STATUS_LABELS, type BackupCopy } from '@shared/types'
 import { Modal, Spinner } from '@/components/ui'
 import { pluralize, relativeDay } from '@/lib/format'
 import { useApp } from '@/store/app'
+import { t, locale } from '@shared/i18n'
 
 /** Combien de titres on nomme par groupe avant de résumer le reste. */
 const NAMED = 6
@@ -13,7 +14,7 @@ const NAMED = 6
 function hour(at: number, all: BackupCopy[]): string {
   const minute = Math.floor(at / 60_000)
   const twin = all.some((c) => c.at !== at && Math.floor(c.at / 60_000) === minute)
-  return new Date(at).toLocaleTimeString('fr-FR', {
+  return new Date(at).toLocaleTimeString(locale(), {
     hour: '2-digit',
     minute: '2-digit',
     ...(twin ? { second: '2-digit' } : {})
@@ -22,8 +23,8 @@ function hour(at: number, all: BackupCopy[]): string {
 
 function kilo(bytes: number): string {
   return bytes >= 1024 * 1024
-    ? `${(bytes / 1024 / 1024).toFixed(1).replace('.', ',')} Mo`
-    : `${Math.max(1, Math.round(bytes / 1024))} Ko`
+    ? t('{v0} Mo', { v0: (bytes / 1024 / 1024).toFixed(1).replace('.', ',') })
+    : t('{v0} Ko', { v0: Math.max(1, Math.round(bytes / 1024)) })
 }
 
 /** Un groupe de titres : les premiers par leur nom, le reste en nombre. */
@@ -52,7 +53,9 @@ function Group({
             {detail && <span className="shrink-0 text-muted">{detail(row)}</span>}
           </li>
         ))}
-        {rest > 0 && <li className="text-muted">et {pluralize(rest, 'autre', 'autres')}</li>}
+        {rest > 0 && (
+          <li className="text-muted">{t('et {autres}', { autres: pluralize(rest, t('autre'), t('autres')) })}</li>
+        )}
       </ul>
     </div>
   )
@@ -147,7 +150,7 @@ export default function RestoreBackup({
           toast(res.message, 'error')
           return
         }
-        toast(`${res.message} L’état d’avant est gardé dans une nouvelle copie.`, 'ok')
+        toast(t('{message} L’état d’avant est gardé dans une nouvelle copie.', { message: res.message }), 'ok')
         onDone()
         onClose()
       })
@@ -157,10 +160,11 @@ export default function RestoreBackup({
   return (
     <Modal open={open} onClose={onClose} width={680}>
       <div className="p-6">
-        <h3 className="title-xl mb-1 text-[1.1rem]">Restaurer une copie</h3>
+        <h3 className="title-xl mb-1 text-[1.1rem]">{t('Restaurer une copie')}</h3>
         <p className="mb-4 max-w-[60ch] text-[0.82rem] leading-relaxed text-muted">
-          Choisis une date : l’aperçu dit ce qui changerait avant que rien ne change. Ta bibliothèque actuelle est
-          copiée juste avant, pour pouvoir revenir en arrière.
+          {t(
+            'Choisis une date : l’aperçu dit ce qui changerait avant que rien ne change. Ta bibliothèque actuelle est copiée juste avant, pour pouvoir revenir en arrière.'
+          )}
         </p>
 
         {copies === null ? (
@@ -168,10 +172,10 @@ export default function RestoreBackup({
             <Spinner />
           </div>
         ) : copies.length === 0 ? (
-          <p className="text-[0.84rem] text-muted">Aucune copie dans le dossier de sauvegarde.</p>
+          <p className="text-[0.84rem] text-muted">{t('Aucune copie dans le dossier de sauvegarde.')}</p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-[236px_1fr]">
-            <ul className="max-h-[340px] space-y-1 overflow-y-auto pr-1" aria-label="Copies">
+            <ul className="max-h-[340px] space-y-1 overflow-y-auto pr-1" aria-label={t('Copies')}>
               {copies.map((copy) => (
                 <li key={copy.name}>
                   <button
@@ -190,16 +194,16 @@ export default function RestoreBackup({
             </ul>
 
             <div className="min-w-0">
-              <div className="mb-3 flex gap-1.5" role="radiogroup" aria-label="Manière de restaurer">
+              <div className="mb-3 flex gap-1.5" role="radiogroup" aria-label={t('Manière de restaurer')}>
                 <button
                   className="chip flex-1 justify-center"
                   role="radio"
                   aria-checked={mode === 'merge'}
                   data-on={mode === 'merge'}
                   onClick={() => setMode('merge')}
-                  title="Ajoute ce qui manque, ne retire rien"
+                  title={t('Ajoute ce qui manque, ne retire rien')}
                 >
-                  Fusionner
+                  {t('Fusionner')}
                 </button>
                 <button
                   className="chip flex-1 justify-center"
@@ -207,15 +211,17 @@ export default function RestoreBackup({
                   aria-checked={mode === 'replace'}
                   data-on={mode === 'replace'}
                   onClick={() => setMode('replace')}
-                  title="La bibliothèque devient exactement la copie"
+                  title={t('La bibliothèque devient exactement la copie')}
                 >
-                  Remplacer
+                  {t('Remplacer')}
                 </button>
               </div>
               <p className="mb-3 text-[0.76rem] text-muted">
                 {mode === 'merge'
-                  ? 'Ajoute ce qui manque. Rien de ce que tu as aujourd’hui n’est retiré, et une série plus récente ici garde sa version.'
-                  : 'Ta bibliothèque devient exactement cette copie : ce qui a été ajouté depuis disparaît.'}
+                  ? t(
+                      'Ajoute ce qui manque. Rien de ce que tu as aujourd’hui n’est retiré, et une série plus récente ici garde sa version.'
+                    )
+                  : t('Ta bibliothèque devient exactement cette copie : ce qui a été ajouté depuis disparaît.')}
               </p>
 
               {!shown ? (
@@ -229,37 +235,41 @@ export default function RestoreBackup({
               ) : p ? (
                 <div aria-live="polite">
                   <div className={`grid gap-2 ${hasMangas ? 'grid-cols-4' : 'grid-cols-3'}`}>
-                    <Figure label="Séries" before={p.series.before} after={p.series.after} />
-                    <Figure label="Épisodes vus" before={p.episodes.before} after={p.episodes.after} />
-                    <Figure label="Listes" before={p.lists.before} after={p.lists.after} />
+                    <Figure label={t('Séries')} before={p.series.before} after={p.series.after} />
+                    <Figure label={t('Épisodes vus')} before={p.episodes.before} after={p.episodes.after} />
+                    <Figure label={t('Listes')} before={p.lists.before} after={p.lists.after} />
                     {/* Seulement pour qui lit : trois zéros de plus n'apprendraient rien aux autres. */}
-                    {hasMangas && <Figure label="Mangas" before={p.mangas.before} after={p.mangas.after} />}
+                    {hasMangas && <Figure label={t('Mangas')} before={p.mangas.before} after={p.mangas.after} />}
                   </div>
                   {p.identical ? (
                     <p className="mt-3 text-[0.82rem] text-muted">
-                      Rien ne changerait : cette copie ne contient rien que ta bibliothèque n’ait déjà.
+                      {t('Rien ne changerait : cette copie ne contient rien que ta bibliothèque n’ait déjà.')}
                     </p>
                   ) : (
                     <div className="max-h-[210px] overflow-y-auto pr-1">
                       {(p.episodes.gained > 0 || p.episodes.lost > 0) && (
                         <p className="mt-3 text-[0.8rem]">
                           {p.episodes.gained > 0 &&
-                            `${pluralize(p.episodes.gained, 'visionnage revient', 'visionnages reviennent')}`}
+                            `${pluralize(p.episodes.gained, t('visionnage revient'), t('visionnages reviennent'))}`}
                           {p.episodes.gained > 0 && p.episodes.lost > 0 && ' · '}
                           {p.episodes.lost > 0 && (
                             <span style={{ color: '#ff9a9a' }}>
-                              {pluralize(p.episodes.lost, 'visionnage disparaît', 'visionnages disparaissent')}
+                              {pluralize(p.episodes.lost, t('visionnage disparaît'), t('visionnages disparaissent'))}
                             </span>
                           )}
                         </p>
                       )}
-                      <Group title="Reviennent" rows={p.added} detail={(r) => (r.to ? STATUS_LABELS[r.to] : null)} />
                       <Group
-                        title="Changent de statut"
+                        title={t('Reviennent')}
+                        rows={p.added}
+                        detail={(r) => (r.to ? STATUS_LABELS[r.to] : null)}
+                      />
+                      <Group
+                        title={t('Changent de statut')}
                         rows={p.changed}
                         detail={(r) => `${r.from ? STATUS_LABELS[r.from] : ''} → ${r.to ? STATUS_LABELS[r.to] : ''}`}
                       />
-                      <Group title="Disparaissent" rows={p.removed} tone="#ff9a9a" />
+                      <Group title={t('Disparaissent')} rows={p.removed} tone="#ff9a9a" />
                     </div>
                   )}
                 </div>
@@ -270,7 +280,7 @@ export default function RestoreBackup({
 
         <div className="mt-6 flex justify-end gap-2">
           <button className="btn" onClick={onClose}>
-            Annuler
+            {t('Annuler')}
           </button>
           <button
             className={costly ? 'btn' : 'btn btn-primary'}
@@ -283,7 +293,11 @@ export default function RestoreBackup({
             onClick={restore}
           >
             <History size={14} />
-            {busy ? 'Restauration…' : mode === 'replace' ? 'Remplacer par cette copie' : 'Fusionner cette copie'}
+            {busy
+              ? t('Restauration…')
+              : mode === 'replace'
+                ? t('Remplacer par cette copie')
+                : t('Fusionner cette copie')}
           </button>
         </div>
       </div>

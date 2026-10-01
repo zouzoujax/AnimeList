@@ -424,3 +424,5 @@ const api = {
 export type Api = typeof api
 
 contextBridge.exposeInMainWorld('api', api)
+// Lue par `@shared/i18n` avant tout autre module : voir là-bas.
+contextBridge.exposeInMainWorld('uiLang', ipcRenderer.sendSync('prefs:ui-lang'))

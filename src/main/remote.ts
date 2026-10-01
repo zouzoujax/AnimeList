@@ -64,6 +64,7 @@ import { advanceManga, setEntry, setWatched, setWatchedUpTo, snapshot } from './
 import { getLaunched, rememberLaunch, setLaunched, type Launched } from './now'
 import { page } from './remote-page'
 import { translate } from './translate'
+import { t } from '@shared/i18n'
 
 export interface RemoteStatus {
   on: boolean
@@ -296,7 +297,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
   const pathname = url.split('?')[0]
   const route = routeOf(pathname)
 
-  if (route === 'unknown') return json(res, 404, { error: 'Adresse inconnue.' })
+  if (route === 'unknown') return json(res, 404, { error: t('Adresse inconnue.') })
 
   if (route === 'page') {
     const html = page()
@@ -311,7 +312,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
 
   if (needsToken(route)) {
     const given = tokenFrom(url, req.headers.authorization)
-    if (!given || !safeEqual(given, token)) return json(res, 401, { error: 'Mot de passe incorrect.' })
+    if (!given || !safeEqual(given, token)) return json(res, 401, { error: t('Mot de passe incorrect.') })
   }
 
   if (route === 'state') return json(res, 200, await remoteState())
@@ -347,7 +348,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
     const id = Number(new URLSearchParams(url.slice(url.indexOf('?') + 1)).get('id'))
     const data = snapshot()
     const media = data.media.find((m) => m.id === id)
-    if (!media) return json(res, 404, { error: 'Série inconnue.' })
+    if (!media) return json(res, 404, { error: t('Série inconnue.') })
 
     const watched = data.history.filter((ev) => ev.animeId === id).map((ev) => ev.episode)
     return json(res, 200, {
@@ -382,9 +383,9 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
    */
   if (route === 'media') {
     const id = Number(new URLSearchParams(url.slice(url.indexOf('?') + 1)).get('id'))
-    if (!Number.isInteger(id) || id <= 0) return json(res, 400, { error: 'Série inconnue.' })
+    if (!Number.isInteger(id) || id <= 0) return json(res, 400, { error: t('Série inconnue.') })
     const media = getMedia(id) ?? (await refreshMedia([id]).catch(() => []))[0]
-    if (!media) return json(res, 404, { error: 'Fiche introuvable chez AniList.' })
+    if (!media) return json(res, 404, { error: t('Fiche introuvable chez AniList.') })
     const card = cardOf(media)
     // En français si une clé DeepL est posée, comme sur la fiche du PC ; le
     // cache des traductions est le même. Une panne rend l'anglais.
@@ -394,11 +395,11 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
 
   if (route === 'franchise') {
     const id = Number(new URLSearchParams(url.slice(url.indexOf('?') + 1)).get('id'))
-    if (!Number.isInteger(id) || id <= 0) return json(res, 400, { error: 'Série inconnue.' })
+    if (!Number.isInteger(id) || id <= 0) return json(res, 400, { error: t('Série inconnue.') })
     try {
       return json(res, 200, await franchiseTree(id))
     } catch (err) {
-      return json(res, 502, { error: `Franchise illisible : ${(err as Error).message}` })
+      return json(res, 502, { error: t('Franchise illisible : {message}', { message: (err as Error).message }) })
     }
   }
 
@@ -424,7 +425,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
    */
   if (route === 'after') {
     const id = Number(new URLSearchParams(url.slice(url.indexOf('?') + 1)).get('id'))
-    if (!Number.isInteger(id) || id <= 0) return json(res, 400, { error: 'Série inconnue.' })
+    if (!Number.isInteger(id) || id <= 0) return json(res, 400, { error: t('Série inconnue.') })
     const media = getMedia(id)
     let tree: Awaited<ReturnType<typeof franchiseTree>> | null = null
     let next: Suggestion[] = []
@@ -462,7 +463,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
         year: p.media.seasonYear,
         episodes: p.media.episodes,
         score: p.media.averageScore,
-        reason: p.reasons[0] ?? (p.from[0] ? `Proche de ${p.from[0]}` : null)
+        reason: p.reasons[0] ?? (p.from[0] ? t('Proche de {v0}', { v0: p.from[0] }) : null)
       }))
     })
   }
@@ -576,7 +577,9 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
       // Le préfixe datait des messages techniques — « HTTP 403 » ne disait pas
       // de qui il venait. Ceux d'aujourd'hui nomment déjà la source, et
       // l'ajouter donnait « AniList : Le catalogue AniList est indisponible ».
-      const dit = found.message.includes('AniList') ? found.message : `AniList : ${found.message}`
+      const dit = found.message.includes('AniList')
+        ? found.message
+        : t('AniList : {message}', { message: found.message })
       return json(res, 502, { error: dit })
     }
 
@@ -597,7 +600,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
     })
   }
 
-  if (req.method !== 'POST') return json(res, 405, { error: 'Méthode refusée.' })
+  if (req.method !== 'POST') return json(res, 405, { error: t('Méthode refusée.') })
 
   let body: {
     id?: number
@@ -611,7 +614,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
   try {
     body = JSON.parse((await readBody(req)) || '{}') as typeof body
   } catch {
-    return json(res, 400, { error: 'Requête illisible.' })
+    return json(res, 400, { error: t('Requête illisible.') })
   }
 
   if (route === 'control') {
@@ -623,7 +626,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
      * ouverte. Hors de cette fenêtre, il n'y aurait rien à quoi l'appliquer.
      */
     if (body.action === 'autoskip') {
-      if (!watchWindow()) return json(res, 409, { error: 'Aucun épisode en cours de lecture.' })
+      if (!watchWindow()) return json(res, 409, { error: t('Aucun épisode en cours de lecture.') })
       setSessionAutoSkip(Number(body.value) === 1)
       return json(res, 200, { player: await nowPlaying() })
     }
@@ -637,24 +640,24 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
      */
     if (body.action === 'lecteur') {
       const index = playerIndex(body.value)
-      if (index === null) return json(res, 400, { error: 'Lecteur inconnu.' })
+      if (index === null) return json(res, 400, { error: t('Lecteur inconnu.') })
       if (!(await switchPlayer(index))) {
-        return json(res, 409, { error: 'Ce lecteur n’est pas proposé pour cet épisode.' })
+        return json(res, 409, { error: t('Ce lecteur n’est pas proposé pour cet épisode.') })
       }
       return json(res, 200, { player: await nowPlaying() })
     }
 
     const action = String(body.action ?? '') as PlayerAction
     const allowed: PlayerAction[] = ['play', 'pause', 'seek', 'volume', 'fullscreen', 'windowed', 'close', 'skip']
-    if (!allowed.includes(action)) return json(res, 400, { error: 'Commande inconnue.' })
+    if (!allowed.includes(action)) return json(res, 400, { error: t('Commande inconnue.') })
 
     const done = await playerCommand(action, { value: Number(body.value) })
-    if (!done) return json(res, 409, { error: 'Rien à piloter, ou commande hors de portée de ce lecteur.' })
+    if (!done) return json(res, 409, { error: t('Rien à piloter, ou commande hors de portée de ce lecteur.') })
     return json(res, 200, { player: await nowPlaying() })
   }
 
   const id = Number(body.id)
-  if (!Number.isInteger(id) || id <= 0) return json(res, 400, { error: 'Série inconnue.' })
+  if (!Number.isInteger(id) || id <= 0) return json(res, 400, { error: t('Série inconnue.') })
 
   /**
    * Un chapitre lu, depuis le téléphone.
@@ -666,9 +669,9 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
   if (route === 'read') {
     const data = snapshot()
     const entry = data.mangaEntries?.find((e) => e.mangaId === id)
-    if (!entry) return json(res, 404, { error: 'Ce manga n’est pas dans ta liste de lecture.' })
+    if (!entry) return json(res, 404, { error: t('Ce manga n’est pas dans ta liste de lecture.') })
     const total = data.mangas?.find((m) => m.id === id)?.chapters ?? null
-    if (total && entry.chapter >= total) return json(res, 409, { error: 'Tous les chapitres sont déjà lus.' })
+    if (total && entry.chapter >= total) return json(res, 409, { error: t('Tous les chapitres sont déjà lus.') })
     const next = advanceManga(id, 1)
     return json(res, 200, { chapter: next.chapter, status: next.status, ...readingRows() })
   }
@@ -679,7 +682,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
     // encore en cache. On la redemande plutôt que d'écrire une entrée sans
     // titre ni jaquette, invisible partout ailleurs.
     const fresh = media ?? (await refreshMedia([id]).catch(() => []))[0]
-    if (!fresh) return json(res, 404, { error: 'Série introuvable.' })
+    if (!fresh) return json(res, 404, { error: t('Série introuvable.') })
 
     setEntry(id, { status: 'planned' }, fresh)
     return json(res, 200, { ok: true })
@@ -694,14 +697,14 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
    */
   if (route === 'status') {
     const next = body.status
-    if (!isRemoteStatus(next)) return json(res, 400, { error: 'Statut inconnu.' })
+    if (!isRemoteStatus(next)) return json(res, 400, { error: t('Statut inconnu.') })
 
     const data = snapshot()
     const entry = data.entries.find((e) => e.animeId === id)
-    if (!entry) return json(res, 404, { error: 'Cette série n’est pas dans ta liste.' })
+    if (!entry) return json(res, 404, { error: t('Cette série n’est pas dans ta liste.') })
     const media = data.media.find((m) => m.id === id)
     if (next === 'completed' && media && !canComplete(media, entry.status === 'completed')) {
-      return json(res, 409, { error: 'Elle n’a pas fini de sortir : impossible de la marquer terminée.' })
+      return json(res, 409, { error: t('Elle n’a pas fini de sortir : impossible de la marquer terminée.') })
     }
 
     if (entry.status !== next) setEntry(id, { status: next })
@@ -710,7 +713,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
 
   if (route === 'tick') {
     const episode = Number(body.episode)
-    if (!Number.isInteger(episode) || episode <= 0) return json(res, 400, { error: 'Épisode inconnu.' })
+    if (!Number.isInteger(episode) || episode <= 0) return json(res, 400, { error: t('Épisode inconnu.') })
 
     // Décocher est toujours permis : c'est la porte de sortie d'une coche
     // arrivée par un import ou par une diffusion repoussée après coup.
@@ -726,7 +729,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
     const media = snapshot().media.find((m) => m.id === id)
     const already = snapshot().history.some((ev) => ev.animeId === id && ev.episode === episode)
     if (on && media && !canTick(media, episode, already)) {
-      return json(res, 409, { error: `L’épisode ${episode} n’est pas encore sorti.` })
+      return json(res, 409, { error: t('L’épisode {episode} n’est pas encore sorti.', { episode }) })
     }
 
     // « Jusqu'ici » rattrape une saison entière d'un geste, ce qui est la
@@ -741,7 +744,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
   // passent par le mot de passe : ouvrir une fenêtre sur le PC de quelqu'un
   // est au moins aussi intrusif que lire sa liste.
   const win = BrowserWindow.getAllWindows()[0]
-  if (!win || win.isDestroyed()) return json(res, 409, { error: 'Aucune fenêtre ouverte sur le PC.' })
+  if (!win || win.isDestroyed()) return json(res, 409, { error: t('Aucune fenêtre ouverte sur le PC.') })
 
   /**
    * `open` : la fiche, sur le PC. Avant la recherche en cache, et c'est tout
@@ -775,14 +778,14 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
   const held = snapshot().media.find((m) => m.id === id)
   const media =
     held ?? (route === 'watch' || route === 'trailer' ? (await refreshMedia([id]).catch(() => []))[0] : undefined)
-  if (!media) return json(res, 404, { error: 'Série inconnue.' })
+  if (!media) return json(res, 404, { error: t('Série inconnue.') })
 
   if (route === 'trailer') {
     const video = media.trailer?.id
-    if (!video) return json(res, 404, { error: 'Pas de bande-annonce pour cette série.' })
+    if (!video) return json(res, 404, { error: t('Pas de bande-annonce pour cette série.') })
     rememberLaunch(id, null, 'Bande-annonce', media)
     const opened = await openTrailerWindow(win, video, media.title.english ?? media.title.romaji)
-    return opened ? json(res, 200, { ok: true }) : json(res, 502, { error: 'La bande-annonce n’a pas pu s’ouvrir.' })
+    return opened ? json(res, 200, { ok: true }) : json(res, 502, { error: t('La bande-annonce n’a pas pu s’ouvrir.') })
   }
 
   if (route === 'watch') {
@@ -794,7 +797,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
      * secondes, pour des adresses dont une seule sera ouverte.
      */
     const target = await resolveAnimeSama(id, searchTitles(media.title)).catch(() => null)
-    if (!target?.url) return json(res, 404, { error: 'Série introuvable sur Anime-Sama.' })
+    if (!target?.url) return json(res, 404, { error: t('Série introuvable sur Anime-Sama.') })
 
     // Seule une adresse portant un menu d'épisodes peut être positionnée ;
     // ailleurs on ouvre la page telle quelle plutôt que de viser à côté.
@@ -802,12 +805,12 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
     const at = target.episodes && Number.isInteger(episode) && episode > 0 ? episode : null
     const aim = aimFor(id, target.url, at)
     const opened = await openAnimeSamaEpisode(target.url, aim.episode, aim.entry)
-    if (!opened) return json(res, 502, { error: 'Le lecteur n’a pas pu s’ouvrir.' })
+    if (!opened) return json(res, 502, { error: t('Le lecteur n’a pas pu s’ouvrir.') })
     rememberLaunch(id, at, undefined, media)
     return json(res, 200, { player: await nowPlaying() })
   }
 
-  return json(res, 404, { error: 'Adresse inconnue.' })
+  return json(res, 404, { error: t('Adresse inconnue.') })
 }
 
 export function remoteStatus(): RemoteStatus {
@@ -843,7 +846,7 @@ export function startRemote(port = REMOTE_PORT): Promise<RemoteStatus> {
         ics: null,
         token: null,
         port,
-        error: 'Aucun réseau local détecté sur cette machine.'
+        error: t('Aucun réseau local détecté sur cette machine.')
       }
       resolve(status)
       return
@@ -852,7 +855,7 @@ export function startRemote(port = REMOTE_PORT): Promise<RemoteStatus> {
     token = sessionToken()
     const next = createServer((req, res) => {
       void handle(req, res).catch(() => {
-        if (!res.headersSent) json(res, 500, { error: 'Erreur interne.' })
+        if (!res.headersSent) json(res, 500, { error: t('Erreur interne.') })
       })
     })
 
@@ -863,7 +866,10 @@ export function startRemote(port = REMOTE_PORT): Promise<RemoteStatus> {
       // de Node, « listen EADDRINUSE », ne le disait à personne.
       const error =
         err.code === 'EADDRINUSE'
-          ? `Le port ${port} est déjà pris : une autre fenêtre AnimeList a sans doute sa télécommande allumée. Éteins-la, puis réessaie.`
+          ? t(
+              'Le port {port} est déjà pris : une autre fenêtre AnimeList a sans doute sa télécommande allumée. Éteins-la, puis réessaie.',
+              { port }
+            )
           : err.message
       status = { on: false, url: null, ics: null, token: null, port, error }
       resolve(status)

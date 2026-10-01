@@ -5,13 +5,14 @@ import { Poster, Section } from '@/components/ui'
 import { useDormant, type DormantRow } from '@/lib/dormant'
 import { titleOf } from '@/lib/format'
 import { useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
 /** « il reste 12 épisodes », « tout est vu », ou l'aveu qu'on ne sait pas. */
 function restLabel(row: DormantRow): string {
   const { remaining } = row.series
-  if (remaining === null) return 'on ne sait pas combien il en reste'
-  if (remaining === 0) return 'tu as vu tout ce qui existe'
-  return `il reste ${remaining} épisode${remaining > 1 ? 's' : ''}`
+  if (remaining === null) return t('on ne sait pas combien il en reste')
+  if (remaining === 0) return t('tu as vu tout ce qui existe')
+  return t('il reste {remaining} épisode{v1}', { remaining, v1: remaining > 1 ? 's' : '' })
 }
 
 function DormantCard({ row }: { row: DormantRow }): React.JSX.Element {
@@ -35,7 +36,7 @@ function DormantCard({ row }: { row: DormantRow }): React.JSX.Element {
       <button
         className="shrink-0"
         onClick={() => navigate({ name: 'anime', id: media.id })}
-        aria-label={`Ouvrir ${title}`}
+        aria-label={t('Ouvrir {title}', { title })}
       >
         <Poster src={media.cover.large} alt="" className="h-[102px] w-[70px]" rounded="rounded-[11px]" />
       </button>
@@ -48,28 +49,31 @@ function DormantCard({ row }: { row: DormantRow }): React.JSX.Element {
           {title}
         </button>
         <p className="mt-1 text-[0.76rem] leading-snug text-muted">
-          Dort depuis {sleepLabel(series.days)} · {restLabel(row)}
+          {t('Dort depuis')} {sleepLabel(series.days)} · {restLabel(row)}
         </p>
 
         <div className="mt-auto flex flex-wrap items-center gap-1.5 pt-2.5">
           {finish ? (
-            <button className="btn !h-7 !px-2.5 text-[0.74rem]" onClick={() => settle('completed', 'marquée terminée')}>
+            <button
+              className="btn !h-7 !px-2.5 text-[0.74rem]"
+              onClick={() => settle('completed', t('marquée terminée'))}
+            >
               <Check size={13} />
-              Terminée
+              {t('Terminée')}
             </button>
           ) : (
             <button className="btn !h-7 !px-2.5 text-[0.74rem]" onClick={() => settle('watching', 'reprise')}>
               <Play size={13} />
-              Reprendre
+              {t('Reprendre')}
             </button>
           )}
           <button
             className="btn !h-7 !px-2.5 text-[0.74rem]"
-            title="Elle quitte les séries en cours, et cesse de te le rappeler"
-            onClick={() => settle('dropped', 'abandonnée')}
+            title={t('Elle quitte les séries en cours, et cesse de te le rappeler')}
+            onClick={() => settle('dropped', t('abandonnée'))}
           >
             <X size={13} />
-            Abandonner
+            {t('Abandonner')}
           </button>
         </div>
       </div>
@@ -97,16 +101,19 @@ export function Dormant(): React.JSX.Element | null {
   return (
     <Section
       id="en-pause"
-      title="Laissées en plan"
+      title={t('Laissées en plan')}
       subtitle={
         rows.length === 1
-          ? `Une série en pause depuis ${sleepLabel(oldest.series.days)}. La reprendre, ou la refermer.`
-          : `${rows.length} séries en pause, la plus ancienne depuis ${sleepLabel(oldest.series.days)}. Les reprendre, ou les refermer.`
+          ? t('Une série en pause depuis {v0}. La reprendre, ou la refermer.', { v0: sleepLabel(oldest.series.days) })
+          : t('{length} séries en pause, la plus ancienne depuis {v1}. Les reprendre, ou les refermer.', {
+              length: rows.length,
+              v1: sleepLabel(oldest.series.days)
+            })
       }
       action={
         <span className="flex shrink-0 items-center gap-1.5 text-[0.74rem] text-faint">
           <Moon size={13} />
-          En pause
+          {t('En pause')}
         </span>
       }
     >

@@ -2,13 +2,14 @@ import { humanMessage } from '@shared/api-outage'
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import type { AiringEntry } from '@shared/types'
-import { NdHeader, NdTabs, plural } from '@/components/nd'
+import { NdHeader, NdTabs } from '@/components/nd'
 import { EmptyState, ErrorBox, Poster, Spinner } from '@/components/ui'
 import { toneAccent } from '@/lib/color'
 import { formatTime, titleOf } from '@/lib/format'
 import { useNow } from '@/lib/hooks'
 import { WeekPicker, startOfWeek, weekRange } from '@/pages/Calendar'
 import { useApp } from '@/store/app'
+import { t, locale } from '@shared/i18n'
 
 const DAY_MS = 86_400_000
 type Scope = 'library' | 'all'
@@ -22,10 +23,10 @@ type Scope = 'library' | 'all'
  * les diffusions japonaises vues depuis la France.
  */
 const BANDS = [
-  { id: 'morning', label: 'Matin', hint: '5 h à midi', from: 5, to: 12 },
-  { id: 'afternoon', label: 'Après-midi', hint: 'midi à 18 h', from: 12, to: 18 },
-  { id: 'evening', label: 'Soirée', hint: '18 h à minuit', from: 18, to: 24 },
-  { id: 'night', label: 'Nuit', hint: 'minuit à 5 h', from: 0, to: 5 }
+  { id: 'morning', label: t('Matin'), hint: t('5 h à midi'), from: 5, to: 12 },
+  { id: 'afternoon', label: 'Après-midi', hint: t('midi à 18 h'), from: 12, to: 18 },
+  { id: 'evening', label: t('Soirée'), hint: t('18 h à minuit'), from: 18, to: 24 },
+  { id: 'night', label: t('Nuit'), hint: t('minuit à 5 h'), from: 0, to: 5 }
 ] as const
 
 const bandOf = (hour: number): (typeof BANDS)[number]['id'] =>
@@ -45,13 +46,13 @@ function Slot({ item, scope, now }: { item: AiringEntry; scope: Scope; now: numb
       data-mine={scope === 'all' && tracked}
       style={{ '--tone': toneAccent(item.media.cover.color) } as React.CSSProperties}
       onClick={() => navigate({ name: 'anime', id: item.mediaId })}
-      title={aired ? 'Déjà diffusé' : undefined}
+      title={aired ? t('Déjà diffusé') : undefined}
     >
       <Poster src={item.media.cover.large} alt="" className="h-[46px] w-[32px] shrink-0" rounded="rounded-[6px]" />
       <span className="min-w-0">
         <span className="clamp-2 text-[0.74rem] font-semibold leading-snug">{titleOf(item.media, lang)}</span>
         <span className="mt-0.5 block text-[0.68rem] text-muted">
-          Ép. {item.episode} à {formatTime(item.airingAt * 1000)}
+          {t('Ép.')} {item.episode} {t('à')} {formatTime(item.airingAt * 1000)}
         </span>
       </span>
     </button>
@@ -148,15 +149,17 @@ export default function NdCalendarPage(): React.JSX.Element {
       <div className="mx-auto max-w-[900px] px-7 py-16">
         <EmptyState
           icon={<CalendarDays size={24} />}
-          title="Aucune série à suivre"
-          hint="Ajoute des séries en cours ou à voir pour retrouver leurs épisodes ici, ou regarde tout ce qui passe cette semaine."
+          title={t('Aucune série à suivre')}
+          hint={t(
+            'Ajoute des séries en cours ou à voir pour retrouver leurs épisodes ici, ou regarde tout ce qui passe cette semaine.'
+          )}
           action={
             <div className="mt-1 flex gap-2">
               <button className="btn btn-primary" onClick={() => setScope('all')}>
-                Voir tout ce qui passe
+                {t('Voir tout ce qui passe')}
               </button>
               <button className="btn" onClick={() => navigate({ name: 'discover' })}>
-                Trouver des séries
+                {t('Trouver des séries')}
               </button>
             </div>
           }
@@ -166,15 +169,22 @@ export default function NdCalendarPage(): React.JSX.Element {
   }
 
   const total = slots.length
-  const when = offset === 0 ? 'cette semaine' : offset === 1 ? 'la semaine prochaine' : `du ${weekRange(from)}`
+  const when =
+    offset === 0
+      ? t('cette semaine')
+      : offset === 1
+        ? t('la semaine prochaine')
+        : t('du {range}', { range: weekRange(from) })
   const title = loading
-    ? 'Récupération de la grille…'
+    ? t('Récupération de la grille…')
     : total > 0
-      ? `${plural(total, 'épisode')} ${scope === 'all' ? 'diffusé' : 'de tes séries'}${scope === 'all' && total > 1 ? 's' : ''} ${when}`
-      : `Rien ${scope === 'all' ? 'à l’antenne' : 'dans tes séries'} ${when}`
+      ? scope === 'all'
+        ? t('{n} épisode{s} diffusé{s} {when}', { n: total, s: total > 1 ? 's' : '', when })
+        : t('{n} épisode{s} de tes séries {when}', { n: total, s: total > 1 ? 's' : '', when })
+      : t('Rien {v0} {when}', { v0: scope === 'all' ? t('à l’antenne') : t('dans tes séries'), when })
 
   const dayName = (i: number): string =>
-    new Date(from + i * DAY_MS).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric' })
+    new Date(from + i * DAY_MS).toLocaleDateString(locale(), { weekday: 'long', day: 'numeric' })
 
   return (
     <div className="page">
@@ -182,19 +192,19 @@ export default function NdCalendarPage(): React.JSX.Element {
         title={title}
         sub={
           busiest >= 0 && !loading
-            ? `La soirée la plus chargée : ${dayName(busiest)}.`
-            : `Semaine du ${weekRange(from)}`
+            ? t('La soirée la plus chargée : {v0}.', { v0: dayName(busiest) })
+            : t('Semaine du {v0}', { v0: weekRange(from) })
         }
         actions={
           <>
-            <button className="icon-btn" onClick={() => setOffset((o) => o - 1)} aria-label="Semaine précédente">
+            <button className="icon-btn" onClick={() => setOffset((o) => o - 1)} aria-label={t('Semaine précédente')}>
               <ChevronLeft size={16} />
             </button>
-            <button className="btn" onClick={() => setPickerOpen(true)} title="Choisir une semaine">
+            <button className="btn" onClick={() => setPickerOpen(true)} title={t('Choisir une semaine')}>
               <CalendarDays size={14} />
-              {offset === 0 ? 'Cette semaine' : weekRange(from)}
+              {offset === 0 ? t('Cette semaine') : weekRange(from)}
             </button>
-            <button className="icon-btn" onClick={() => setOffset((o) => o + 1)} aria-label="Semaine suivante">
+            <button className="icon-btn" onClick={() => setOffset((o) => o + 1)} aria-label={t('Semaine suivante')}>
               <ChevronRight size={16} />
             </button>
           </>
@@ -203,11 +213,11 @@ export default function NdCalendarPage(): React.JSX.Element {
 
       <div className="mb-5">
         <NdTabs
-          label="Quelles séries"
+          label={t('Quelles séries')}
           size="sm"
           tabs={[
-            { id: 'library' as const, label: 'Mes séries' },
-            { id: 'all' as const, label: 'Tout ce qui passe' }
+            { id: 'library' as const, label: t('Mes séries') },
+            { id: 'all' as const, label: t('Tout ce qui passe') }
           ]}
           value={scope}
           onChange={setScope}
@@ -216,14 +226,14 @@ export default function NdCalendarPage(): React.JSX.Element {
 
       {error && <ErrorBox message={error} onRetry={() => setNonce((n) => n + 1)} />}
       {loading ? (
-        <Spinner label="Récupération de la grille…" />
+        <Spinner label={t('Récupération de la grille…')} />
       ) : (
-        <div className="nd-program" role="table" aria-label="Grille des diffusions">
+        <div className="nd-program" role="table" aria-label={t('Grille des diffusions')}>
           <div className="nd-program-row nd-program-head" role="row">
             <span role="columnheader" />
             {Array.from({ length: 7 }, (_, i) => (
               <span key={i} role="columnheader" className="nd-program-day" data-today={i === todayIndex}>
-                {i === todayIndex ? "Aujourd'hui" : dayName(i)}
+                {i === todayIndex ? t("Aujourd'hui") : dayName(i)}
               </span>
             ))}
           </div>

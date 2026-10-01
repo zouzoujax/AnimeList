@@ -14,8 +14,10 @@ import { Poster } from '@/components/ui'
 import { toneAccent } from '@/lib/color'
 import { airingLabel, isUnaired, relativeDay, titleOf } from '@/lib/format'
 import { nextEpisodeOf, useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
-export const plural = (n: number, word: string, many = `${word}s`): string => `${n} ${n > 1 ? many : word}`
+/** Les mots arrivent en français et sont traduits ici, une fois la forme choisie. */
+export const plural = (n: number, word: string, many = `${word}s`): string => `${n} ${t(n > 1 ? many : word)}`
 
 /** Au-delà, un trait par épisode deviendrait un liseré illisible : on montre une fenêtre autour du suivant. */
 const STRIP_MAX = 52
@@ -50,7 +52,7 @@ export function EpisodeStrip({
       data-size={size}
       style={{ '--tone': toneAccent(media.cover.color) } as React.CSSProperties}
       role="img"
-      aria-label={`${seen?.size ?? 0} épisodes vus sur ${total}`}
+      aria-label={t('{v0} épisodes vus sur {total}', { v0: seen?.size ?? 0, total })}
     >
       {Array.from({ length: count }, (_, i) => {
         const n = start + i
@@ -78,7 +80,7 @@ export function NdHeader({
       <div className="min-w-0 max-w-[70ch]">
         {back && (
           <button className="nd-back" onClick={back}>
-            Retour
+            {t('Retour')}
           </button>
         )}
         <h1 className="title-xl text-[1.6rem] leading-tight">{title}</h1>
@@ -162,8 +164,12 @@ export function SeriesRow({
         <span className="min-w-0 flex-1">
           <span className="clamp-2 text-[0.9rem] font-semibold leading-snug">{titleOf(media, lang)}</span>
           <span className="mt-1 flex flex-wrap gap-x-3 text-[0.76rem] text-muted">
-            {tracked && <span>{next ? `Épisode ${next}` : 'Terminée'}</span>}
-            {behind > 1 && <span className="font-semibold text-[var(--tone-ink)]">{behind} déjà sortis</span>}
+            {tracked && <span>{next ? t('Épisode {next}', { next }) : t('Terminée')}</span>}
+            {behind > 1 && (
+              <span className="font-semibold text-[var(--tone-ink)]">
+                {behind} {t('déjà sortis')}
+              </span>
+            )}
             {note}
           </span>
           {tracked && (
@@ -184,10 +190,10 @@ export function SeriesRow({
         ) : (
           <button
             className="home-row-mark"
-            title={`Cocher l'épisode ${next}`}
+            title={t("Cocher l'épisode {next}", { next })}
             onClick={async () => {
               await toggleEpisode(media.id, next, media)
-              toast(`Épisode ${next} coché · ${titleOf(media, lang)}`)
+              toast(t('Épisode {next} coché · {v1}', { next, v1: titleOf(media, lang) }))
             }}
           >
             <Check size={15} />
@@ -225,5 +231,5 @@ export function spokenDuration(minutes: number): string {
           ]
         : [[m, 'minute']]
   const said = parts.filter(([n]) => n > 0).map(([n, w]) => plural(n, w))
-  return said.length ? said.join(' et ') : '0 minute'
+  return said.length ? said.join(t(' et ')) : t('0 minute')
 }

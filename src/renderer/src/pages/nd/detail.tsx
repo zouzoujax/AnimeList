@@ -18,6 +18,7 @@ import { rgba, toneAccent } from '@/lib/color'
 import { airingLabel, titleOf } from '@/lib/format'
 import { statusBlocked } from '@/lib/status'
 import { useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
 const STATUSES: LibraryStatus[] = ['watching', 'planned', 'completed', 'paused', 'dropped']
 
@@ -29,18 +30,24 @@ export function NdDetailHero(props: DetailHeroProps): React.JSX.Element {
 
   // Où tu en es, en une phrase : c'est ce que l'en-tête doit dire avant tout.
   const where = !entry
-    ? 'Pas encore dans ta bibliothèque.'
+    ? t('Pas encore dans ta bibliothèque.')
     : seen === 0
-      ? `Pas encore commencée${total ? `, ${plural(total, 'épisode')} au total` : ''}.`
+      ? t('Pas encore commencée{v0}.', { v0: total ? t(', {v0} au total', { v0: plural(total, 'épisode') }) : '' })
       : total && seen >= total
-        ? `Tu as vu les ${total} épisodes.`
-        : `Tu as vu ${plural(seen, 'épisode')}${total ? ` sur ${total}` : ''}.${
-            next !== null
-              ? ` Le suivant est l’épisode ${next}.`
-              : upcoming
-                ? ` L’épisode ${upcoming.episode} sort ${airingLabel(upcoming.airingAt).toLowerCase()}.`
-                : ''
-          }`
+        ? t('Tu as vu les {total} épisodes.', { total })
+        : t('Tu as vu {v0}{v1}.{v2}', {
+            v0: plural(seen, 'épisode'),
+            v1: total ? ` sur ${total}` : '',
+            v2:
+              next !== null
+                ? t(' Le suivant est l’épisode {next}.', { next })
+                : upcoming
+                  ? t(' L’épisode {episode} sort {v1}.', {
+                      episode: upcoming.episode,
+                      v1: airingLabel(upcoming.airingAt).toLowerCase()
+                    })
+                  : ''
+          })
 
   return (
     <section className="on-art relative overflow-hidden" style={{ '--tone': glow } as React.CSSProperties}>
@@ -63,7 +70,7 @@ export function NdDetailHero(props: DetailHeroProps): React.JSX.Element {
       <div className="relative mx-auto max-w-[1400px] px-7 pb-8 pt-5">
         <button className="btn !h-8" onClick={props.onBack}>
           <ArrowLeft size={14} />
-          Retour
+          {t('Retour')}
         </button>
 
         <div className="mt-10 flex items-end gap-7">
@@ -76,7 +83,9 @@ export function NdDetailHero(props: DetailHeroProps): React.JSX.Element {
           <div className="min-w-0 flex-1 pb-1">
             <h1 className="title-xl clamp-3 max-w-[22ch] text-[2.7rem] leading-[1.02]">{titleOf(media, lang)}</h1>
             {props.alsoKnownAs.length > 0 && (
-              <p className="mt-2 text-[0.9rem] text-muted">Aussi appelé {props.alsoKnownAs.slice(0, 2).join(' ou ')}</p>
+              <p className="mt-2 text-[0.9rem] text-muted">
+                {t('Aussi appelé')} {props.alsoKnownAs.slice(0, 2).join(' ou ')}
+              </p>
             )}
 
             <p className="mt-4 max-w-[60ch] text-[0.95rem] leading-relaxed">{where}</p>
@@ -90,30 +99,32 @@ export function NdDetailHero(props: DetailHeroProps): React.JSX.Element {
               {!entry ? (
                 <button className="btn btn-primary" onClick={props.onAdd}>
                   <Plus size={15} />
-                  Ajouter à ma bibliothèque
+                  {t('Ajouter à ma bibliothèque')}
                 </button>
               ) : (
                 next !== null && (
                   <button className="btn btn-primary" onClick={props.onMark}>
                     <Check size={15} />
-                    Cocher l’épisode {next}
+                    {t('Cocher l’épisode')} {next}
                   </button>
                 )
               )}
               <button className="btn" onClick={props.onFavorite} aria-pressed={!!entry?.favorite}>
                 <Heart size={14} fill={entry?.favorite ? 'currentColor' : 'none'} />
-                {entry?.favorite ? 'Dans tes favoris' : 'Ajouter aux favoris'}
+                {entry?.favorite ? t('Dans tes favoris') : t('Ajouter aux favoris')}
               </button>
               {entry && (
                 <button className="btn" onClick={props.onLists}>
                   <FolderPlus size={14} />
-                  {props.inLists > 0 ? `Dans ${plural(props.inLists, 'liste')}` : 'Ranger dans une liste'}
+                  {props.inLists > 0
+                    ? t('Dans {v0}', { v0: plural(props.inLists, 'liste') })
+                    : t('Ranger dans une liste')}
                 </button>
               )}
             </div>
 
             {entry && (
-              <div className="nd-seg mt-4" role="group" aria-label="Statut">
+              <div className="nd-seg mt-4" role="group" aria-label={t('Statut')}>
                 {STATUSES.map((status) => {
                   const blocked = statusBlocked(status, media, entry)
                   return (
@@ -139,17 +150,17 @@ export function NdDetailHero(props: DetailHeroProps): React.JSX.Element {
 
 /** L'ordre de lecture : ce qu'on fait d'abord, ce qu'on lit ensuite, ce qu'on découvre à la fin. */
 const MAIN: { key: DetailPartKey; label: string }[] = [
-  { key: 'episodes', label: 'Épisodes' },
-  { key: 'language', label: 'Langue' },
-  { key: 'files', label: 'Fichiers' },
-  { key: 'synopsis', label: 'Synopsis' },
+  { key: 'episodes', label: t('Épisodes') },
+  { key: 'language', label: t('Langue') },
+  { key: 'files', label: t('Fichiers') },
+  { key: 'synopsis', label: t('Synopsis') },
   { key: 'trailer', label: 'Bande-annonce' },
-  { key: 'cast', label: 'Personnages' },
-  { key: 'franchise', label: 'Franchise' },
-  { key: 'relations', label: 'Même série' },
-  { key: 'films', label: 'Films' },
-  { key: 'manga', label: 'Manga' },
-  { key: 'recommendations', label: 'Recommandations' }
+  { key: 'cast', label: t('Personnages') },
+  { key: 'franchise', label: t('Franchise') },
+  { key: 'relations', label: t('Même série') },
+  { key: 'films', label: t('Films') },
+  { key: 'manga', label: t('Manga') },
+  { key: 'recommendations', label: t('Recommandations') }
 ]
 const SIDE: DetailPartKey[] = ['progress', 'rating', 'watch', 'info', 'error']
 
@@ -194,7 +205,7 @@ export function NdDetailBody({ parts }: { parts: DetailParts }): React.JSX.Eleme
 
   return (
     <div className="nd-detail mx-auto mt-8 max-w-[1400px] px-7">
-      <nav className="nd-toc" aria-label="Sommaire de la fiche">
+      <nav className="nd-toc" aria-label={t('Sommaire de la fiche')}>
         {present.map((p) => (
           <button
             key={p.key}

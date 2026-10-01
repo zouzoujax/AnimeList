@@ -16,6 +16,7 @@ import { AnimeCard } from '@/components/AnimeCard'
 import { FollowButton } from '@/components/FollowButton'
 import { ErrorBox, Poster, PosterSkeletons } from '@/components/ui'
 import { useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
 export default function PersonPage({ kind, id }: { kind: 'character' | 'staff'; id: number }): React.JSX.Element {
   const back = useApp((s) => s.back)
@@ -44,7 +45,7 @@ export default function PersonPage({ kind, id }: { kind: 'character' | 'staff'; 
   if (person === null) {
     return (
       <div className="page">
-        <ErrorBox message="Cette fiche est introuvable sur AniList." onRetry={back} />
+        <ErrorBox message={t('Cette fiche est introuvable sur AniList.')} onRetry={back} />
       </div>
     )
   }
@@ -55,7 +56,7 @@ export default function PersonPage({ kind, id }: { kind: 'character' | 'staff'; 
     <div className="page">
       <button className="btn mb-5 !h-8" onClick={back}>
         <ArrowLeft size={14} />
-        Retour
+        {t('Retour')}
       </button>
 
       <div className="mb-7 flex items-center gap-4">
@@ -67,11 +68,11 @@ export default function PersonPage({ kind, id }: { kind: 'character' | 'staff'; 
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <p className="label mb-1">{kind === 'staff' ? 'Doubleur' : 'Personnage'}</p>
+          <p className="label mb-1">{kind === 'staff' ? t('Doubleur') : t('Personnage')}</p>
           <h1 className="title-xl text-[1.85rem] leading-tight">{person.name}</h1>
           <p className="mt-1 text-[0.82rem] text-muted">
-            {person.roles.length} série{person.roles.length > 1 ? 's' : ''}
-            {owned > 0 && ` · ${owned} dans ta bibliothèque`}
+            {t('{n} série{s}', { n: person.roles.length, s: person.roles.length > 1 ? 's' : '' })}
+            {owned > 0 && t(' · {owned} dans ta bibliothèque', { owned })}
           </p>
         </div>
 
@@ -81,7 +82,7 @@ export default function PersonPage({ kind, id }: { kind: 'character' | 'staff'; 
       </div>
 
       {person.roles.length === 0 ? (
-        <p className="py-16 text-center text-sm text-faint">AniList ne lui connaît aucune autre série.</p>
+        <p className="py-16 text-center text-sm text-faint">{t('AniList ne lui connaît aucune autre série.')}</p>
       ) : (
         <div className="card-grid">
           {person.roles.map((row, i) => (

@@ -24,6 +24,7 @@ import { Modal, Poster } from '@/components/ui'
 import { rgba, toneAccent } from '@/lib/color'
 import { titleOf } from '@/lib/format'
 import { useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
 /**
  * Une couleur par nature de suite, prise dans la palette des accents.
@@ -108,7 +109,7 @@ export function NextUp(): React.JSX.Element | null {
               <PartyPopper size={19} />
             </span>
             <div className="min-w-0">
-              <p className="text-[1rem] font-semibold">Série terminée</p>
+              <p className="text-[1rem] font-semibold">{t('Série terminée')}</p>
               {media && <p className="truncate text-[0.8rem] text-faint">{titleOf(media, lang)}</p>}
             </div>
           </div>
@@ -119,14 +120,14 @@ export function NextUp(): React.JSX.Element | null {
               style={{ border: '1px solid var(--line)' }}
             >
               <p className="text-[0.84rem] text-muted">
-                {rating.score === null ? 'Ta note, tant que c’est frais ?' : 'Note gardée. Merci !'}
+                {rating.score === null ? t('Ta note, tant que c’est frais ?') : t('Note gardée. Merci !')}
               </p>
               <Stars value={rating.score} onChange={rate} />
             </div>
           )}
 
           {list.length > 0 && (
-            <p className="mb-3 text-[0.84rem] text-muted">Pour continuer, dans l’ordre de la franchise :</p>
+            <p className="mb-3 text-[0.84rem] text-muted">{t('Pour continuer, dans l’ordre de la franchise :')}</p>
           )}
 
           {/* Jusqu'à huit conseils : la liste défile plutôt que de pousser
@@ -166,7 +167,7 @@ export function NextUp(): React.JSX.Element | null {
 
           <div className="mt-5 flex justify-end">
             <button className="btn !h-9" onClick={dismiss}>
-              {rating?.score != null && list.length === 0 ? 'Fermer' : 'Plus tard'}
+              {rating?.score != null && list.length === 0 ? t('Fermer') : t('Plus tard')}
             </button>
           </div>
         </div>

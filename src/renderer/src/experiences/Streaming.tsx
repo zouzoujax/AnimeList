@@ -11,6 +11,7 @@ import { StreamingCalendar, StreamingDetailHero, StreamingDiscover, StreamingMan
 import { StreamingBadges } from './badges-pages'
 import { StreamingDetailBody } from './detail-bodies'
 import type { Experience } from '.'
+import { t as tr, locale } from '@shared/i18n'
 
 /*
  * STREAMING — la grammaire des plateformes : une bannière qui occupe l'écran et
@@ -19,14 +20,14 @@ import type { Experience } from '.'
  */
 
 const NAV: { route: Route; label: string }[] = [
-  { route: { name: 'home' }, label: 'Accueil' },
-  { route: { name: 'discover' }, label: 'Découvrir' },
-  { route: { name: 'library' }, label: 'Ma liste' },
-  { route: { name: 'calendar' }, label: 'Calendrier' },
-  { route: { name: 'manga' }, label: 'Manga' },
-  { route: { name: 'stats' }, label: 'Statistiques' },
-  { route: { name: 'badges' }, label: 'Badges' },
-  { route: { name: 'settings' }, label: 'Réglages' }
+  { route: { name: 'home' }, label: tr('Accueil') },
+  { route: { name: 'discover' }, label: tr('Découvrir') },
+  { route: { name: 'library' }, label: tr('Ma liste') },
+  { route: { name: 'calendar' }, label: tr('Calendrier') },
+  { route: { name: 'manga' }, label: tr('Manga') },
+  { route: { name: 'stats' }, label: tr('Statistiques') },
+  { route: { name: 'badges' }, label: tr('Badges') },
+  { route: { name: 'settings' }, label: tr('Réglages') }
 ]
 
 function Nav(): React.JSX.Element {
@@ -47,7 +48,7 @@ function Nav(): React.JSX.Element {
 
   return (
     <nav
-      aria-label="Navigation principale"
+      aria-label={tr('Navigation principale')}
       className="xs-nav absolute inset-x-0 top-0 z-30 flex h-16 items-center gap-7 px-10 transition-colors duration-500"
       data-solid={solid || route.name !== 'home'}
     >
@@ -62,7 +63,7 @@ function Nav(): React.JSX.Element {
           {label}
         </button>
       ))}
-      <button className="xs-link ml-auto" onClick={() => setPalette(true)} aria-label="Rechercher">
+      <button className="xs-link ml-auto" onClick={() => setPalette(true)} aria-label={tr('Rechercher')}>
         <Search size={19} />
       </button>
     </nav>
@@ -72,19 +73,19 @@ function Nav(): React.JSX.Element {
 /** Lecture ou fiche : le bouton blanc fait toujours la chose la plus probable. */
 function usePlay(media: Media | undefined): { label: string; run: () => void } {
   const state = useApp()
-  if (!media) return { label: 'Lecture', run: () => {} }
+  if (!media) return { label: tr('Lecture'), run: () => {} }
   const tracked = state.entries.get(media.id)?.status === 'watching'
   const next = tracked ? nextEpisodeOf(state, media.id, media.episodes) : null
   if (next !== null && !isUnaired(media, next)) {
     return {
-      label: `Épisode ${next}`,
+      label: tr('Épisode {next}', { next }),
       run: () => {
         void state.toggleEpisode(media.id, next, media)
-        state.toast(`Épisode ${next} coché · ${titleOf(media, state.prefs.titleLang)}`)
+        state.toast(tr('Épisode {next} coché · {v1}', { next, v1: titleOf(media, state.prefs.titleLang) }))
       }
     }
   }
-  return { label: 'Voir', run: () => state.navigate({ name: 'anime', id: media.id }) }
+  return { label: tr('Voir'), run: () => state.navigate({ name: 'anime', id: media.id }) }
 }
 
 function Billboard({ items }: { items: Media[] }): React.JSX.Element {
@@ -129,15 +130,22 @@ function Billboard({ items }: { items: Media[] }): React.JSX.Element {
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           >
             <p className="xs-kicker mb-3">
-              <span className="xs-badge">A</span> SÉRIE
+              <span className="xs-badge">A</span> {tr('SÉRIE')}
             </p>
             <h1 className="title-xl clamp-2 text-[3.4rem] leading-[0.98]">{titleOf(media, lang)}</h1>
             <div className="mt-4 flex items-center gap-3 text-[0.9rem]">
               {media.averageScore !== null && (
-                <span className="font-bold text-[#46d369]">{media.averageScore}% d’appréciation</span>
+                <span className="font-bold text-[#46d369]">
+                  {media.averageScore}
+                  {tr('% d’appréciation')}
+                </span>
               )}
               {media.seasonYear && <span className="text-muted">{media.seasonYear}</span>}
-              {media.episodes && <span className="xs-outline">{media.episodes} ép.</span>}
+              {media.episodes && (
+                <span className="xs-outline">
+                  {media.episodes} {tr('ép.')}
+                </span>
+              )}
             </div>
             {media.description && (
               <p className="clamp-3 mt-4 text-[1rem] leading-relaxed text-muted">{media.description}</p>
@@ -149,7 +157,7 @@ function Billboard({ items }: { items: Media[] }): React.JSX.Element {
               </button>
               <button className="xs-more" onClick={() => navigate({ name: 'anime', id: media.id })}>
                 <Info size={20} />
-                Plus d’infos
+                {tr('Plus d’infos')}
               </button>
             </div>
           </motion.div>
@@ -160,7 +168,7 @@ function Billboard({ items }: { items: Media[] }): React.JSX.Element {
         {items.map((m, i) => (
           <button
             key={m.id}
-            aria-label={`Afficher ${titleOf(m, lang)}`}
+            aria-label={tr('Afficher {v0}', { v0: titleOf(m, lang) })}
             onClick={() => setIndex(i)}
             className="xs-dot"
             data-on={i === index % items.length}
@@ -182,10 +190,10 @@ export function Row({ title, children }: { title: string; children: ReactNode })
       <div ref={ref} className="scroll-x flex gap-2 px-10 py-6">
         {children}
       </div>
-      <button className="xs-arrow left-0" onClick={() => slide(-1)} aria-label="Précédent">
+      <button className="xs-arrow left-0" onClick={() => slide(-1)} aria-label={tr('Précédent')}>
         <ChevronLeft size={34} />
       </button>
-      <button className="xs-arrow right-0" onClick={() => slide(1)} aria-label="Suivant">
+      <button className="xs-arrow right-0" onClick={() => slide(1)} aria-label={tr('Suivant')}>
         <ChevronRight size={34} />
       </button>
     </section>
@@ -220,7 +228,7 @@ export function Tile({ media, progress, note }: { media: Media; progress?: numbe
 function Top10({ items }: { items: Media[] }): React.JSX.Element {
   const navigate = useApp((s) => s.navigate)
   return (
-    <Row title="Top 10 des tendances aujourd’hui">
+    <Row title={tr('Top 10 des tendances aujourd’hui')}>
       {items.slice(0, 10).map((media, i) => (
         <motion.button
           key={media.id}
@@ -256,7 +264,7 @@ function Home(): React.JSX.Element {
       <Billboard items={billboard} />
       <div className="relative -mt-[12vh]">
         {continuing.length > 0 && (
-          <Row title="Reprendre la lecture">
+          <Row title={tr('Reprendre la lecture')}>
             {continuing.map((m) => (
               <Tile key={m.id} media={m} progress={m.episodes ? (watched.get(m.id)?.size ?? 0) / m.episodes : 0} />
             ))}
@@ -264,14 +272,18 @@ function Home(): React.JSX.Element {
         )}
         {trending.items.length > 0 && <Top10 items={trending.items} />}
         {behind.length > 0 && (
-          <Row title="Nouveaux épisodes pour toi">
+          <Row title={tr('Nouveaux épisodes pour toi')}>
             {behind.map(({ media, behind: n }) => (
-              <Tile key={media.id} media={media} note={`${n} nouvel${n > 1 ? 's' : ''} épisode${n > 1 ? 's' : ''}`} />
+              <Tile
+                key={media.id}
+                media={media}
+                note={tr('{n} nouvel{v1} épisode{v2}', { n, v1: n > 1 ? 's' : '', v2: n > 1 ? 's' : '' })}
+              />
             ))}
           </Row>
         )}
         {season.items.length > 0 && (
-          <Row title="Nouveautés de la saison">
+          <Row title={tr('Nouveautés de la saison')}>
             {season.items.map((m) => (
               <Tile key={m.id} media={m} />
             ))}
@@ -292,11 +304,11 @@ function Library(): React.JSX.Element {
 
   return (
     <div className="xs-page px-10 pb-16 pt-24">
-      <h1 className="title-xl mb-5 text-[2.4rem]">Ma liste</h1>
+      <h1 className="title-xl mb-5 text-[2.4rem]">{tr('Ma liste')}</h1>
       <div className="mb-8 flex flex-wrap gap-2">
         {TABS.map((id) => (
           <button key={id} className="xs-tab" data-on={tab === id} onClick={() => setTab(id)}>
-            {id === 'all' ? 'Tout' : STATUS_LABELS[id]}
+            {id === 'all' ? tr('Tout') : STATUS_LABELS[id]}
           </button>
         ))}
       </div>
@@ -336,7 +348,7 @@ function Stats(): React.JSX.Element {
         )}
         <div className="xs-vignette absolute inset-0" />
         <div className="relative">
-          <p className="xs-kicker">Ton année en streaming</p>
+          <p className="xs-kicker">{tr('Ton année en streaming')}</p>
           <motion.p
             className="xs-mega"
             initial={{ opacity: 0, y: 60, scale: 0.9 }}
@@ -345,22 +357,22 @@ function Stats(): React.JSX.Element {
           >
             {Math.round(s.minutes / 60)}
           </motion.p>
-          <p className="text-[1.8rem] font-bold">heures devant l’écran</p>
+          <p className="text-[1.8rem] font-bold">{tr('heures devant l’écran')}</p>
           <p className="mt-2 text-[1rem] text-muted">
-            {s.episodes} épisodes · {s.series} séries · record de {s.bestStreak} jours d’affilée
+            {s.episodes} {tr('épisodes ·')} {s.series} {tr('séries · record de')} {s.bestStreak} {tr('jours d’affilée')}
           </p>
         </div>
       </section>
 
       {s.topSeries.length > 0 && (
-        <Row title="Tes séries les plus regardées">
+        <Row title={tr('Tes séries les plus regardées')}>
           {s.topSeries.map(({ media, episodes }, i) => (
             <motion.button
               key={media.id}
               onClick={() => navigate({ name: 'anime', id: media.id })}
               className="relative flex h-[210px] w-[250px] shrink-0 items-end"
               whileHover={{ scale: 1.06 }}
-              title={`${episodes} épisodes`}
+              title={tr('{episodes} épisodes', { episodes })}
             >
               <span className="xs-rank" aria-hidden>
                 {i + 1}
@@ -376,7 +388,7 @@ function Stats(): React.JSX.Element {
       )}
 
       <section className="mb-12 px-10">
-        <h2 className="mb-5 text-[1.3rem] font-bold">Tes genres</h2>
+        <h2 className="mb-5 text-[1.3rem] font-bold">{tr('Tes genres')}</h2>
         <div className="flex flex-col gap-2.5">
           {s.genres.map((g, i) => (
             <div key={g.name} className="grid grid-cols-[140px_1fr_80px] items-center gap-4">
@@ -396,7 +408,7 @@ function Stats(): React.JSX.Element {
 
       <section className="mb-12 grid grid-cols-2 gap-12 px-10">
         <div>
-          <h2 className="mb-5 text-[1.3rem] font-bold">Mois par mois</h2>
+          <h2 className="mb-5 text-[1.3rem] font-bold">{tr('Mois par mois')}</h2>
           <div className="flex h-[180px] items-end gap-2">
             {s.months.map((m, i) => (
               <div key={i} className="flex h-full flex-1 flex-col items-center justify-end gap-2">
@@ -405,7 +417,7 @@ function Stats(): React.JSX.Element {
                   initial={{ height: 0 }}
                   animate={{ height: `${Math.max(2, (m.episodes / peakMonth) * 100)}%` }}
                   transition={{ delay: i * 0.04, duration: 0.6 }}
-                  title={`${m.episodes} épisodes`}
+                  title={tr('{episodes} épisodes', { episodes: m.episodes })}
                 />
                 <span className="text-[0.7rem] uppercase text-faint">{m.label}</span>
               </div>
@@ -413,7 +425,7 @@ function Stats(): React.JSX.Element {
           </div>
         </div>
         <div>
-          <h2 className="mb-5 text-[1.3rem] font-bold">Tes soirées</h2>
+          <h2 className="mb-5 text-[1.3rem] font-bold">{tr('Tes soirées')}</h2>
           <div className="flex h-[180px] items-end gap-3">
             {s.weekdays.map((n, i) => (
               <div key={i} className="flex h-full flex-1 flex-col items-center justify-end gap-2">
@@ -433,13 +445,16 @@ function Stats(): React.JSX.Element {
 
       <section className="grid grid-cols-4 gap-2 px-10">
         {[
-          ['Note moyenne', s.avgScore === null ? '—' : `${s.avgScore.toFixed(1)}/10`],
-          ['Séries terminées', String(s.completed)],
-          ['Studio préféré', s.studios[0]?.name ?? '—'],
+          [tr('Note moyenne'), s.avgScore === null ? '—' : `${s.avgScore.toFixed(1)}/10`],
+          [tr('Séries terminées'), String(s.completed)],
+          [tr('Studio préféré'), s.studios[0]?.name ?? '—'],
           [
-            'Journée record',
+            tr('Journée record'),
             s.record
-              ? `${s.record.episodes} ép. le ${new Date(s.record.at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}`
+              ? tr('{episodes} ép. le {v1}', {
+                  episodes: s.record.episodes,
+                  v1: new Date(s.record.at).toLocaleDateString(locale(), { day: 'numeric', month: 'short' })
+                })
               : '—'
           ]
         ].map(([label, value]) => (
@@ -451,7 +466,7 @@ function Stats(): React.JSX.Element {
       </section>
       {top && (
         <p className="mt-8 px-10 text-[0.9rem] text-faint">
-          Ta série de l’année : <span className="font-bold text-white">{titleOf(top, lang)}</span>
+          {tr('Ta série de l’année :')} <span className="font-bold text-white">{titleOf(top, lang)}</span>
         </p>
       )}
     </div>

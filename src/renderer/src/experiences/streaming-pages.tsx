@@ -17,6 +17,7 @@ import { useApp } from '@/store/app'
 import { useCatalogue, useForYou, useMangaList, useWeek } from './pages-data'
 import { Row, Tile } from './Streaming'
 import type { DetailHeroProps } from '.'
+import { t as tr, locale } from '@shared/i18n'
 
 /*
  * STREAMING — les autres écrans de la plateforme : un catalogue par rayons,
@@ -25,11 +26,11 @@ import type { DetailHeroProps } from '.'
  */
 
 const TABS: { kind: BrowseKind; label: string }[] = [
-  { kind: 'trending', label: 'Tendances' },
-  { kind: 'season', label: 'Cette saison' },
-  { kind: 'popular', label: 'Populaires' },
-  { kind: 'top', label: 'Mieux notés' },
-  { kind: 'upcoming', label: 'Prochainement' }
+  { kind: 'trending', label: tr('Tendances') },
+  { kind: 'season', label: tr('Cette saison') },
+  { kind: 'popular', label: tr('Populaires') },
+  { kind: 'top', label: tr('Mieux notés') },
+  { kind: 'upcoming', label: tr('Prochainement') }
 ]
 
 export function StreamingDiscover({ initialSearch }: { initialSearch?: string }): React.JSX.Element {
@@ -41,10 +42,10 @@ export function StreamingDiscover({ initialSearch }: { initialSearch?: string })
   return (
     <div className="xs-page pb-16 pt-24">
       <div className="flex flex-wrap items-center gap-4 px-10">
-        <h1 className="title-xl text-[2.4rem]">{searching ? 'Résultats' : 'Parcourir'}</h1>
+        <h1 className="title-xl text-[2.4rem]">{searching ? tr('Résultats') : tr('Parcourir')}</h1>
         <label className="xs-search ml-auto">
           <Search size={18} />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Titres, personnages…" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={tr('Titres, personnages…')} />
         </label>
       </div>
       {!searching && (
@@ -59,12 +60,12 @@ export function StreamingDiscover({ initialSearch }: { initialSearch?: string })
 
       {!searching && rec && rec.picks.length > 0 && (
         <div className="mt-8">
-          <Row title="Recommandé pour toi">
+          <Row title={tr('Recommandé pour toi')}>
             {rec.picks.slice(0, 12).map((pick) => (
               <Tile
                 key={pick.media.id}
                 media={pick.media}
-                note={pick.from[0] ? `Parce que tu as aimé ${pick.from[0]}` : undefined}
+                note={pick.from[0] ? tr('Parce que tu as aimé {v0}', { v0: pick.from[0] }) : undefined}
               />
             ))}
           </Row>
@@ -76,12 +77,12 @@ export function StreamingDiscover({ initialSearch }: { initialSearch?: string })
           <Tile key={media.id} media={media} />
         ))}
       </div>
-      {loading && items.length === 0 && <p className="px-10 text-faint">Chargement du catalogue…</p>}
+      {loading && items.length === 0 && <p className="px-10 text-faint">{tr('Chargement du catalogue…')}</p>}
       {error && <p className="px-10 text-faint">{error}</p>}
       {hasMore && !loading && (
         <div className="mt-10 flex justify-center">
           <button className="xs-more" onClick={loadMore}>
-            Voir plus
+            {tr('Voir plus')}
           </button>
         </div>
       )}
@@ -89,8 +90,8 @@ export function StreamingDiscover({ initialSearch }: { initialSearch?: string })
   )
 }
 
-const dayName = new Intl.DateTimeFormat('fr-FR', { weekday: 'long' })
-const dayNum = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' })
+const dayName = new Intl.DateTimeFormat(locale(), { weekday: 'long' })
+const dayNum = new Intl.DateTimeFormat(locale(), { day: 'numeric', month: 'short' })
 
 export function StreamingCalendar(): React.JSX.Element {
   const navigate = useApp((s) => s.navigate)
@@ -103,29 +104,31 @@ export function StreamingCalendar(): React.JSX.Element {
   return (
     <div className="xs-page pb-16 pt-24">
       <div className="flex flex-wrap items-center gap-4 px-10">
-        <h1 className="title-xl text-[2.4rem]">Programme</h1>
+        <h1 className="title-xl text-[2.4rem]">{tr('Programme')}</h1>
         <div className="flex gap-2">
           <button className="xs-tab" data-on={scope === 'library'} onClick={() => setScope('library')}>
-            Ma liste
+            {tr('Ma liste')}
           </button>
           <button className="xs-tab" data-on={scope === 'all'} onClick={() => setScope('all')}>
-            Tout
+            {tr('Tout')}
           </button>
         </div>
         <div className="ml-auto flex items-center gap-2">
-          <button className="xs-round" onClick={() => setOffset((o) => o - 1)} aria-label="Semaine précédente">
+          <button className="xs-round" onClick={() => setOffset((o) => o - 1)} aria-label={tr('Semaine précédente')}>
             <ChevronLeft size={20} />
           </button>
           <button className="xs-tab" onClick={() => setOffset(0)} data-on={offset === 0}>
-            Cette semaine
+            {tr('Cette semaine')}
           </button>
-          <button className="xs-round" onClick={() => setOffset((o) => o + 1)} aria-label="Semaine suivante">
+          <button className="xs-round" onClick={() => setOffset((o) => o + 1)} aria-label={tr('Semaine suivante')}>
             <ChevronRight size={20} />
           </button>
         </div>
       </div>
       <p className="mt-2 px-10 text-faint">
-        {week.loading ? 'Chargement…' : `${week.total} épisode${week.total > 1 ? 's' : ''} cette semaine`}
+        {week.loading
+          ? tr('Chargement…')
+          : tr('{total} épisode{v1} cette semaine', { total: week.total, v1: week.total > 1 ? 's' : '' })}
         {week.error ? ` · ${week.error}` : ''}
       </p>
 
@@ -151,13 +154,15 @@ export function StreamingCalendar(): React.JSX.Element {
                   />
                   <span className="block p-2">
                     <span className="text-[0.7rem] font-bold text-[var(--accent)]">
-                      {formatTime(slot.airingAt * 1000)} · ÉP. {slot.episode}
+                      {formatTime(slot.airingAt * 1000)} {tr('· ÉP.')} {slot.episode}
                     </span>
                     <span className="clamp-2 block text-[0.78rem] font-semibold">{titleOf(slot.media, lang)}</span>
                   </span>
                 </motion.button>
               ))}
-              {day.items.length === 0 && !week.loading && <p className="text-[0.75rem] text-faint">Rien ce jour-là.</p>}
+              {day.items.length === 0 && !week.loading && (
+                <p className="text-[0.75rem] text-faint">{tr('Rien ce jour-là.')}</p>
+              )}
             </div>
           </section>
         ))}
@@ -167,9 +172,9 @@ export function StreamingCalendar(): React.JSX.Element {
 }
 
 const MANGA_TABS: { kind: MangaKind; label: string }[] = [
-  { kind: 'trending', label: 'Tendances' },
-  { kind: 'popular', label: 'Populaires' },
-  { kind: 'top', label: 'Mieux notés' }
+  { kind: 'trending', label: tr('Tendances') },
+  { kind: 'popular', label: tr('Populaires') },
+  { kind: 'top', label: tr('Mieux notés') }
 ]
 
 export function StreamingManga(): React.JSX.Element {
@@ -181,7 +186,7 @@ export function StreamingManga(): React.JSX.Element {
   return (
     <div className="xs-page pb-16 pt-24">
       <div className="flex flex-wrap items-center gap-4 px-10">
-        <h1 className="title-xl text-[2.4rem]">Manga</h1>
+        <h1 className="title-xl text-[2.4rem]">{tr('Manga')}</h1>
         <div className="flex gap-2">
           {MANGA_TABS.map((t) => (
             <button key={t.kind} className="xs-tab" data-on={tab === t.kind} onClick={() => setTab(t.kind)}>
@@ -191,13 +196,13 @@ export function StreamingManga(): React.JSX.Element {
         </div>
         <label className="xs-search ml-auto">
           <Search size={18} />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Chercher un manga…" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={tr('Chercher un manga…')} />
         </label>
       </div>
 
       {items.length > 0 && (
         <div className="mt-6">
-          <Row title="Top 10 manga">
+          <Row title={tr('Top 10 manga')}>
             {items.slice(0, 10).map((manga, i) => (
               <motion.button
                 key={manga.id}
@@ -234,7 +239,7 @@ export function StreamingManga(): React.JSX.Element {
           </motion.button>
         ))}
       </div>
-      {loading && <p className="px-10 text-faint">Chargement…</p>}
+      {loading && <p className="px-10 text-faint">{tr('Chargement…')}</p>}
       {error && <p className="px-10 text-faint">{error}</p>}
 
       <Modal open={open !== null} onClose={() => setOpen(null)} width={640}>
@@ -255,7 +260,7 @@ export function StreamingDetailHero(props: DetailHeroProps): React.JSX.Element {
       <img src={media.banner ?? media.cover.xl} alt="" className="absolute inset-0 h-full w-full object-cover" />
       <div className="xs-vignette absolute inset-0" />
       <button className="xs-back absolute left-10 top-20 z-10" onClick={props.onBack}>
-        <ArrowLeft size={18} /> Retour
+        <ArrowLeft size={18} /> {tr('Retour')}
       </button>
 
       <motion.div
@@ -265,16 +270,24 @@ export function StreamingDetailHero(props: DetailHeroProps): React.JSX.Element {
         transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
       >
         <p className="xs-kicker mb-3">
-          <span className="xs-badge">A</span> {media.format ? (FORMAT_LABELS[media.format] ?? media.format) : 'SÉRIE'}
+          <span className="xs-badge">A</span>{' '}
+          {media.format ? (FORMAT_LABELS[media.format] ?? media.format) : tr('SÉRIE')}
         </p>
         <h1 className="title-xl clamp-2 text-[3.6rem] leading-[0.98]">{titleOf(media, lang)}</h1>
         {props.alsoKnownAs.length > 0 && <p className="mt-2 text-[0.95rem] text-muted">{props.alsoKnownAs[0]}</p>}
         <div className="mt-4 flex flex-wrap items-center gap-3 text-[0.95rem]">
           {media.averageScore !== null && (
-            <span className="font-bold text-[#46d369]">{media.averageScore}% d’appréciation</span>
+            <span className="font-bold text-[#46d369]">
+              {media.averageScore}
+              {tr('% d’appréciation')}
+            </span>
           )}
           {media.seasonYear && <span className="text-muted">{media.seasonYear}</span>}
-          {total && <span className="xs-outline">{total} ép.</span>}
+          {total && (
+            <span className="xs-outline">
+              {total} {tr('ép.')}
+            </span>
+          )}
           {media.studios[0] && <span className="text-muted">{media.studios[0]}</span>}
         </div>
         {entry && total ? (
@@ -291,23 +304,23 @@ export function StreamingDetailHero(props: DetailHeroProps): React.JSX.Element {
         <div className="mt-6 flex flex-wrap items-center gap-3">
           {next !== null ? (
             <button className="xs-play" onClick={props.onMark}>
-              <Play size={20} fill="currentColor" strokeWidth={0} /> Épisode {next}
+              <Play size={20} fill="currentColor" strokeWidth={0} /> {tr('Épisode')} {next}
             </button>
           ) : null}
           {!entry ? (
             <button className="xs-more" onClick={props.onAdd}>
-              <Plus size={20} /> Ma liste
+              <Plus size={20} /> {tr('Ma liste')}
             </button>
           ) : (
             <span className="xs-more !cursor-default">
               <Check size={20} /> {STATUS_LABELS[entry.status]}
             </span>
           )}
-          <button className="xs-round" onClick={props.onFavorite} aria-label="Favori" data-on={!!entry?.favorite}>
+          <button className="xs-round" onClick={props.onFavorite} aria-label={tr('Favori')} data-on={!!entry?.favorite}>
             <Heart size={18} fill={entry?.favorite ? 'currentColor' : 'none'} />
           </button>
           {entry && (
-            <button className="xs-round" onClick={props.onLists} aria-label="Listes" data-on={props.inLists > 0}>
+            <button className="xs-round" onClick={props.onLists} aria-label={tr('Listes')} data-on={props.inLists > 0}>
               <FolderPlus size={18} />
             </button>
           )}

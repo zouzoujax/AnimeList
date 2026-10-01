@@ -19,6 +19,7 @@ import { SETTINGS_SECTIONS, fold } from '@/lib/settings-sections'
 import { formatLabel, titleOf } from '@/lib/format'
 import { useApp, type Route } from '@/store/app'
 import { Modal } from './ui'
+import { t as tr } from '@shared/i18n'
 
 interface Item {
   key: string
@@ -29,15 +30,15 @@ interface Item {
 }
 
 const NAV_COMMANDS: { label: string; icon: typeof House; route: Route }[] = [
-  { label: 'Accueil', icon: House, route: { name: 'home' } },
-  { label: 'Découvrir', icon: Compass, route: { name: 'discover' } },
-  { label: 'Bibliothèque', icon: LibraryBig, route: { name: 'library' } },
-  { label: 'Manga', icon: BookOpen, route: { name: 'manga' } },
-  { label: 'Calendrier', icon: CalendarDays, route: { name: 'calendar' } },
-  { label: 'Saison en cours', icon: CalendarDays, route: { name: 'season' } },
-  { label: 'Journal', icon: NotebookPen, route: { name: 'journal' } },
-  { label: 'Statistiques', icon: ChartColumn, route: { name: 'stats' } },
-  { label: 'Réglages', icon: Settings, route: { name: 'settings' } }
+  { label: tr('Accueil'), icon: House, route: { name: 'home' } },
+  { label: tr('Découvrir'), icon: Compass, route: { name: 'discover' } },
+  { label: tr('Bibliothèque'), icon: LibraryBig, route: { name: 'library' } },
+  { label: tr('Manga'), icon: BookOpen, route: { name: 'manga' } },
+  { label: tr('Calendrier'), icon: CalendarDays, route: { name: 'calendar' } },
+  { label: tr('Saison en cours'), icon: CalendarDays, route: { name: 'season' } },
+  { label: tr('Journal'), icon: NotebookPen, route: { name: 'journal' } },
+  { label: tr('Statistiques'), icon: ChartColumn, route: { name: 'stats' } },
+  { label: tr('Réglages'), icon: Settings, route: { name: 'settings' } }
 ]
 
 /**
@@ -111,7 +112,7 @@ function Palette(): React.JSX.Element {
     const nav = NAV_COMMANDS.filter((c) => !needle || c.label.toLowerCase().includes(needle)).map((c) => ({
       key: `nav-${c.label}`,
       label: c.label,
-      sub: 'Navigation',
+      sub: tr('Navigation'),
       run: () => navigate(c.route)
     }))
 
@@ -123,7 +124,7 @@ function Palette(): React.JSX.Element {
             (section) => ({
               key: `settings-${section.id}`,
               label: section.title,
-              sub: 'Réglages',
+              sub: tr('Réglages'),
               run: () => navigate({ name: 'settings', section: section.id })
             })
           )
@@ -139,7 +140,7 @@ function Palette(): React.JSX.Element {
     })
 
     return [
-      ...local.map((m) => toItem(m, 'Ma bibliothèque')),
+      ...local.map((m) => toItem(m, tr('Ma bibliothèque'))),
       ...nav,
       ...settings,
       ...remote.items.filter((m) => !localIds.has(m.id)).map((m) => toItem(m, formatLabel(m.format)))
@@ -175,7 +176,7 @@ function Palette(): React.JSX.Element {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={onKeyDown}
-          placeholder="Chercher un anime, aller quelque part…"
+          placeholder={tr('Chercher un anime, aller quelque part…')}
           className="h-[54px] flex-1 bg-transparent text-[0.94rem] outline-none placeholder:text-faint"
         />
         {remote.loading && <LoaderCircle size={15} className="animate-spin text-faint" />}
@@ -184,7 +185,9 @@ function Palette(): React.JSX.Element {
       <div ref={listRef} className="scroll-y max-h-[52vh] p-2">
         {items.length === 0 ? (
           <p className="px-3 py-8 text-center text-[0.83rem] text-faint">
-            {query.trim().length >= 2 ? 'Aucun résultat.' : 'Tape au moins deux lettres pour chercher sur AniList.'}
+            {query.trim().length >= 2
+              ? tr('Aucun résultat.')
+              : tr('Tape au moins deux lettres pour chercher sur AniList.')}
           </p>
         ) : (
           items.map((item, i) => (
@@ -219,9 +222,9 @@ function Palette(): React.JSX.Element {
         className="flex items-center gap-4 border-t px-4 py-2 text-[0.68rem] text-faint"
         style={{ borderColor: 'var(--line)' }}
       >
-        <span>↑↓ naviguer</span>
-        <span>⏎ ouvrir</span>
-        <span>Échap fermer</span>
+        <span>{tr('↑↓ naviguer')}</span>
+        <span>{tr('⏎ ouvrir')}</span>
+        <span>{tr('Échap fermer')}</span>
       </div>
     </>
   )

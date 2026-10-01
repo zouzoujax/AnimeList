@@ -23,22 +23,23 @@ import { searchTitles } from '@/lib/watch'
 import { minutesToHuman, titleOf } from '@/lib/format'
 import { rgba, toneAccent } from '@/lib/color'
 import { useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
 /** Assez pour la plus longue soirée possible, sans parcourir cent épisodes. */
 const MAX_PER_SERIES = 12
 
 const CHOICES: { label: string; value: number | 'auto' }[] = [
-  { label: '30 min', value: 30 },
+  { label: t('30 min'), value: 30 },
   { label: '1 h', value: 60 },
   { label: '2 h', value: 120 },
-  { label: 'Aucune idée', value: 'auto' }
+  { label: t('Aucune idée'), value: 'auto' }
 ]
 
 const REASONS: Record<Reason, string> = {
-  retard: 'en retard',
-  reprise: 'tu y étais',
-  decouverte: 'jamais commencée',
-  suite: 'la suite'
+  retard: t('en retard'),
+  reprise: t('tu y étais'),
+  decouverte: t('jamais commencée'),
+  suite: t('la suite')
 }
 
 export function Soiree(): React.JSX.Element | null {
@@ -178,14 +179,14 @@ export function Soiree(): React.JSX.Element | null {
     const target = await window.api.watch.animeSama(media.id, searchTitles(media))
     if (!target?.url || !target.episodes) {
       await window.api.watch.setSoiree([])
-      toast('Anime-Sama ne donne pas de page d’épisodes pour cette série.', 'info')
+      toast(t('Anime-Sama ne donne pas de page d’épisodes pour cette série.'), 'info')
       navigate({ name: 'anime', id: media.id })
       return
     }
     const ok = await window.api.watch.openEpisode(target.url, slot.episode, media.id)
     if (!ok) {
       await window.api.watch.setSoiree([])
-      toast('Cet épisode n’a pas pu être ouvert.', 'error')
+      toast(t('Cet épisode n’a pas pu être ouvert.'), 'error')
       return
     }
     setRunning(suite)
@@ -206,20 +207,24 @@ export function Soiree(): React.JSX.Element | null {
           <Clapperboard size={17} />
         </span>
         <div className="mr-auto">
-          <p className="text-[0.95rem] font-semibold">Soirée anime</p>
+          <p className="text-[0.95rem] font-semibold">{t('Soirée anime')}</p>
           <p className="text-[0.78rem] text-faint">
             {running !== null
-              ? `Soirée en cours · ${done} sur ${running.length} vus`
+              ? t('Soirée en cours · {done} sur {length} vus', { done, length: running.length })
               : session === null
-                ? 'Dis combien de temps tu as, l’app compose la suite'
-                : `${session.slots.length} épisode${session.slots.length > 1 ? 's' : ''} · ${minutesToHuman(session.minutes)}`}
+                ? t('Dis combien de temps tu as, l’app compose la suite')
+                : t('{length} épisode{v1} · {v2}', {
+                    length: session.slots.length,
+                    v1: session.slots.length > 1 ? 's' : '',
+                    v2: minutesToHuman(session.minutes)
+                  })}
           </p>
         </div>
 
         {running !== null && (
           <button className="btn !h-8 text-[0.75rem]" onClick={() => void stopRunning()}>
             <Square size={12} />
-            Arrêter la soirée
+            {t('Arrêter la soirée')}
           </button>
         )}
 
@@ -235,12 +240,14 @@ export function Soiree(): React.JSX.Element | null {
               className="btn !h-8 text-[0.75rem]"
               disabled={!alternative}
               title={
-                alternative ? 'Écarter la série en tête et recomposer' : 'Plus rien d’autre à proposer pour cette durée'
+                alternative
+                  ? t('Écarter la série en tête et recomposer')
+                  : t('Plus rien d’autre à proposer pour cette durée')
               }
               onClick={() => setDropped((d) => [...d, ...new Set(session.slots.map((x) => x.animeId))])}
             >
               <Dices size={13} />
-              Autre idée
+              {t('Autre idée')}
             </button>
 
             <button
@@ -251,7 +258,7 @@ export function Soiree(): React.JSX.Element | null {
               }}
             >
               <RotateCcw size={13} />
-              Changer la durée
+              {t('Changer la durée')}
             </button>
           </>
         )}
@@ -270,15 +277,18 @@ export function Soiree(): React.JSX.Element | null {
           </div>
         ) : (
           <p className="text-[0.82rem] text-muted">
-            Rien d’assez court pour {minutesToHuman(budget as number)}. Essaie un créneau plus large — le plus court de
-            tes épisodes disponibles dure plus longtemps que ça.
+            {t('Rien d’assez court pour')} {minutesToHuman(budget as number)}
+            {t(
+              '. Essaie un créneau plus large — le plus court de tes épisodes disponibles dure plus longtemps que ça.'
+            )}
           </p>
         )
       ) : (
         <>
           {running === null && choice === 'auto' && (
             <p className="mb-3 text-[0.76rem] text-faint">
-              Aucune idée, donc {minutesToHuman(usual)} : c’est la durée médiane de tes journées de visionnage.
+              {t('Aucune idée, donc')} {minutesToHuman(usual)}{' '}
+              {t(': c’est la durée médiane de tes journées de visionnage.')}
             </p>
           )}
 
@@ -307,13 +317,13 @@ export function Soiree(): React.JSX.Element | null {
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[0.84rem] font-medium">{slot.title}</p>
                     <p className="text-[0.74rem] text-faint">
-                      Épisode {slot.episode} · {slot.minutes} min · {REASONS[slot.reason]}
+                      {t('Épisode')} {slot.episode} · {slot.minutes} {t('min ·')} {REASONS[slot.reason]}
                     </p>
                   </div>
 
                   <button
                     className="btn !h-8 !px-2.5"
-                    title={`Commencer la soirée ici, à l’épisode ${slot.episode}`}
+                    title={t('Commencer la soirée ici, à l’épisode {episode}', { episode: slot.episode })}
                     onClick={() => void launch(i)}
                   >
                     <Play size={13} />
@@ -321,7 +331,7 @@ export function Soiree(): React.JSX.Element | null {
                   {running === null && (
                     <button
                       className="btn !h-8 !px-2.5"
-                      title="Retirer cette série de la soirée"
+                      title={t('Retirer cette série de la soirée')}
                       onClick={() => setDropped((d) => [...d, slot.animeId])}
                     >
                       <X size={13} />
@@ -337,17 +347,19 @@ export function Soiree(): React.JSX.Element | null {
               <>
                 <button className="btn btn-primary !h-9" onClick={() => void launch(0)}>
                   <Play size={14} />
-                  Lancer la soirée
+                  {t('Lancer la soirée')}
                 </button>
                 <p className="text-[0.76rem] text-faint">
-                  {minutesToHuman(session?.minutes ?? 0)} pour {minutesToHuman(budget as number)} demandées
-                  {(session?.minutes ?? 0) > (budget as number) ? ' — un épisode de rab' : ''}
+                  {minutesToHuman(session?.minutes ?? 0)} {t('pour')} {minutesToHuman(budget as number)}{' '}
+                  {t('demandées')}
+                  {(session?.minutes ?? 0) > (budget as number) ? t(' — un épisode de rab') : ''}
                 </p>
               </>
             ) : (
               <p className="text-[0.76rem] text-faint">
-                L’app enchaîne toute seule et fermera la fenêtre au bout de la liste. Cette liste-ci ne bouge plus :
-                elle est celle qui joue.
+                {t(
+                  'L’app enchaîne toute seule et fermera la fenêtre au bout de la liste. Cette liste-ci ne bouge plus : elle est celle qui joue.'
+                )}
               </p>
             )}
           </div>

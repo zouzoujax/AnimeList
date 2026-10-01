@@ -7,6 +7,7 @@ import { NdHeader, SeriesRow, plural } from '@/components/nd'
 import { ErrorBox, PosterSkeletons, Spinner } from '@/components/ui'
 import { useInView } from '@/lib/hooks'
 import { useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
 const EMPTY_ITEMS: Media[] = []
 
@@ -102,10 +103,13 @@ export default function NdStudioPage({ studio }: { studio: string }): React.JSX.
         title={name}
         sub={
           loading
-            ? 'Chargement du catalogue…'
+            ? t('Chargement du catalogue…')
             : seen.length > 0
-              ? `${plural(seen.length, 'de ses séries est', 'de ses séries sont')} dans ta bibliothèque, sur ${loaded}.`
-              : `Aucune de ses séries dans ta bibliothèque pour l’instant, sur ${loaded}.`
+              ? t('{v0} dans ta bibliothèque, sur {loaded}.', {
+                  v0: plural(seen.length, 'de ses séries est', 'de ses séries sont'),
+                  loaded
+                })
+              : t('Aucune de ses séries dans ta bibliothèque pour l’instant, sur {loaded}.', { loaded })
         }
         actions={<FollowButton kind="studio" target={studio} name={name} />}
       />
@@ -115,12 +119,12 @@ export default function NdStudioPage({ studio }: { studio: string }): React.JSX.
       ) : error ? (
         <ErrorBox message={error} />
       ) : items.length === 0 ? (
-        <p className="py-16 text-center text-sm text-muted">AniList ne connaît aucun titre à ce studio.</p>
+        <p className="py-16 text-center text-sm text-muted">{t('AniList ne connaît aucun titre à ce studio.')}</p>
       ) : (
         <>
           {seen.length > 0 && (
             <section className="mb-10">
-              <h2 className="title-xl mb-3.5 px-1 text-[1.32rem]">Ce que tu en as vu</h2>
+              <h2 className="title-xl mb-3.5 px-1 text-[1.32rem]">{t('Ce que tu en as vu')}</h2>
               <ul className="home-queue">
                 {seen.map((media) => (
                   <SeriesRow key={media.id} media={media} />
@@ -132,9 +136,9 @@ export default function NdStudioPage({ studio }: { studio: string }): React.JSX.
           {rest.length > 0 && (
             <section>
               <h2 className="title-xl px-1 text-[1.32rem]">
-                {seen.length > 0 ? 'Le reste de son catalogue' : 'Son catalogue'}
+                {seen.length > 0 ? t('Le reste de son catalogue') : t('Son catalogue')}
               </h2>
-              <p className="mb-3.5 mt-0.5 px-1 text-[0.8rem] text-muted">Du plus populaire au moins connu.</p>
+              <p className="mb-3.5 mt-0.5 px-1 text-[0.8rem] text-muted">{t('Du plus populaire au moins connu.')}</p>
               <div className="card-grid">
                 {rest.map((media, i) => (
                   <AnimeCard key={media.id} media={media} width="100%" index={i % 24} />
@@ -144,7 +148,7 @@ export default function NdStudioPage({ studio }: { studio: string }): React.JSX.
           )}
 
           {hasMore && <div ref={sentinel} className="h-4" />}
-          {loadingMore && <Spinner label="Chargement de la suite…" />}
+          {loadingMore && <Spinner label={t('Chargement de la suite…')} />}
         </>
       )}
     </div>

@@ -1,3 +1,4 @@
+import { t, lazy } from './i18n'
 /**
  * Manga, manhwa, manhua : d'où vient une bande dessinée.
  *
@@ -15,22 +16,22 @@
 export type MangaOrigin = 'manga' | 'manhwa' | 'manhua' | 'novel' | 'other'
 
 /** Ce qu'on écrit à l'écran. Les trois mots sont d'usage courant en français. */
-export const ORIGIN_LABELS: Record<MangaOrigin, string> = {
-  manga: 'Manga',
-  manhwa: 'Manhwa',
-  manhua: 'Manhua',
-  novel: 'Roman',
+export const ORIGIN_LABELS: Record<MangaOrigin, string> = lazy(() => ({
+  manga: t('Manga'),
+  manhwa: t('Manhwa'),
+  manhua: t('Manhua'),
+  novel: t('Roman'),
   other: 'BD'
-}
+}))
 
 /** Ce que chaque mot recouvre, en une phrase, pour l'infobulle. */
-export const ORIGIN_HINTS: Record<MangaOrigin, string> = {
-  manga: 'Japon · noir et blanc, lecture de droite à gauche',
-  manhwa: 'Corée du Sud · souvent en couleur, défilement vertical',
-  manhua: 'Chine, Taïwan ou Hong Kong · souvent en couleur',
-  novel: 'Roman ou light novel, pas une bande dessinée',
-  other: 'Origine hors des trois traditions'
-}
+export const ORIGIN_HINTS: Record<MangaOrigin, string> = lazy(() => ({
+  manga: t('Japon · noir et blanc, lecture de droite à gauche'),
+  manhwa: t('Corée du Sud · souvent en couleur, défilement vertical'),
+  manhua: t('Chine, Taïwan ou Hong Kong · souvent en couleur'),
+  novel: t('Roman ou light novel, pas une bande dessinée'),
+  other: t('Origine hors des trois traditions')
+}))
 
 /** Les pays de chaque tradition. Un code inconnu tombe dans « BD ». */
 const BY_COUNTRY: Record<string, MangaOrigin> = {
@@ -53,13 +54,13 @@ export function originOf(country: string | null | undefined, format?: string | n
 }
 
 /** « Le manga », « Le manhwa » — pour titrer une section qui n'en montre qu'un. */
-export const ORIGIN_THE: Record<MangaOrigin, string> = {
-  manga: 'Le manga',
-  manhwa: 'Le manhwa',
-  manhua: 'Le manhua',
-  novel: 'Le roman',
-  other: 'L’œuvre d’origine'
-}
+export const ORIGIN_THE: Record<MangaOrigin, string> = lazy(() => ({
+  manga: t('Le manga'),
+  manhwa: t('Le manhwa'),
+  manhua: t('Le manhua'),
+  novel: t('Le roman'),
+  other: t('L’œuvre d’origine')
+}))
 
 /**
  * Le titre qui convient à un lot d'œuvres.

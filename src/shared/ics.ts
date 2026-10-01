@@ -1,3 +1,4 @@
+import { t } from './i18n'
 /**
  * Le calendrier des diffusions, au format iCalendar (RFC 5545).
  *
@@ -86,7 +87,7 @@ function fold(line: string): string {
 /** Toutes les quatre heures : assez pour suivre la grille, assez peu pour ne rien réveiller. */
 const REFRESH = 'PT4H'
 
-export function buildIcs(events: IcsEvent[], now = Date.now(), name = 'AnimeList — mes diffusions'): string {
+export function buildIcs(events: IcsEvent[], now = Date.now(), name = t('AnimeList — mes diffusions')): string {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
@@ -108,8 +109,8 @@ export function buildIcs(events: IcsEvent[], now = Date.now(), name = 'AnimeList
       `DTSTAMP:${stamp(now)}`,
       `DTSTART:${stamp(ev.airingAt)}`,
       `DTEND:${stamp(ev.airingAt + minutes * 60_000)}`,
-      `SUMMARY:${escape(`${ev.title} — épisode ${ev.episode}`)}`,
-      `DESCRIPTION:${escape(`Épisode ${ev.episode} de ${ev.title}, annoncé par AniList.`)}`,
+      `SUMMARY:${escape(t('{title} — épisode {episode}', { title: ev.title, episode: ev.episode }))}`,
+      `DESCRIPTION:${escape(t('Épisode {episode} de {title}, annoncé par AniList.', { episode: ev.episode, title: ev.title }))}`,
       'TRANSP:TRANSPARENT'
     )
     if (typeof ev.alarm === 'number' && ev.alarm >= 0) {
@@ -119,7 +120,7 @@ export function buildIcs(events: IcsEvent[], now = Date.now(), name = 'AnimeList
         // `-PT0M` et non `PT0M` : certains agendas lisent mal un décalage
         // positif nul, et le signe ne change rien au moment.
         `TRIGGER:-PT${Math.round(ev.alarm)}M`,
-        `DESCRIPTION:${escape(ev.alarm > 0 ? `${ev.title} — épisode ${ev.episode} bientôt` : `${ev.title} — épisode ${ev.episode} disponible`)}`,
+        `DESCRIPTION:${escape(ev.alarm > 0 ? t('{title} — épisode {episode} bientôt', { title: ev.title, episode: ev.episode }) : t('{title} — épisode {episode} disponible', { title: ev.title, episode: ev.episode }))}`,
         'END:VALARM'
       )
     }

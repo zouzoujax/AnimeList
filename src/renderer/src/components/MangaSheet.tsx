@@ -14,13 +14,14 @@ import { ORIGIN_HINTS, ORIGIN_LABELS } from '@shared/origin'
 import { Poster } from '@/components/ui'
 import { rgba, toneAccent } from '@/lib/color'
 import { useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
 export const MANGA_STATUS: Record<string, string> = {
-  FINISHED: 'Terminé',
-  RELEASING: 'En cours',
-  NOT_YET_RELEASED: 'À paraître',
-  CANCELLED: 'Annulé',
-  HIATUS: 'En pause'
+  FINISHED: t('Terminé'),
+  RELEASING: t('En cours'),
+  NOT_YET_RELEASED: t('À paraître'),
+  CANCELLED: t('Annulé'),
+  HIATUS: t('En pause')
 }
 
 export const READ_STATUS_ORDER: LibraryStatus[] = ['watching', 'planned', 'completed', 'paused', 'dropped']
@@ -34,7 +35,7 @@ export const READ_STATUS_ORDER: LibraryStatus[] = ['watching', 'planned', 'compl
 function readBlocked(status: LibraryStatus, manga: Manga, entry: MangaEntry): string | null {
   if (status !== 'completed' || entry.status === 'completed') return null
   if (manga.status === 'RELEASING' || manga.status === 'HIATUS' || manga.status === 'NOT_YET_RELEASED')
-    return 'Il paraît encore : on est à jour, pas au bout.'
+    return t('Il paraît encore : on est à jour, pas au bout.')
   return null
 }
 
@@ -69,7 +70,7 @@ function Counter({
       <div className="flex items-center gap-1.5">
         <button
           className="icon-btn !h-8 !w-8"
-          aria-label={`${label} : un de moins`}
+          aria-label={t('{label} : un de moins', { label })}
           disabled={value <= 0}
           onClick={() => onStep(-1)}
         >
@@ -120,10 +121,11 @@ function Reading({ manga }: { manga: Manga }): React.JSX.Element {
       <div className="flex flex-wrap items-center gap-2 border-b px-5 py-3" style={{ borderColor: 'var(--line)' }}>
         <button className="btn btn-primary" onClick={() => void api.setEntry(manga.id, { status: 'watching' }, manga)}>
           <BookOpen size={14} />
-          Je le lis
+          {t('Je le lis')}
         </button>
         <button className="btn" onClick={() => void api.setEntry(manga.id, { status: 'planned' }, manga)}>
-          <BookmarkPlus size={14} />À lire plus tard
+          <BookmarkPlus size={14} />
+          {t('À lire plus tard')}
         </button>
       </div>
     )
@@ -153,7 +155,7 @@ function Reading({ manga }: { manga: Manga }): React.JSX.Element {
         <button
           className="icon-btn !h-8 !w-8"
           onClick={() => void api.setEntry(manga.id, { favorite: !entry.favorite })}
-          aria-label="Favori"
+          aria-label={t('Favori')}
           aria-pressed={entry.favorite}
           style={entry.favorite ? { color: '#fb7185', background: 'rgba(251,113,133,.12)' } : undefined}
         >
@@ -163,18 +165,18 @@ function Reading({ manga }: { manga: Manga }): React.JSX.Element {
 
       <div className="mt-3.5 flex flex-wrap gap-x-6 gap-y-3">
         <Counter
-          label={entry.rereads > 0 ? `Chapitres · relecture ${entry.rereads}` : 'Chapitres'}
+          label={entry.rereads > 0 ? t('Chapitres · relecture {rereads}', { rereads: entry.rereads }) : t('Chapitres')}
           value={entry.chapter}
           total={total}
-          stepLabel="Un chapitre lu aujourd’hui"
+          stepLabel={t('Un chapitre lu aujourd’hui')}
           onStep={(d) => void api.advance(manga.id, d)}
           onSet={(n) => void api.setChapter(manga.id, n, true)}
         />
         <Counter
-          label="Tomes"
+          label={t('Tomes')}
           value={entry.volume}
           total={manga.volumes}
-          stepLabel="Un tome de plus"
+          stepLabel={t('Un tome de plus')}
           onStep={(d) => void api.setEntry(manga.id, { volume: entry.volume + d })}
           onSet={(n) => void api.setEntry(manga.id, { volume: n })}
         />
@@ -185,7 +187,7 @@ function Reading({ manga }: { manga: Manga }): React.JSX.Element {
         </div>
       )}
       <p className="mt-2 text-[0.7rem] text-faint">
-        « +1 » compte une lecture d’aujourd’hui ; un numéro tapé rattrape sans dater.
+        {t('« +1 » compte une lecture d’aujourd’hui ; un numéro tapé rattrape sans dater.')}
       </p>
 
       <textarea
@@ -196,7 +198,7 @@ function Reading({ manga }: { manga: Manga }): React.JSX.Element {
           if (e.target.value !== entry.notes) void api.setEntry(manga.id, { notes: e.target.value })
         }}
         rows={2}
-        placeholder="Mes notes : un arc, un personnage, où reprendre…"
+        placeholder={t('Mes notes : un arc, un personnage, où reprendre…')}
         className="field mt-3 w-full !h-auto resize-y py-2 text-[0.8rem] leading-relaxed"
       />
 
@@ -205,11 +207,13 @@ function Reading({ manga }: { manga: Manga }): React.JSX.Element {
           <button
             className="btn btn-ghost !h-8 !text-[0.76rem]"
             onClick={() =>
-              void api.reread(manga.id).then(() => toast('Relecture commencée : la progression repart de zéro.', 'ok'))
+              void api
+                .reread(manga.id)
+                .then(() => toast(t('Relecture commencée : la progression repart de zéro.'), 'ok'))
             }
           >
             <RotateCcw size={13} />
-            Relire
+            {t('Relire')}
           </button>
         )}
         <button
@@ -221,7 +225,7 @@ function Reading({ manga }: { manga: Manga }): React.JSX.Element {
           onBlur={() => setConfirmRemove(false)}
         >
           <Trash2 size={13} />
-          {confirmRemove ? 'Retirer, avec son historique ?' : 'Retirer de ma liste'}
+          {confirmRemove ? t('Retirer, avec son historique ?') : t('Retirer de ma liste')}
         </button>
       </div>
     </div>
@@ -251,8 +255,16 @@ export function MangaSheet({ manga, onClose }: { manga: Manga; onClose: () => vo
                 {manga.averageScore}%
               </span>
             )}
-            {manga.chapters && <span>{manga.chapters} chapitres</span>}
-            {manga.volumes && <span>{manga.volumes} tomes</span>}
+            {manga.chapters && (
+              <span>
+                {manga.chapters} {t('chapitres')}
+              </span>
+            )}
+            {manga.volumes && (
+              <span>
+                {manga.volumes} {t('tomes')}
+              </span>
+            )}
             {manga.startYear && <span>{manga.startYear}</span>}
           </div>
 
@@ -273,17 +285,17 @@ export function MangaSheet({ manga, onClose }: { manga: Manga; onClose: () => vo
           </div>
         )}
         <p className="whitespace-pre-line text-[0.83rem] leading-relaxed text-muted">
-          {manga.description ?? 'Aucun résumé sur AniList.'}
+          {manga.description ?? t('Aucun résumé sur AniList.')}
         </p>
       </div>
 
       <div className="flex justify-end gap-2 border-t px-5 py-3" style={{ borderColor: 'var(--line)' }}>
         <button className="btn" onClick={onClose}>
-          Fermer
+          {t('Fermer')}
         </button>
         <button className="btn btn-primary" onClick={() => void window.api.app.openExternal(manga.siteUrl)}>
           <BookOpen size={14} />
-          Voir sur AniList
+          {t('Voir sur AniList')}
           <ExternalLink size={13} />
         </button>
       </div>

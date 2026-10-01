@@ -14,6 +14,7 @@ import { Section } from '@/components/ui'
 import { monthLabel, num } from '@/lib/format'
 import { useNow } from '@/lib/hooks'
 import { useApp } from '@/store/app'
+import { t, locale } from '@shared/i18n'
 
 export function ReadingStats(): React.JSX.Element | null {
   const entries = useApp((s) => s.mangaEntries)
@@ -26,48 +27,61 @@ export function ReadingStats(): React.JSX.Element | null {
 
   const months = stats.months.map((m) => ({
     // L'abréviation d'usage : trois lettres confondaient juin et juillet.
-    label: new Date(m.year, m.month, 1).toLocaleDateString('fr-FR', { month: 'short' }),
+    label: new Date(m.year, m.month, 1).toLocaleDateString(locale(), { month: 'short' }),
     value: m.chapters,
-    detail: `${monthLabel(new Date(m.year, m.month, 1))} · ${num(m.chapters)} chapitre${m.chapters > 1 ? 's' : ''}`
+    detail: t('{v0} · {v1} chapitre{v2}', {
+      v0: monthLabel(new Date(m.year, m.month, 1)),
+      v1: num(m.chapters),
+      v2: m.chapters > 1 ? 's' : ''
+    })
   }))
   const read = stats.months.some((m) => m.chapters > 0)
 
   return (
     <Section
       id="lecture"
-      title="Lecture"
-      subtitle={`${num(stats.total)} manga${stats.total > 1 ? 's' : ''} suivi${stats.total > 1 ? 's' : ''} · rattrapages comptés au total, pas au mois`}
+      title={t('Lecture')}
+      subtitle={t('{v0} manga{v1} suivi{v2} · rattrapages comptés au total, pas au mois', {
+        v0: num(stats.total),
+        v1: stats.total > 1 ? 's' : '',
+        v2: stats.total > 1 ? 's' : ''
+      })}
       action={
         <button className="chip shrink-0" onClick={() => navigate({ name: 'manga' })}>
           <BookOpen size={13} />
-          Ma lecture
+          {t('Ma lecture')}
         </button>
       }
     >
       <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatTile label="Chapitres lus" value={num(stats.chapters)} icon={<BookOpen size={15} />} />
+        <StatTile label={t('Chapitres lus')} value={num(stats.chapters)} icon={<BookOpen size={15} />} />
         <StatTile
-          label="Ce mois-ci"
+          label={t('Ce mois-ci')}
           value={num(stats.thisMonth)}
-          hint={`${num(stats.activeDays)} jour${stats.activeDays > 1 ? 's' : ''} de lecture en tout`}
+          hint={t('{v0} jour{v1} de lecture en tout', {
+            v0: num(stats.activeDays),
+            v1: stats.activeDays > 1 ? 's' : ''
+          })}
           icon={<CalendarDays size={15} />}
         />
         <StatTile
-          label="En lecture"
+          label={t('En lecture')}
           value={num(stats.byStatus.watching)}
-          hint={`${num(stats.byStatus.planned)} à lire · ${num(stats.byStatus.paused)} en pause`}
+          hint={t('{v0} à lire · {v1} en pause', { v0: num(stats.byStatus.planned), v1: num(stats.byStatus.paused) })}
           icon={<Library size={15} />}
         />
         <StatTile
-          label="Lus"
+          label={t('Lus')}
           value={num(stats.byStatus.completed)}
-          hint={stats.volumes > 0 ? `${num(stats.volumes)} tome${stats.volumes > 1 ? 's' : ''}` : undefined}
+          hint={
+            stats.volumes > 0 ? t('{n} tome{s}', { n: num(stats.volumes), s: stats.volumes > 1 ? 's' : '' }) : undefined
+          }
           icon={<BookCheck size={15} />}
         />
       </div>
       {read && (
         <div className="glass rounded-[20px] p-5">
-          <MonthlyColumns data={months} unit="Chapitres lus par mois" />
+          <MonthlyColumns data={months} unit={t('Chapitres lus par mois')} />
         </div>
       )}
     </Section>

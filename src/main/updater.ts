@@ -22,6 +22,7 @@ import type { ReleaseNote, UpdateStatus } from '@shared/types'
 import { parseReleaseNote } from '@shared/release-notes'
 import { getPrefs } from './store'
 import { setTaskbarProgress } from './taskbar'
+import { t } from '@shared/i18n'
 
 let state: UpdateStatus = { phase: 'idle', version: null, percent: 0, message: null, notes: [] }
 let started = false
@@ -140,7 +141,7 @@ function announceReady(version: string): void {
 
 export async function checkForUpdates(): Promise<UpdateStatus> {
   if (!app.isPackaged) {
-    set({ phase: 'unsupported', message: 'Les mises à jour ne concernent que la version installée.', notes: [] })
+    set({ phase: 'unsupported', message: t('Les mises à jour ne concernent que la version installée.'), notes: [] })
     return state
   }
 

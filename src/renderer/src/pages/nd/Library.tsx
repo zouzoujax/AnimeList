@@ -10,26 +10,27 @@ import { titleOf } from '@/lib/format'
 import { useSessionState } from '@/lib/hooks'
 import { useMatcher } from '@/lib/search'
 import { useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
 type Filter = LibraryStatus | 'all' | 'favorites'
 type Sort = 'recent' | 'title' | 'score' | 'progress' | 'added'
 
 const FILTERS: { id: Filter; label: string }[] = [
-  { id: 'all', label: 'Tout' },
+  { id: 'all', label: t('Tout') },
   { id: 'watching', label: STATUS_LABELS.watching },
   { id: 'planned', label: STATUS_LABELS.planned },
   { id: 'completed', label: STATUS_LABELS.completed },
   { id: 'paused', label: STATUS_LABELS.paused },
   { id: 'dropped', label: STATUS_LABELS.dropped },
-  { id: 'favorites', label: 'Favoris' }
+  { id: 'favorites', label: t('Favoris') }
 ]
 
 const SORTS: { id: Sort; label: string }[] = [
-  { id: 'recent', label: 'Regardées récemment' },
-  { id: 'added', label: 'Ajoutées récemment' },
-  { id: 'title', label: 'Par titre' },
-  { id: 'score', label: 'Par note' },
-  { id: 'progress', label: 'Par progression' }
+  { id: 'recent', label: t('Regardées récemment') },
+  { id: 'added', label: t('Ajoutées récemment') },
+  { id: 'title', label: t('Par titre') },
+  { id: 'score', label: t('Par note') },
+  { id: 'progress', label: t('Par progression') }
 ]
 
 /** Case à cocher lisible sans la couleur : la coche dit l'état. */
@@ -190,15 +191,15 @@ export default function NdLibraryPage({ initialGenre }: { initialGenre?: string 
       <div className="mx-auto max-w-[900px] px-7 py-16">
         <EmptyState
           icon={<LibraryBig size={24} />}
-          title="Ta bibliothèque est vide"
-          hint="Ajoute des animes depuis Découvrir, ou importe ta liste MyAnimeList depuis les réglages."
+          title={t('Ta bibliothèque est vide')}
+          hint={t('Ajoute des animes depuis Découvrir, ou importe ta liste MyAnimeList depuis les réglages.')}
           action={
             <div className="mt-1 flex gap-2">
               <button className="btn btn-primary" onClick={() => navigate({ name: 'discover' })}>
-                Explorer le catalogue
+                {t('Explorer le catalogue')}
               </button>
               <button className="btn" onClick={() => navigate({ name: 'settings' })}>
-                Importer ma liste
+                {t('Importer ma liste')}
               </button>
             </div>
           }
@@ -209,8 +210,8 @@ export default function NdLibraryPage({ initialGenre }: { initialGenre?: string 
 
   // La phrase dit l'essentiel de la bibliothèque, dans l'ordre où on s'en sert.
   const summary = [
-    counts.watching ? `${counts.watching} en cours` : null,
-    counts.planned ? `${counts.planned} à voir` : null,
+    counts.watching ? t('{watching} en cours', { watching: counts.watching }) : null,
+    counts.planned ? t('{planned} à voir', { planned: counts.planned }) : null,
     counts.completed ? plural(counts.completed, 'terminée') : null
   ]
     .filter(Boolean)
@@ -221,20 +222,22 @@ export default function NdLibraryPage({ initialGenre }: { initialGenre?: string 
   return (
     <div className="page">
       <NdHeader
-        title={`${plural(rows.length, 'série')} dans ta bibliothèque`}
+        title={t('{v0} dans ta bibliothèque', { v0: plural(rows.length, 'série') })}
         sub={
           narrowed
-            ? `${plural(visible.length, 'série correspond', 'séries correspondent')} à ce que tu as choisi.`
+            ? t('{v0} à ce que tu as choisi.', {
+                v0: plural(visible.length, 'série correspond', 'séries correspondent')
+              })
             : `${summary}.`
         }
         actions={
           <>
-            <div className="nd-seg" role="group" aria-label="Affichage">
+            <div className="nd-seg" role="group" aria-label={t('Affichage')}>
               <button aria-pressed={view === 'rows'} onClick={() => setView('rows')}>
-                Lignes
+                {t('Lignes')}
               </button>
               <button aria-pressed={view === 'posters'} onClick={() => setView('posters')}>
-                Affiches
+                {t('Affiches')}
               </button>
             </div>
             <button
@@ -242,14 +245,14 @@ export default function NdLibraryPage({ initialGenre }: { initialGenre?: string 
               onClick={() => (selecting ? stopSelecting() : setSelecting(true))}
               style={selecting ? { borderColor: 'var(--accent)' } : undefined}
             >
-              {selecting ? 'Terminer la sélection' : 'Sélectionner'}
+              {selecting ? t('Terminer la sélection') : t('Sélectionner')}
             </button>
           </>
         }
       />
 
       <NdTabs
-        label="Statut"
+        label={t('Statut')}
         size="sm"
         tabs={FILTERS.filter((f) => f.id === 'all' || (counts[f.id] ?? 0) > 0).map((f) => ({
           id: f.id,
@@ -266,10 +269,10 @@ export default function NdLibraryPage({ initialGenre }: { initialGenre?: string 
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Chercher dans ta bibliothèque"
+            placeholder={t('Chercher dans ta bibliothèque')}
           />
           {search && (
-            <button onClick={() => setSearch('')} aria-label="Effacer la recherche">
+            <button onClick={() => setSearch('')} aria-label={t('Effacer la recherche')}>
               <X size={13} />
             </button>
           )}
@@ -279,9 +282,9 @@ export default function NdLibraryPage({ initialGenre }: { initialGenre?: string 
           className="field"
           value={genre ?? ''}
           onChange={(e) => setGenre(e.target.value || null)}
-          aria-label="Genre"
+          aria-label={t('Genre')}
         >
-          <option value="">Tous les genres</option>
+          <option value="">{t('Tous les genres')}</option>
           {genres.map(([g, n]) => (
             <option key={g} value={g}>
               {GENRE_LABELS[g] ?? g} ({n})
@@ -289,7 +292,7 @@ export default function NdLibraryPage({ initialGenre }: { initialGenre?: string 
           ))}
         </select>
 
-        <select className="field" value={sort} onChange={(e) => setSort(e.target.value as Sort)} aria-label="Tri">
+        <select className="field" value={sort} onChange={(e) => setSort(e.target.value as Sort)} aria-label={t('Tri')}>
           {SORTS.map((s) => (
             <option key={s.id} value={s.id}>
               {s.label}
@@ -301,9 +304,9 @@ export default function NdLibraryPage({ initialGenre }: { initialGenre?: string 
           className="field"
           value={listId ?? ''}
           onChange={(e) => setListId(e.target.value || null)}
-          aria-label="Liste"
+          aria-label={t('Liste')}
         >
-          <option value="">Toutes les listes</option>
+          <option value="">{t('Toutes les listes')}</option>
           {lists.map((list) => (
             <option key={list.id} value={list.id}>
               {list.emoji} {list.name} ({list.animeIds.length})
@@ -312,7 +315,7 @@ export default function NdLibraryPage({ initialGenre }: { initialGenre?: string 
         </select>
         <button className="btn btn-ghost" onClick={() => setManaging(true)}>
           <Pencil size={13} />
-          {lists.length === 0 ? 'Créer une liste' : 'Gérer les listes'}
+          {lists.length === 0 ? t('Créer une liste') : t('Gérer les listes')}
         </button>
 
         {folded.size > 0 && (
@@ -320,15 +323,15 @@ export default function NdLibraryPage({ initialGenre }: { initialGenre?: string 
             className="chip"
             data-on={showSequels}
             onClick={() => setShowSequels(!showSequels)}
-            title="Les saisons suivantes que tu n'as pas commencées sont rangées sous la première"
+            title={t("Les saisons suivantes que tu n'as pas commencées sont rangées sous la première")}
           >
-            {showSequels ? 'Replier' : 'Montrer'} {plural(folded.size, 'saison suivante', 'saisons suivantes')}
+            {showSequels ? t('Replier') : t('Montrer')} {plural(folded.size, 'saison suivante', 'saisons suivantes')}
           </button>
         )}
 
         {activeList && selecting && selected.size > 0 && (
           <button className="btn" onClick={() => void setListMembership(activeList.id, [...selected], false)}>
-            Retirer de « {activeList.name} »
+            {t('Retirer de «')} {activeList.name} »
           </button>
         )}
         {selecting && visible.length > 0 && (
@@ -338,7 +341,7 @@ export default function NdLibraryPage({ initialGenre }: { initialGenre?: string 
               setSelected(selected.size === visible.length ? new Set() : new Set(visible.map((r) => r.media.id)))
             }
           >
-            {selected.size === visible.length ? 'Tout désélectionner' : 'Tout sélectionner'}
+            {selected.size === visible.length ? t('Tout désélectionner') : t('Tout sélectionner')}
           </button>
         )}
       </div>
@@ -346,8 +349,11 @@ export default function NdLibraryPage({ initialGenre }: { initialGenre?: string 
       {visible.length === 0 ? (
         <p className="py-16 text-center text-sm text-muted">
           {search.trim()
-            ? `Rien ne répond à « ${search.trim()} ». La recherche pardonne les accents, les abréviations et les fautes de frappe — si tu l’appelles autrement, donne-lui ce surnom depuis sa fiche.`
-            : 'Aucune série ne correspond. Change d’onglet ou efface la recherche.'}
+            ? t(
+                'Rien ne répond à « {v0} ». La recherche pardonne les accents, les abréviations et les fautes de frappe — si tu l’appelles autrement, donne-lui ce surnom depuis sa fiche.',
+                { v0: search.trim() }
+              )
+            : t('Aucune série ne correspond. Change d’onglet ou efface la recherche.')}
         </p>
       ) : view === 'posters' ? (
         <div className="card-grid">
@@ -399,11 +405,15 @@ export default function NdLibraryPage({ initialGenre }: { initialGenre?: string 
                 <>
                   {/* « Terminée » est déjà dit par la ligne quand tout est vu. */}
                   {filter === 'all' && entry.status !== 'completed' && <span>{STATUS_LABELS[entry.status]}</span>}
-                  {entry.score !== null && <span>Noté {entry.score}/10</span>}
+                  {entry.score !== null && (
+                    <span>
+                      {t('Noté')} {entry.score}/10
+                    </span>
+                  )}
                   {entry.favorite && (
                     <span className="inline-flex items-center gap-1">
                       <Heart size={11} fill="currentColor" strokeWidth={0} aria-hidden />
-                      Favori
+                      {t('Favori')}
                     </span>
                   )}
                 </>

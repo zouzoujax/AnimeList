@@ -19,6 +19,7 @@ import { useApp, type Route } from '@/store/app'
 import { ApiStatusBadge } from './ApiStatus'
 import { SidebarWidget } from './SidebarWidget'
 import { ThemeFx } from './ThemeFx'
+import { t } from '@shared/i18n'
 
 const NOISE =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E\")"
@@ -139,8 +140,8 @@ export function TitleBar(): React.JSX.Element {
       <button
         onClick={back}
         disabled={!stack.length}
-        aria-label="Retour"
-        title="Retour (Alt+←)"
+        aria-label={t('Retour')}
+        title={t('Retour (Alt+←)')}
         className="no-drag icon-btn !h-7 !w-7 disabled:opacity-25"
       >
         <ChevronLeft size={17} />
@@ -148,8 +149,8 @@ export function TitleBar(): React.JSX.Element {
       <button
         onClick={forward}
         disabled={!forwardStack.length}
-        aria-label="Suivant"
-        title="Suivant (Alt+→)"
+        aria-label={t('Suivant')}
+        title={t('Suivant (Alt+→)')}
         className="no-drag icon-btn -ml-1.5 !h-7 !w-7 disabled:opacity-25"
       >
         <ChevronRight size={17} />
@@ -158,7 +159,8 @@ export function TitleBar(): React.JSX.Element {
       <div className="flex select-none items-center gap-2 pl-0.5">
         <Logo />
         <span className="title-xl text-[0.92rem] tracking-tight">
-          Anime<span className="text-muted">List</span>
+          {t('Anime')}
+          <span className="text-muted">{t('List')}</span>
         </span>
       </div>
 
@@ -171,12 +173,12 @@ export function TitleBar(): React.JSX.Element {
           style={{ borderColor: 'var(--line)', background: 'var(--search-bg, rgba(0,0,0,.28))' }}
         >
           <Search size={13} className="text-faint transition group-hover:text-[var(--accent-2)]" />
-          <span className="text-faint">Rechercher un anime…</span>
+          <span className="text-faint">{t('Rechercher un anime…')}</span>
           <kbd
             className="ml-auto rounded px-1.5 py-0.5 text-[0.62rem] font-semibold tracking-wide text-faint"
             style={{ background: 'rgba(255,255,255,.06)' }}
           >
-            Ctrl K
+            {t('Ctrl K')}
           </kbd>
         </button>
       </div>
@@ -188,14 +190,14 @@ export function TitleBar(): React.JSX.Element {
 
 /** Dans l'ordre des raccourcis : Ctrl+1 pour la première, et ainsi de suite. */
 export const NAV: { route: Route; label: string; icon: typeof House }[] = [
-  { route: { name: 'home' }, label: 'Accueil', icon: House },
-  { route: { name: 'discover' }, label: 'Découvrir', icon: Compass },
-  { route: { name: 'library' }, label: 'Bibliothèque', icon: LibraryBig },
-  { route: { name: 'manga' }, label: 'Manga', icon: BookOpen },
-  { route: { name: 'calendar' }, label: 'Calendrier', icon: CalendarDays },
-  { route: { name: 'stats' }, label: 'Statistiques', icon: ChartColumn },
-  { route: { name: 'journal' }, label: 'Journal', icon: NotebookPen },
-  { route: { name: 'settings' }, label: 'Réglages', icon: Settings }
+  { route: { name: 'home' }, label: t('Accueil'), icon: House },
+  { route: { name: 'discover' }, label: t('Découvrir'), icon: Compass },
+  { route: { name: 'library' }, label: t('Bibliothèque'), icon: LibraryBig },
+  { route: { name: 'manga' }, label: t('Manga'), icon: BookOpen },
+  { route: { name: 'calendar' }, label: t('Calendrier'), icon: CalendarDays },
+  { route: { name: 'stats' }, label: t('Statistiques'), icon: ChartColumn },
+  { route: { name: 'journal' }, label: t('Journal'), icon: NotebookPen },
+  { route: { name: 'settings' }, label: t('Réglages'), icon: Settings }
 ]
 
 export function Sidebar(): React.JSX.Element {
@@ -215,7 +217,7 @@ export function Sidebar(): React.JSX.Element {
 
   return (
     <nav
-      aria-label="Navigation principale"
+      aria-label={t('Navigation principale')}
       className="nav-shell flex w-[228px] shrink-0 flex-col gap-1 border-r px-3 py-4"
       style={{ borderColor: 'var(--line)', background: 'color-mix(in oklab, var(--bg) 55%, transparent)' }}
     >
@@ -225,7 +227,7 @@ export function Sidebar(): React.JSX.Element {
           <button
             key={target.name}
             onClick={() => navigate(target)}
-            title={`${label} (Ctrl+${i + 1})`}
+            title={t('{label} (Ctrl+{v1})', { label, v1: i + 1 })}
             // The rail layout hides the labels, so the accessible name has to
             // come from somewhere other than the text.
             aria-label={label}
@@ -261,16 +263,18 @@ export function Sidebar(): React.JSX.Element {
             className="mb-2 rounded-lg px-2.5 py-1 text-center text-[0.68rem] font-semibold tracking-wide uppercase"
             style={{ background: 'linear-gradient(90deg, #facc15, #f97316)', color: '#1c1917' }}
           >
-            Mode développeur
+            {t('Mode développeur')}
           </div>
         )}
         <div className="glass rounded-2xl px-3.5 py-3">
-          <p className="label mb-2">Ces 7 jours</p>
+          <p className="label mb-2">{t('Ces 7 jours')}</p>
           <div className="flex items-baseline gap-1.5">
             <span className="stat-num text-[1.6rem] leading-none">{week.episodes}</span>
-            <span className="text-[0.74rem] text-faint">épisodes</span>
+            <span className="text-[0.74rem] text-faint">{t('épisodes')}</span>
           </div>
-          <p className="mt-1.5 text-[0.74rem] text-faint">{minutesToHuman(week.minutes)} de visionnage</p>
+          <p className="mt-1.5 text-[0.74rem] text-faint">
+            {minutesToHuman(week.minutes)} {t('de visionnage')}
+          </p>
         </div>
       </div>
     </nav>

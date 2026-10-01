@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import type { ApiStatus } from '@shared/types'
 import { ageLabel } from '@shared/api-recovery'
 import { useNow } from '@/lib/hooks'
+import { t } from '@shared/i18n'
 
 /** « 12 min », « 40 s » : ce qu'il reste avant que le catalogue réponde. */
 function remaining(until: number, now: number): string {
@@ -51,15 +52,19 @@ export function ApiStatusBadge(): React.JSX.Element | null {
   let label: string | null = null
   let hint = ''
   if (!online || status.state === 'offline') {
-    label = 'Hors ligne'
-    hint = 'Le catalogue AniList est injoignable. Ta bibliothèque, tes épisodes et tes statistiques restent là.'
+    label = t('Hors ligne')
+    hint = t('Le catalogue AniList est injoignable. Ta bibliothèque, tes épisodes et tes statistiques restent là.')
   } else if (status.state === 'paused' && status.until && !expired) {
-    label = `AniList en pause · ${remaining(status.until, now)}`
-    hint = `${status.message ?? 'AniList ne répond plus.'} Nouvel essai dans ${remaining(status.until, now)}.`
+    label = t('AniList en pause · {v0}', { v0: remaining(status.until, now) })
+    hint = t('{v0} Nouvel essai dans {v1}.', {
+      v0: status.message ?? t('AniList ne répond plus.'),
+      v1: remaining(status.until, now)
+    })
   } else if (status.state === 'throttled' && status.until && !expired) {
-    label = `AniList ralentit · ${remaining(status.until, now)}`
-    hint =
+    label = t('AniList ralentit · {v0}', { v0: remaining(status.until, now) })
+    hint = t(
       'Trop de demandes en peu de temps : AniList en accepte une trentaine par minute. Les pages en attente se rempliront toutes seules.'
+    )
   }
   if (!label) return null
 
@@ -68,22 +73,24 @@ export function ApiStatusBadge(): React.JSX.Element | null {
   const lines = [hint]
   if (status.staleAt) {
     const age = ageLabel(status.staleAt, now)
-    label += age.startsWith('il y a') ? ` · données d’${age}` : ' · données récentes'
+    label += age.startsWith('il y a') ? t(' · données d’{age}', { age }) : t(' · données récentes')
     lines.push(
-      `Les pages du catalogue montrent leur dernière version enregistrée, la plus ancienne ${ageLabel(status.staleAt, now)}.`
+      t('Les pages du catalogue montrent leur dernière version enregistrée, la plus ancienne {v0}.', {
+        v0: ageLabel(status.staleAt, now)
+      })
     )
   }
   if (status.pending) {
     lines.push(
       status.pending > 1
-        ? `${status.pending} pages se remettront à jour d’elles-mêmes au retour d’AniList.`
-        : 'Une page se remettra à jour d’elle-même au retour d’AniList.'
+        ? t('{pending} pages se remettront à jour d’elles-mêmes au retour d’AniList.', { pending: status.pending })
+        : t('Une page se remettra à jour d’elle-même au retour d’AniList.')
     )
   }
   if (status.probeAt && status.probeAt > now && status.state === 'offline') {
-    lines.push(`Prochain essai dans ${remaining(status.probeAt, now)}.`)
+    lines.push(t('Prochain essai dans {v0}.', { v0: remaining(status.probeAt, now) }))
   }
-  lines.push('Clique pour réessayer maintenant.')
+  lines.push(t('Clique pour réessayer maintenant.'))
 
   const Icon = trying ? RefreshCw : status.state === 'throttled' && online ? Hourglass : CloudOff
   return (

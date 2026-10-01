@@ -25,26 +25,27 @@ import { isUnaired, titleOf } from '@/lib/format'
 import { useSessionState } from '@/lib/hooks'
 import { useMatcher } from '@/lib/search'
 import { nextEpisodeOf, useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
 type Filter = LibraryStatus | 'all' | 'favorites'
 type Sort = 'recent' | 'title' | 'score' | 'progress' | 'added'
 
 const FILTERS: { id: Filter; label: string }[] = [
-  { id: 'all', label: 'Tout' },
+  { id: 'all', label: t('Tout') },
   { id: 'watching', label: STATUS_LABELS.watching },
   { id: 'planned', label: STATUS_LABELS.planned },
   { id: 'completed', label: STATUS_LABELS.completed },
   { id: 'paused', label: STATUS_LABELS.paused },
   { id: 'dropped', label: STATUS_LABELS.dropped },
-  { id: 'favorites', label: 'Favoris' }
+  { id: 'favorites', label: t('Favoris') }
 ]
 
 const SORTS: { id: Sort; label: string }[] = [
-  { id: 'recent', label: 'Activité récente' },
-  { id: 'added', label: "Date d'ajout" },
-  { id: 'title', label: 'Titre A→Z' },
-  { id: 'score', label: 'Ma note' },
-  { id: 'progress', label: 'Progression' }
+  { id: 'recent', label: t('Activité récente') },
+  { id: 'added', label: t("Date d'ajout") },
+  { id: 'title', label: t('Titre A→Z') },
+  { id: 'score', label: t('Ma note') },
+  { id: 'progress', label: t('Progression') }
 ]
 
 function ListRow({ media, entry, index }: { media: Media; entry: Entry; index: number }): React.JSX.Element {
@@ -105,9 +106,9 @@ function ListRow({ media, entry, index }: { media: Media; entry: Entry; index: n
         <button
           onClick={async () => {
             await toggleEpisode(media.id, next)
-            toast(`Épisode ${next} coché · ${titleOf(media, lang)}`)
+            toast(t('Épisode {next} coché · {v1}', { next, v1: titleOf(media, lang) }))
           }}
-          title={`Marquer l'épisode ${next}`}
+          title={t("Marquer l'épisode {next}", { next })}
           className="btn !h-8 shrink-0 !px-2.5 opacity-0 transition group-hover:opacity-100"
         >
           <Plus size={13} />
@@ -163,7 +164,7 @@ function SelectableCard({
           onToggle()
         }}
         aria-pressed={on}
-        aria-label={on ? 'Retirer de la sélection' : 'Ajouter à la sélection'}
+        aria-label={on ? t('Retirer de la sélection') : t('Ajouter à la sélection')}
       >
         <Tick on={on} />
       </button>
@@ -326,15 +327,15 @@ export default function LibraryPage({
       <div className="mx-auto max-w-[900px] px-7 py-16">
         <EmptyState
           icon={<LibraryBig size={24} />}
-          title="Rien à suivre pour l'instant"
-          hint="Ajoute des animes depuis Découvrir, ou importe ta liste MyAnimeList en un clic."
+          title={t("Rien à suivre pour l'instant")}
+          hint={t('Ajoute des animes depuis Découvrir, ou importe ta liste MyAnimeList en un clic.')}
           action={
             <div className="mt-1 flex gap-2">
               <button className="btn btn-primary" onClick={() => navigate({ name: 'discover' })}>
-                Explorer le catalogue
+                {t('Explorer le catalogue')}
               </button>
               <button className="btn" onClick={() => navigate({ name: 'settings' })}>
-                Importer
+                {t('Importer')}
               </button>
             </div>
           }
@@ -347,9 +348,9 @@ export default function LibraryPage({
     <div className="page">
       <div className="mb-6 flex items-end justify-between gap-4">
         <div>
-          <h1 className="title-xl text-[1.85rem]">Bibliothèque</h1>
+          <h1 className="title-xl text-[1.85rem]">{t('Bibliothèque')}</h1>
           <p className="mt-1 text-[0.85rem] text-muted">
-            {visible.length} sur {rows.length} animes
+            {visible.length} {t('sur')} {rows.length} {t('animes')}
           </p>
         </div>
         <div className="flex gap-1.5">
@@ -362,7 +363,7 @@ export default function LibraryPage({
             style={selecting ? { borderColor: 'var(--accent)', color: 'var(--color-ink)' } : undefined}
           >
             <CheckSquare size={14} />
-            {selecting ? 'Terminer' : 'Sélectionner'}
+            {selecting ? t('Terminer') : t('Sélectionner')}
           </button>
           {selecting && visible.length > 0 && (
             <button
@@ -371,14 +372,14 @@ export default function LibraryPage({
                 setSelected(selected.size === visible.length ? new Set() : new Set(visible.map((r) => r.media.id)))
               }
             >
-              {selected.size === visible.length ? 'Rien' : 'Tout'}
+              {selected.size === visible.length ? t('Rien') : t('Tout')}
             </button>
           )}
           <button
             className="icon-btn"
             data-on={view === 'grid'}
             onClick={() => setView('grid')}
-            aria-label="Vue grille"
+            aria-label={t('Vue grille')}
             style={view === 'grid' ? { background: 'var(--panel-2)', color: '#fff' } : undefined}
           >
             <LayoutGrid size={16} />
@@ -386,7 +387,7 @@ export default function LibraryPage({
           <button
             className="icon-btn"
             onClick={() => setView('list')}
-            aria-label="Vue liste"
+            aria-label={t('Vue liste')}
             style={view === 'list' ? { background: 'var(--panel-2)', color: '#fff' } : undefined}
           >
             <Rows3 size={16} />
@@ -401,7 +402,7 @@ export default function LibraryPage({
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Filtrer ma bibliothèque…"
+              placeholder={t('Filtrer ma bibliothèque…')}
               className="field w-full !pl-9 !pr-9"
             />
             {search && (
@@ -440,12 +441,12 @@ export default function LibraryPage({
               onClick={() => setShowSequels(!showSequels)}
               title={
                 showSequels
-                  ? 'Replier les saisons suivantes pas encore commencées'
-                  : 'Afficher les saisons suivantes pas encore commencées'
+                  ? t('Replier les saisons suivantes pas encore commencées')
+                  : t('Afficher les saisons suivantes pas encore commencées')
               }
             >
               <Layers size={12} />
-              Saisons suivantes
+              {t('Saisons suivantes')}
               <span className="tabular-nums opacity-60">{folded.size}</span>
             </button>
           )}
@@ -464,7 +465,7 @@ export default function LibraryPage({
           className="mt-2.5 flex flex-wrap items-center gap-1.5 border-t pt-2.5"
           style={{ borderColor: 'var(--line)' }}
         >
-          <span className="label mr-0.5">Listes</span>
+          <span className="label mr-0.5">{t('Listes')}</span>
           {lists.map((list) => (
             <button
               key={list.id}
@@ -477,18 +478,18 @@ export default function LibraryPage({
               <span className="tabular-nums opacity-60">{list.animeIds.length}</span>
             </button>
           ))}
-          {lists.length === 0 && <span className="text-[0.74rem] text-faint">Aucune liste pour l'instant.</span>}
+          {lists.length === 0 && <span className="text-[0.74rem] text-faint">{t("Aucune liste pour l'instant.")}</span>}
           {activeList && selecting && selected.size > 0 && (
             <button
               className="btn !h-7 text-[0.74rem]"
               onClick={() => void setListMembership(activeList.id, [...selected], false)}
             >
-              Retirer de la liste
+              {t('Retirer de la liste')}
             </button>
           )}
           <button className="btn !h-7 text-[0.74rem]" onClick={() => setManaging(true)}>
             <Pencil size={12} />
-            {lists.length === 0 ? 'Créer une liste' : 'Gérer'}
+            {lists.length === 0 ? t('Créer une liste') : t('Gérer')}
           </button>
         </div>
       </div>
@@ -497,11 +498,13 @@ export default function LibraryPage({
         <p className="mx-auto max-w-[46ch] py-16 text-center text-sm leading-relaxed text-faint">
           {search.trim() ? (
             <>
-              Rien ne répond à « {search.trim()} ». La recherche pardonne les accents, les abréviations et les fautes de
-              frappe — si tu l’appelles autrement, donne-lui ce surnom depuis sa fiche.
+              {t('Rien ne répond à «')} {search.trim()}{' '}
+              {t(
+                '». La recherche pardonne les accents, les abréviations et les fautes de frappe — si tu l’appelles autrement, donne-lui ce surnom depuis sa fiche.'
+              )}
             </>
           ) : (
-            'Aucun anime ne correspond à ces filtres.'
+            t('Aucun anime ne correspond à ces filtres.')
           )}
         </p>
       ) : view === 'grid' ? (

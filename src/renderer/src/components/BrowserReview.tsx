@@ -25,6 +25,7 @@ import type { Media } from '@shared/types'
 import { Modal, Poster } from '@/components/ui'
 import { titleOf } from '@/lib/format'
 import { useApp } from '@/store/app'
+import { t as tr, locale } from '@shared/i18n'
 
 const keyOf = (t: { episode: number } & ({ animeId: number } | { media: Media })): string =>
   `${'animeId' in t ? t.animeId : t.media.id}:${t.episode}`
@@ -32,10 +33,10 @@ const keyOf = (t: { episode: number } & ({ animeId: number } | { media: Media })
 /** « 14 h 32 », ou la date devant quand ce n'est pas aujourd'hui. */
 function whenLabel(at: number): string {
   const d = new Date(at)
-  const time = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', ' h ')
+  const time = d.toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit' }).replace(':', ' h ')
   return d.toDateString() === new Date().toDateString()
     ? time
-    : `${d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}, ${time}`
+    : `${d.toLocaleDateString(locale(), { day: 'numeric', month: 'short' })}, ${time}`
 }
 
 /** « Ép. 3 », « Ép. 3, 4 ». */
@@ -111,7 +112,7 @@ export function BrowserReview(): React.JSX.Element {
     const kept = ticks.filter((t) => !dropped.has(keyOf(t)))
     setDropped(new Set(ticks.map(keyOf)))
     for (const t of kept) await window.api.library.setWatched(t.animeId, t.episode, false)
-    toast(kept.length > 1 ? `${kept.length} épisodes décochés` : 'Épisode décoché', 'ok')
+    toast(kept.length > 1 ? tr('{length} épisodes décochés', { length: kept.length }) : tr('Épisode décoché'), 'ok')
   }
 
   const add = async (items: BrowserFind[]): Promise<void> => {
@@ -119,19 +120,22 @@ export function BrowserReview(): React.JSX.Element {
     settleFind(media.id)
     await window.api.library.setEntry(media.id, { status: 'watching' }, media)
     for (const f of items) await window.api.library.setWatched(media.id, f.episode, true)
-    toast(`${titleOf(media, lang)} ajoutée · ${episodesLabel(items.map((f) => f.episode))} coché`, 'ok')
+    toast(
+      tr('{v0} ajoutée · {v1} coché', { v0: titleOf(media, lang), v1: episodesLabel(items.map((f) => f.episode)) }),
+      'ok'
+    )
   }
 
   const heading =
     ticks.length && finds.length
-      ? 'Regardé dans ton navigateur'
+      ? tr('Regardé dans ton navigateur')
       : ticks.length
         ? ticks.length > 1
-          ? `${ticks.length} épisodes regardés dans ton navigateur`
-          : 'Un épisode regardé dans ton navigateur'
+          ? tr('{length} épisodes regardés dans ton navigateur', { length: ticks.length })
+          : tr('Un épisode regardé dans ton navigateur')
         : findGroups.length > 1
-          ? `${findGroups.length} séries regardées hors de ta bibliothèque`
-          : 'Une série regardée hors de ta bibliothèque'
+          ? tr('{length} séries regardées hors de ta bibliothèque', { length: findGroups.length })
+          : tr('Une série regardée hors de ta bibliothèque')
 
   return (
     <Modal open={ticks.length + finds.length > 0} onClose={close} width={520}>
@@ -141,14 +145,14 @@ export function BrowserReview(): React.JSX.Element {
           {heading}
         </h3>
         <p className="mb-5 text-[0.8rem] leading-relaxed text-muted">
-          {ticks.length > 0 && 'Coché pendant que tu regardais ailleurs : clique sur un épisode pour le décocher. '}
-          {finds.length > 0 && 'Retrouvé sur AniList d’après le titre du site : rien n’est ajouté sans toi.'}
+          {ticks.length > 0 && tr('Coché pendant que tu regardais ailleurs : clique sur un épisode pour le décocher. ')}
+          {finds.length > 0 && tr('Retrouvé sur AniList d’après le titre du site : rien n’est ajouté sans toi.')}
         </p>
 
         <div className="mb-5 flex max-h-[50vh] flex-col gap-4 overflow-y-auto">
           {tickGroups.length > 0 && (
             <section>
-              {finds.length > 0 && <p className="label mb-2">Coché</p>}
+              {finds.length > 0 && <p className="label mb-2">{tr('Coché')}</p>}
               <ul className="flex flex-col gap-2.5">
                 {tickGroups.map(({ id, items }) => {
                   const media = mediaMap.get(id)
@@ -162,7 +166,7 @@ export function BrowserReview(): React.JSX.Element {
                       />
                       <div className="min-w-0 flex-1">
                         <p className="clamp-2 text-[0.86rem] font-semibold leading-snug">
-                          {media ? titleOf(media, lang) : `Série ${id}`}
+                          {media ? titleOf(media, lang) : tr('Série {id}', { id })}
                         </p>
                         <p className="mt-0.5 text-[0.72rem] text-faint">
                           {items[0].site} · {whenLabel(items[items.length - 1].at)}
@@ -175,12 +179,12 @@ export function BrowserReview(): React.JSX.Element {
                                 key={t.episode}
                                 className="btn !h-7 !px-2.5 text-[0.74rem]"
                                 aria-pressed={on}
-                                title={on ? 'Décocher cet épisode' : 'Le recocher'}
+                                title={on ? tr('Décocher cet épisode') : tr('Le recocher')}
                                 style={on ? undefined : { opacity: 0.5, textDecoration: 'line-through' }}
                                 onClick={() => toggleTick(t)}
                               >
                                 {on && <Check size={13} />}
-                                Ép. {t.episode}
+                                {tr('Ép.')} {t.episode}
                               </button>
                             )
                           })}
@@ -195,7 +199,7 @@ export function BrowserReview(): React.JSX.Element {
 
           {findGroups.length > 0 && (
             <section>
-              <p className="label mb-2">Pas dans ta bibliothèque</p>
+              <p className="label mb-2">{tr('Pas dans ta bibliothèque')}</p>
               <ul className="flex flex-col gap-2.5">
                 {findGroups.map(({ id, items }) => {
                   const media = items[0].media
@@ -219,11 +223,11 @@ export function BrowserReview(): React.JSX.Element {
                             onClick={() => void add(items)}
                           >
                             <Plus size={13} />
-                            Ajouter et cocher
+                            {tr('Ajouter et cocher')}
                           </button>
                           <button className="btn !h-7 !px-2.5 text-[0.74rem]" onClick={() => settleFind(id)}>
                             <X size={13} />
-                            Ignorer
+                            {tr('Ignorer')}
                           </button>
                         </div>
                       </div>
@@ -239,11 +243,11 @@ export function BrowserReview(): React.JSX.Element {
           {ticks.length > 0 && dropped.size < ticks.length && (
             <button className="btn" onClick={() => void untickAll()}>
               <Undo2 size={14} />
-              Tout décocher
+              {tr('Tout décocher')}
             </button>
           )}
           <button className="btn" onClick={close}>
-            Fermer
+            {tr('Fermer')}
           </button>
         </div>
       </div>

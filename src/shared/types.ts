@@ -1,6 +1,8 @@
 import type { ReleaseNote } from './release-notes'
 import type { MangaOrigin } from './origin'
 import type { TasteFacet } from './taste'
+import { t as tr, type UiLang, lazy } from './i18n'
+
 export type MediaFormat = 'TV' | 'TV_SHORT' | 'MOVIE' | 'SPECIAL' | 'OVA' | 'ONA' | 'MUSIC'
 export type MediaStatus = 'FINISHED' | 'RELEASING' | 'NOT_YET_RELEASED' | 'CANCELLED' | 'HIATUS'
 export type SeasonName = 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL'
@@ -51,18 +53,18 @@ export interface ThemeDef {
   experience?: ExperienceId
 }
 
-export const THEMES: ThemeDef[] = [
+export const THEMES: ThemeDef[] = lazy(() => [
   {
     id: 'nebula',
     name: 'Nébuleuse',
-    hint: 'Verre dépoli, aurore, néons doux',
+    hint: tr('Verre dépoli, aurore, néons doux'),
     swatch: ['#0a0c18', '#7c5cff'],
     titlebar: { color: '#0B0E1A', symbolColor: '#C9D0EA' }
   },
   {
     id: 'paper',
     name: 'Papier',
-    hint: 'Clair, éditorial, sans effets',
+    hint: tr('Clair, éditorial, sans effets'),
     swatch: ['#f6f4ef', '#1c1a17'],
     titlebar: { color: '#FFFFFF', symbolColor: '#3A362F' },
     light: true
@@ -70,14 +72,14 @@ export const THEMES: ThemeDef[] = [
   {
     id: 'terminal',
     name: 'Terminal',
-    hint: 'Monospace, angles vifs, contraste',
+    hint: tr('Monospace, angles vifs, contraste'),
     swatch: ['#05070a', '#2bff88'],
     titlebar: { color: '#080B10', symbolColor: '#92A49B' }
   },
   {
     id: 'synth',
     name: 'Synthwave',
-    hint: 'Saturé, arrondi, néon assumé',
+    hint: tr('Saturé, arrondi, néon assumé'),
     swatch: ['#1a0b2e', '#ff2e97'],
     titlebar: { color: '#210D3A', symbolColor: '#C9A4DC' }
   },
@@ -85,7 +87,7 @@ export const THEMES: ThemeDef[] = [
   {
     id: 'indigo',
     name: 'Indigo',
-    hint: 'Suisse et sombre, un trait de lumière en bordure',
+    hint: tr('Suisse et sombre, un trait de lumière en bordure'),
     swatch: ['#0b1120', '#6366f1'],
     titlebar: { color: '#0F172A', symbolColor: '#A3B0C2' },
     accent: '#6366f1'
@@ -93,7 +95,7 @@ export const THEMES: ThemeDef[] = [
   {
     id: 'oled',
     name: 'OLED',
-    hint: 'Noir pur, étoiles filantes',
+    hint: tr('Noir pur, étoiles filantes'),
     swatch: ['#000000', '#22c55e'],
     titlebar: { color: '#000000', symbolColor: '#A1A1AA' },
     accent: '#22c55e'
@@ -101,7 +103,7 @@ export const THEMES: ThemeDef[] = [
   {
     id: 'manga',
     name: 'Manga',
-    hint: 'Cases encrées, trame de points',
+    hint: tr('Cases encrées, trame de points'),
     swatch: ['#fff7ed', '#f97316'],
     titlebar: { color: '#FFF7ED', symbolColor: '#0F172A' },
     light: true,
@@ -110,7 +112,7 @@ export const THEMES: ThemeDef[] = [
   {
     id: 'arcade',
     name: 'Arcade',
-    hint: 'Pixels, polices 8 bits, grille qui clignote',
+    hint: tr('Pixels, polices 8 bits, grille qui clignote'),
     swatch: ['#0f172a', '#22c55e'],
     titlebar: { color: '#0B1222', symbolColor: '#A3B0C2' },
     accent: '#22c55e'
@@ -118,7 +120,7 @@ export const THEMES: ThemeDef[] = [
   {
     id: 'cyber',
     name: 'Cyberpunk',
-    hint: 'HUD, angles coupés, grille qui s’allume',
+    hint: tr('HUD, angles coupés, grille qui s’allume'),
     swatch: ['#0f0f23', '#f43f5e'],
     titlebar: { color: '#0B0B1C', symbolColor: '#B8ACD9' },
     accent: '#f43f5e'
@@ -126,7 +128,7 @@ export const THEMES: ThemeDef[] = [
   {
     id: 'kawaii',
     name: 'Kawaii',
-    hint: 'Pastel, tout arrondi, bulles',
+    hint: tr('Pastel, tout arrondi, bulles'),
     swatch: ['#fdf2f8', '#ec4899'],
     titlebar: { color: '#FFF7FB', symbolColor: '#7A4A63' },
     light: true,
@@ -135,7 +137,7 @@ export const THEMES: ThemeDef[] = [
   {
     id: 'liquid',
     name: 'Liquid Glass',
-    hint: 'Verre sombre, reflet d’or qui tourne',
+    hint: tr('Verre sombre, reflet d’or qui tourne'),
     swatch: ['#0c0a09', '#ca8a04'],
     titlebar: { color: '#1C1917', symbolColor: '#D6D3D1' },
     accent: '#ca8a04'
@@ -143,7 +145,7 @@ export const THEMES: ThemeDef[] = [
   {
     id: 'bento',
     name: 'Bento',
-    hint: 'Blocs noirs, chiffres d’affiche, bordure sous le curseur',
+    hint: tr('Blocs noirs, chiffres d’affiche, bordure sous le curseur'),
     swatch: ['#0a0a0a', '#ec4899'],
     titlebar: { color: '#0A0A0A', symbolColor: '#A3A3A3' },
     accent: '#ec4899'
@@ -151,7 +153,7 @@ export const THEMES: ThemeDef[] = [
   {
     id: 'boreal',
     name: 'Aurore',
-    hint: 'Nuit polaire, rideaux de lumière',
+    hint: tr('Nuit polaire, rideaux de lumière'),
     swatch: ['#050816', '#2dd4bf'],
     titlebar: { color: '#0A0F24', symbolColor: '#AAB6D3' },
     accent: '#2dd4bf'
@@ -160,7 +162,7 @@ export const THEMES: ThemeDef[] = [
   {
     id: 'ds-ardoise',
     name: 'Ardoise',
-    hint: 'Neutres froids, bleu, rayons moyens',
+    hint: tr('Neutres froids, bleu, rayons moyens'),
     swatch: ['#020617', '#3b82f6'],
     titlebar: { color: '#0F172A', symbolColor: '#CBD5E1' },
     accent: '#3b82f6'
@@ -168,7 +170,7 @@ export const THEMES: ThemeDef[] = [
   {
     id: 'ds-carbon',
     name: 'Carbon',
-    hint: 'Gris industriels, angles droits',
+    hint: tr('Gris industriels, angles droits'),
     swatch: ['#161616', '#0f62fe'],
     titlebar: { color: '#161616', symbolColor: '#C6C6C6' },
     accent: '#0f62fe'
@@ -177,7 +179,7 @@ export const THEMES: ThemeDef[] = [
   {
     id: 'xp-streaming',
     name: 'Streaming',
-    hint: 'Bannière plein écran, rangées qui défilent, menu en haut',
+    hint: tr('Bannière plein écran, rangées qui défilent, menu en haut'),
     swatch: ['#0b0b0f', '#e50914'],
     titlebar: { color: '#0B0B0F', symbolColor: '#B3B3B3' },
     accent: '#e50914',
@@ -186,7 +188,7 @@ export const THEMES: ThemeDef[] = [
   {
     id: 'xp-console',
     name: 'Console',
-    hint: 'Tuiles géantes, focus animé, menu horizontal de console',
+    hint: tr('Tuiles géantes, focus animé, menu horizontal de console'),
     swatch: ['#0a1330', '#4f8cff'],
     titlebar: { color: '#0A1330', symbolColor: '#AFC3E8' },
     accent: '#4f8cff',
@@ -195,7 +197,7 @@ export const THEMES: ThemeDef[] = [
   {
     id: 'xp-magazine',
     name: 'Magazine',
-    hint: 'Pages en cases, gros titres, lecture comme un numéro papier',
+    hint: tr('Pages en cases, gros titres, lecture comme un numéro papier'),
     swatch: ['#f4efe6', '#d7261e'],
     titlebar: { color: '#F4EFE6', symbolColor: '#1A1A1A' },
     light: true,
@@ -205,7 +207,7 @@ export const THEMES: ThemeDef[] = [
   {
     id: 'xp-hud',
     name: 'Cockpit',
-    hint: 'Panneaux, jauges et données partout, façon HUD',
+    hint: tr('Panneaux, jauges et données partout, façon HUD'),
     swatch: ['#050a0a', '#22d3ee'],
     titlebar: { color: '#050A0A', symbolColor: '#7FA9A6' },
     accent: '#22d3ee',
@@ -214,13 +216,13 @@ export const THEMES: ThemeDef[] = [
   {
     id: 'xp-carnet',
     name: 'Carnet',
-    hint: 'Étagères de jaquettes, cartes à collectionner',
+    hint: tr('Étagères de jaquettes, cartes à collectionner'),
     swatch: ['#2b2118', '#e0a458'],
     titlebar: { color: '#2B2118', symbolColor: '#D9C5A7' },
     accent: '#e0a458',
     experience: 'carnet'
   }
-]
+])
 
 export function chromeFor(theme: ThemeId): { color: string; symbolColor: string } {
   return (THEMES.find((t) => t.id === theme) ?? THEMES[0]).titlebar
@@ -234,12 +236,12 @@ export function accentFor(theme: ThemeId): string {
 /** Where the navigation lives and how densely pages are composed. */
 export type LayoutId = 'classic' | 'rail' | 'topbar' | 'dashboard'
 
-export const LAYOUTS: { id: LayoutId; name: string; hint: string }[] = [
-  { id: 'classic', name: 'Classique', hint: 'Menu latéral libellé, sections empilées' },
-  { id: 'rail', name: 'Rail compact', hint: 'Menu en icônes, grilles denses' },
-  { id: 'topbar', name: 'Barre haute', hint: 'Navigation dans l’en-tête, pleine largeur' },
-  { id: 'dashboard', name: 'Tableau de bord', hint: 'Accueil en tuiles côte à côte' }
-]
+export const LAYOUTS: { id: LayoutId; name: string; hint: string }[] = lazy(() => [
+  { id: 'classic', name: 'Classique', hint: tr('Menu latéral libellé, sections empilées') },
+  { id: 'rail', name: 'Rail compact', hint: tr('Menu en icônes, grilles denses') },
+  { id: 'topbar', name: 'Barre haute', hint: tr('Navigation dans l’en-tête, pleine largeur') },
+  { id: 'dashboard', name: 'Tableau de bord', hint: tr('Accueil en tuiles côte à côte') }
+])
 
 export interface Media {
   id: number
@@ -460,22 +462,24 @@ export type NewDesignPage =
   | 'studio'
   | 'person'
 
-export const NEW_DESIGN_PAGES: { id: NewDesignPage; label: string; hint: string }[] = [
-  { id: 'home', label: 'Accueil', hint: 'Frise d’épisodes, file « À regarder », semaine de diffusion' },
-  { id: 'library', label: 'Bibliothèque', hint: 'Onglets par statut, une ligne par série avec sa frise' },
-  { id: 'discover', label: 'Découvrir', hint: 'Grande recherche, recommandations expliquées' },
-  { id: 'calendar', label: 'Calendrier', hint: 'Grille de programme : matin, après-midi, soirée, nuit' },
-  { id: 'season', label: 'Tri de la saison', hint: 'Cartes à trancher, lignes pour celles que tu suis déjà' },
-  { id: 'manga', label: 'Manga', hint: 'Origine et sens de lecture en tête, étagères' },
-  { id: 'stats', label: 'Statistiques', hint: 'Ton visionnage raconté en phrases, badges en liste' },
-  { id: 'journal', label: 'Journal', hint: 'Journées annoncées en toutes lettres, visionnages en lignes' },
-  { id: 'detail', label: 'Fiche d’un anime', hint: 'Frise dans l’en-tête, sommaire qui suit la lecture' },
-  { id: 'studio', label: 'Studio', hint: 'Ce que tu as vu en lignes, le reste en affiches' },
-  { id: 'person', label: 'Personnage et doubleur', hint: 'Rôles déjà vus en tête, avec le nom du rôle' }
-]
+export const NEW_DESIGN_PAGES: { id: NewDesignPage; label: string; hint: string }[] = lazy(() => [
+  { id: 'home', label: tr('Accueil'), hint: tr('Frise d’épisodes, file « À regarder », semaine de diffusion') },
+  { id: 'library', label: tr('Bibliothèque'), hint: tr('Onglets par statut, une ligne par série avec sa frise') },
+  { id: 'discover', label: tr('Découvrir'), hint: tr('Grande recherche, recommandations expliquées') },
+  { id: 'calendar', label: tr('Calendrier'), hint: tr('Grille de programme : matin, après-midi, soirée, nuit') },
+  { id: 'season', label: tr('Tri de la saison'), hint: tr('Cartes à trancher, lignes pour celles que tu suis déjà') },
+  { id: 'manga', label: tr('Manga'), hint: tr('Origine et sens de lecture en tête, étagères') },
+  { id: 'stats', label: tr('Statistiques'), hint: tr('Ton visionnage raconté en phrases, badges en liste') },
+  { id: 'journal', label: tr('Journal'), hint: tr('Journées annoncées en toutes lettres, visionnages en lignes') },
+  { id: 'detail', label: tr('Fiche d’un anime'), hint: tr('Frise dans l’en-tête, sommaire qui suit la lecture') },
+  { id: 'studio', label: tr('Studio'), hint: tr('Ce que tu as vu en lignes, le reste en affiches') },
+  { id: 'person', label: tr('Personnage et doubleur'), hint: tr('Rôles déjà vus en tête, avec le nom du rôle') }
+])
 
 export interface Prefs {
   titleLang: TitleLang
+  /** La langue des boutons et des textes de l'app, pas celle des titres. */
+  uiLang: UiLang
   theme: ThemeId
   layout: LayoutId
   accent: string
@@ -1055,43 +1059,43 @@ export interface UpdateStatus {
   notes: ReleaseNote[]
 }
 
-export const EMOTIONS: { id: EmotionId; emoji: string; label: string }[] = [
-  { id: 'love', emoji: '💜', label: 'Coup de cœur' },
-  { id: 'hype', emoji: '🔥', label: 'Hype' },
-  { id: 'cry', emoji: '😭', label: 'Larmes' },
-  { id: 'laugh', emoji: '😂', label: 'Fou rire' },
-  { id: 'mind', emoji: '🤯', label: 'Claque' },
-  { id: 'chill', emoji: '🍵', label: 'Cosy' },
-  { id: 'scared', emoji: '😱', label: 'Flippant' },
-  { id: 'bored', emoji: '🥱', label: 'Longuet' }
-]
+export const EMOTIONS: { id: EmotionId; emoji: string; label: string }[] = lazy(() => [
+  { id: 'love', emoji: '💜', label: tr('Coup de cœur') },
+  { id: 'hype', emoji: '🔥', label: tr('Hype') },
+  { id: 'cry', emoji: '😭', label: tr('Larmes') },
+  { id: 'laugh', emoji: '😂', label: tr('Fou rire') },
+  { id: 'mind', emoji: '🤯', label: tr('Claque') },
+  { id: 'chill', emoji: '🍵', label: tr('Cosy') },
+  { id: 'scared', emoji: '😱', label: tr('Flippant') },
+  { id: 'bored', emoji: '🥱', label: tr('Longuet') }
+])
 
-export const STATUS_LABELS: Record<LibraryStatus, string> = {
-  watching: 'En cours',
-  planned: 'À voir',
-  completed: 'Terminé',
-  paused: 'En pause',
-  dropped: 'Abandonné'
-}
+export const STATUS_LABELS: Record<LibraryStatus, string> = lazy(() => ({
+  watching: tr('En cours'),
+  planned: tr('À voir'),
+  completed: tr('Terminé'),
+  paused: tr('En pause'),
+  dropped: tr('Abandonné')
+}))
 
 /** Les mêmes statuts, dits pour un manga : on le lit, on ne le regarde pas. */
-export const READ_STATUS_LABELS: Record<LibraryStatus, string> = {
-  watching: 'En lecture',
-  planned: 'À lire',
-  completed: 'Lu',
-  paused: 'En pause',
-  dropped: 'Abandonné'
-}
+export const READ_STATUS_LABELS: Record<LibraryStatus, string> = lazy(() => ({
+  watching: tr('En lecture'),
+  planned: tr('À lire'),
+  completed: tr('Lu'),
+  paused: tr('En pause'),
+  dropped: tr('Abandonné')
+}))
 
-export const FORMAT_LABELS: Record<string, string> = {
-  TV: 'Série TV',
-  TV_SHORT: 'Format court',
-  MOVIE: 'Film',
-  SPECIAL: 'Spécial',
+export const FORMAT_LABELS: Record<string, string> = lazy(() => ({
+  TV: tr('Série TV'),
+  TV_SHORT: tr('Format court'),
+  MOVIE: tr('Film'),
+  SPECIAL: tr('Spécial'),
   OVA: 'OAV',
   ONA: 'ONA',
-  MUSIC: 'Clip'
-}
+  MUSIC: tr('Clip')
+}))
 
 export const GENRES = [
   'Action',
@@ -1114,29 +1118,30 @@ export const GENRES = [
   'Thriller'
 ] as const
 
-export const GENRE_LABELS: Record<string, string> = {
-  Action: 'Action',
-  Adventure: 'Aventure',
-  Comedy: 'Comédie',
-  Drama: 'Drame',
-  Ecchi: 'Ecchi',
-  Fantasy: 'Fantasy',
-  Horror: 'Horreur',
-  'Mahou Shoujo': 'Magical girl',
-  Mecha: 'Mecha',
-  Music: 'Musique',
-  Mystery: 'Mystère',
-  Psychological: 'Psychologique',
-  Romance: 'Romance',
+export const GENRE_LABELS: Record<string, string> = lazy(() => ({
+  Action: tr('Action'),
+  Adventure: tr('Aventure'),
+  Comedy: tr('Comédie'),
+  Drama: tr('Drame'),
+  Ecchi: tr('Ecchi'),
+  Fantasy: tr('Fantasy'),
+  Horror: tr('Horreur'),
+  'Mahou Shoujo': tr('Magical girl'),
+  Mecha: tr('Mecha'),
+  Music: tr('Musique'),
+  Mystery: tr('Mystère'),
+  Psychological: tr('Psychologique'),
+  Romance: tr('Romance'),
   'Sci-Fi': 'Science-fiction',
-  'Slice of Life': 'Tranche de vie',
-  Sports: 'Sport',
-  Supernatural: 'Surnaturel',
-  Thriller: 'Thriller'
-}
+  'Slice of Life': tr('Tranche de vie'),
+  Sports: tr('Sport'),
+  Supernatural: tr('Surnaturel'),
+  Thriller: tr('Thriller')
+}))
 
 export const DEFAULT_PREFS: Prefs = {
   titleLang: 'romaji',
+  uiLang: 'fr',
   theme: 'nebula',
   layout: 'classic',
   accent: '#7C5CFF',

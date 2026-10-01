@@ -5,6 +5,7 @@ import { Modal } from '@/components/ui'
 import { titleOf } from '@/lib/format'
 import { emotionOf, type JournalRow } from '@/lib/journal'
 import { useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
 type Format = 'md' | 'csv'
 
@@ -48,7 +49,7 @@ export function JournalExport({ rows, filtered }: { rows: JournalRow[]; filtered
   const minutes = chosen.reduce((sum, row) => sum + (row.minutes || 0), 0)
 
   const save = (): void => {
-    const title = year === null ? 'Journal' : `Journal — ${year}`
+    const title = year === null ? t('Journal') : t('Journal — {year}', { year })
     const text = format === 'md' ? toMarkdown(chosen, title) : toCsv(chosen)
     setBusy(true)
     void window.api.data
@@ -62,37 +63,37 @@ export function JournalExport({ rows, filtered }: { rows: JournalRow[]; filtered
 
   return (
     <>
-      <button className="chip" title="Enregistrer ton journal en Markdown ou en CSV" onClick={() => setOpen(true)}>
+      <button className="chip" title={t('Enregistrer ton journal en Markdown ou en CSV')} onClick={() => setOpen(true)}>
         <Download size={13} />
-        Exporter
+        {t('Exporter')}
       </button>
 
       <Modal open={open} onClose={() => setOpen(false)} width={460}>
         <div className="p-6">
-          <h3 className="title-xl mb-1 text-[1.1rem]">Exporter le journal</h3>
+          <h3 className="title-xl mb-1 text-[1.1rem]">{t('Exporter le journal')}</h3>
           <p className="mb-5 text-[0.8rem] leading-relaxed text-muted">
-            Un fichier à toi, lisible sans l’app.
-            {filtered && ' Ce sont les lignes actuellement affichées qui partent, filtres compris.'}
+            {t('Un fichier à toi, lisible sans l’app.')}
+            {filtered && t(' Ce sont les lignes actuellement affichées qui partent, filtres compris.')}
           </p>
 
-          <p className="label mb-2">Format</p>
+          <p className="label mb-2">{t('Format')}</p>
           <div className="nd-seg mb-5">
             <button aria-pressed={format === 'md'} onClick={() => setFormat('md')}>
-              Markdown
+              {t('Markdown')}
             </button>
             <button aria-pressed={format === 'csv'} onClick={() => setFormat('csv')}>
               CSV
             </button>
           </div>
 
-          <p className="label mb-2">Période</p>
+          <p className="label mb-2">{t('Période')}</p>
           <select
             className="field mb-5 w-full"
             value={year ?? ''}
             onChange={(e) => setYear(e.target.value ? Number(e.target.value) : null)}
-            aria-label="Année à exporter"
+            aria-label={t('Année à exporter')}
           >
-            <option value="">Tout le journal</option>
+            <option value="">{t('Tout le journal')}</option>
             {years.map((y) => (
               <option key={y} value={y}>
                 {y}
@@ -102,17 +103,21 @@ export function JournalExport({ rows, filtered }: { rows: JournalRow[]; filtered
 
           <p className="mb-5 text-[0.8rem] text-muted">
             {chosen.length === 0
-              ? 'Rien à exporter pour cette période.'
-              : `${chosen.length} épisode${chosen.length > 1 ? 's' : ''}, ${spokenHours(minutes)} de visionnage.`}
+              ? t('Rien à exporter pour cette période.')
+              : t('{length} épisode{v1}, {v2} de visionnage.', {
+                  length: chosen.length,
+                  v1: chosen.length > 1 ? 's' : '',
+                  v2: spokenHours(minutes)
+                })}
           </p>
 
           <div className="flex justify-end gap-2">
             <button className="btn" onClick={() => setOpen(false)}>
-              Annuler
+              {t('Annuler')}
             </button>
             <button className="btn btn-primary" disabled={busy || chosen.length === 0} onClick={save}>
               <Download size={14} />
-              {busy ? 'Écriture…' : 'Enregistrer'}
+              {busy ? t('Écriture…') : t('Enregistrer')}
             </button>
           </div>
         </div>

@@ -4,6 +4,7 @@ import { NdHeader, plural } from '@/components/nd'
 import { SETTINGS_SECTIONS, filterSettings } from '@/lib/settings-sections'
 import SettingsBody from './settings/Body'
 import { useApp } from '@/store/app'
+import { t as tr } from '@shared/i18n'
 
 /**
  * Le sommaire, qui suit la lecture.
@@ -39,7 +40,7 @@ function Toc({ visible }: { visible: Set<string> | null }): React.JSX.Element {
   }, [])
 
   return (
-    <nav aria-label="Sections des réglages" className="nd-set-toc">
+    <nav aria-label={tr('Sections des réglages')} className="nd-set-toc">
       <ul>
         {SETTINGS_SECTIONS.filter((section) => !visible || visible.has(section.id)).map((section) => (
           <li key={section.id}>
@@ -96,16 +97,19 @@ export default function SettingsPage(): React.JSX.Element {
     // de la phrase qu'il commande.
     <div className="page" style={{ ['--page-max' as string]: '1040px' }}>
       <NdHeader
-        title="Réglages"
-        sub={`${plural(entries.size, 'titre')} et ${plural(events.length, 'épisode coché', 'épisodes cochés')} sur ce PC, dans un fichier qui n’en sort pas.`}
+        title={tr('Réglages')}
+        sub={tr('{v0} et {v1} sur ce PC, dans un fichier qui n’en sort pas.', {
+          v0: plural(entries.size, 'titre'),
+          v1: plural(events.length, 'épisode coché', 'épisodes cochés')
+        })}
       />
 
       <label className="nd-search mb-8">
         <Search size={15} aria-hidden />
         <input
           type="search"
-          placeholder="Chercher un réglage…"
-          aria-label="Chercher un réglage"
+          placeholder={tr('Chercher un réglage…')}
+          aria-label={tr('Chercher un réglage')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => {
@@ -115,7 +119,7 @@ export default function SettingsPage(): React.JSX.Element {
           }}
         />
         {query && (
-          <button onClick={() => setQuery('')} aria-label="Effacer la recherche">
+          <button onClick={() => setQuery('')} aria-label={tr('Effacer la recherche')}>
             <X size={15} />
           </button>
         )}
@@ -125,7 +129,9 @@ export default function SettingsPage(): React.JSX.Element {
         <Toc visible={visible} />
         <div ref={bodyRef} className="min-w-0 flex-1">
           {visible?.size === 0 && (
-            <p className="py-16 text-center text-sm text-muted">Aucun réglage ne répond à « {query.trim()} ».</p>
+            <p className="py-16 text-center text-sm text-muted">
+              {tr('Aucun réglage ne répond à «')} {query.trim()} ».
+            </p>
           )}
           <SettingsBody />
         </div>

@@ -24,6 +24,7 @@ import { startSequelWatcher } from './sequels'
 import { startMangaWatcher } from './manga-watch'
 import { captureAll, screenshotRun } from './screenshots'
 import { flush, getPrefs, initStore, store } from './store'
+import { isUiLang, setUiLang } from '@shared/i18n'
 
 const isDev = !app.isPackaged
 
@@ -167,6 +168,8 @@ function createWindow(): BrowserWindow {
 
 void app.whenReady().then(() => {
   initStore()
+  const lang = getPrefs().uiLang
+  setUiLang(isUiLang(lang) ? lang : 'fr')
   initAniList()
   initAnimeSama()
   initFiller()

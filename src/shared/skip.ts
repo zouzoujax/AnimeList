@@ -1,3 +1,4 @@
+import { t, lazy } from './i18n'
 /**
  * Passer un générique.
  *
@@ -35,10 +36,10 @@ export interface SkipRange {
   reference: number
 }
 
-export const SKIP_LABELS: Record<SkipKind, string> = {
-  op: 'Passer l’opening',
-  ed: 'Passer le générique de fin'
-}
+export const SKIP_LABELS: Record<SkipKind, string> = lazy(() => ({
+  op: t('Passer l’opening'),
+  ed: t('Passer le générique de fin')
+}))
 
 /** Écart toléré entre la durée de référence et celle du lecteur. */
 export const LENGTH_TOLERANCE_S = 60

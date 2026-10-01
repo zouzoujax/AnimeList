@@ -19,6 +19,7 @@ import {
 } from '@shared/phone-push'
 import { getPrefs, setPrefs } from './store'
 import { remoteStatus } from './remote'
+import { t } from '@shared/i18n'
 
 const TIMEOUT_MS = 10_000
 
@@ -62,7 +63,7 @@ export function setPhonePushServer(raw: string): { ok: boolean; error?: string; 
 
 async function publish(msg: PushMessage): Promise<{ ok: boolean; error?: string }> {
   const { on, server, topic } = phonePushStatus()
-  if (!on) return { ok: false, error: 'Notifications du téléphone éteintes.' }
+  if (!on) return { ok: false, error: t('Notifications du téléphone éteintes.') }
   const checked = checkServer(server)
   if (!checked.ok) return { ok: false, error: checked.error }
   try {
@@ -72,7 +73,7 @@ async function publish(msg: PushMessage): Promise<{ ok: boolean; error?: string 
       body: pushBody(topic, msg),
       signal: AbortSignal.timeout(TIMEOUT_MS)
     })
-    if (!res.ok) return { ok: false, error: `Le serveur ntfy a répondu ${res.status}.` }
+    if (!res.ok) return { ok: false, error: t('Le serveur ntfy a répondu {status}.', { status: res.status }) }
     return { ok: true }
   } catch (err) {
     // Le message de Node — « fetch failed », « aborted due to timeout » — ne
@@ -81,8 +82,8 @@ async function publish(msg: PushMessage): Promise<{ ok: boolean; error?: string 
     return {
       ok: false,
       error: slow
-        ? `Le serveur ntfy ne répond pas (${TIMEOUT_MS / 1000} s d’attente).`
-        : 'Serveur ntfy injoignable : vérifie son adresse et la connexion du PC.'
+        ? t('Le serveur ntfy ne répond pas ({v0} s d’attente).', { v0: TIMEOUT_MS / 1000 })
+        : t('Serveur ntfy injoignable : vérifie son adresse et la connexion du PC.')
     }
   }
 }
@@ -103,8 +104,8 @@ export function pushEpisode(animeId: number, episode: number, title: string, soo
   if (sent.has(key) || !phonePushStatus().on) return
   sent.add(key)
   void publish({
-    title: soon ? `Bientôt : épisode ${episode}` : `Épisode ${episode} disponible`,
-    message: soon ? `${title} — dans ${soon} min` : title,
+    title: soon ? t('Bientôt : épisode {episode}', { episode }) : t('Épisode {episode} disponible', { episode }),
+    message: soon ? t('{title} — dans {soon} min', { title, soon }) : title,
     click: clickTarget()
   }).then((res) => {
     // Raté : on oublie l'avoir envoyé, pour que le rattrapage réessaie.
@@ -119,7 +120,7 @@ export function pushEpisode(animeId: number, episode: number, title: string, soo
 export function testPhonePush(): Promise<{ ok: boolean; error?: string }> {
   return publish({
     title: 'AnimeList',
-    message: 'Ça marche : les prochains épisodes arriveront ici.',
+    message: t('Ça marche : les prochains épisodes arriveront ici.'),
     tags: ['white_check_mark'],
     click: clickTarget()
   })

@@ -65,6 +65,7 @@ import { useExperience, type DetailHeroProps, type DetailParts } from '@/experie
 import { useNewDesign } from '@/lib/nd'
 import { NdDetailBody, NdDetailHero } from '@/pages/nd/detail'
 import { Stars } from '@/components/Stars'
+import { t, locale } from '@shared/i18n'
 
 const STATUS_ORDER: LibraryStatus[] = ['watching', 'planned', 'completed', 'paused', 'dropped']
 
@@ -85,7 +86,7 @@ function SeasonStrip({ animeId }: { animeId: number }): React.JSX.Element | null
 
   return (
     <div className="mb-3 flex flex-wrap items-center gap-1.5">
-      <span className="label mr-0.5">Saisons</span>
+      <span className="label mr-0.5">{t('Saisons')}</span>
       {seasons.map((season) => {
         const current = season.id === animeId
         const seen = watched.get(season.id)?.size ?? 0
@@ -100,8 +101,8 @@ function SeasonStrip({ animeId }: { animeId: number }): React.JSX.Element | null
             aria-current={current ? 'page' : undefined}
             onClick={() => !current && navigate({ name: 'anime', id: season.id })}
             title={`${season.title}${season.year ? ` · ${season.year}` : ''}${
-              season.episodes ? ` · ${season.episodes} ép.` : ''
-            }${tracked ? ` · ${seen} vus` : ' · pas dans ta bibliothèque'}`}
+              season.episodes ? t(' · {episodes} ép.', { episodes: season.episodes }) : ''
+            }${tracked ? t(' · {seen} vus', { seen }) : t(' · pas dans ta bibliothèque')}`}
           >
             S{season.number}
             {/* Deux cours partagent un numéro : sans ça la bande afficherait
@@ -170,7 +171,7 @@ function EpisodeGrid({
   if (!episodes.length) {
     return (
       <p className="glass rounded-2xl px-4 py-6 text-center text-[0.82rem] text-faint">
-        La liste d'épisodes n'est pas encore publiée pour ce titre.
+        {t("La liste d'épisodes n'est pas encore publiée pour ce titre.")}
       </p>
     )
   }
@@ -210,14 +211,18 @@ function EpisodeGrid({
           className="btn !h-8"
           onClick={() => markUpTo(detail.id, Math.min(episodes.length, lastAired), detail)}
           disabled={count >= Math.min(episodes.length, lastAired)}
-          title={lastAired < episodes.length ? `Jusqu'à l'épisode ${lastAired}, le dernier diffusé` : undefined}
+          title={
+            lastAired < episodes.length
+              ? t("Jusqu'à l'épisode {lastAired}, le dernier diffusé", { lastAired })
+              : undefined
+          }
         >
           <CheckCheck size={14} />
-          Tout marquer
+          {t('Tout marquer')}
         </button>
         <button className="btn !h-8" onClick={() => clearProgress(detail.id)} disabled={count === 0}>
           <RotateCcw size={14} />
-          Réinitialiser
+          {t('Réinitialiser')}
         </button>
 
         {/* Only offered when MyAnimeList actually labelled something: a switch
@@ -230,13 +235,16 @@ function EpisodeGrid({
             aria-pressed={hideFiller}
             title={
               hideFiller
-                ? 'Réafficher les épisodes hors intrigue'
-                : `${filler.size} épisode${filler.size > 1 ? 's' : ''} hors intrigue (filler ou résumé)`
+                ? t('Réafficher les épisodes hors intrigue')
+                : t('{size} épisode{v1} hors intrigue (filler ou résumé)', {
+                    size: filler.size,
+                    v1: filler.size > 1 ? 's' : ''
+                  })
             }
             style={hideFiller ? { borderColor: 'var(--accent)' } : undefined}
           >
             {hideFiller ? <Eye size={14} /> : <EyeOff size={14} />}
-            {hideFiller ? 'Tout afficher' : 'Sans filler'}
+            {hideFiller ? t('Tout afficher') : t('Sans filler')}
             <span className="tabular-nums opacity-60">{filler.size}</span>
           </button>
         )}
@@ -246,11 +254,11 @@ function EpisodeGrid({
             className="btn btn-primary !h-8"
             onClick={() => {
               void startRewatch(detail.id)
-              toast('Nouveau visionnage commencé — l’historique précédent est conservé.', 'ok')
+              toast(t('Nouveau visionnage commencé — l’historique précédent est conservé.'), 'ok')
             }}
           >
             <Repeat size={14} />
-            Revoir
+            {t('Revoir')}
           </button>
         )}
 
@@ -266,10 +274,10 @@ function EpisodeGrid({
                 color: 'var(--color-ink)'
               }}
             >
-              {pass === 1 ? '2ᵉ' : `${pass + 1}ᵉ`} visionnage
+              {pass === 1 ? '2ᵉ' : `${pass + 1}ᵉ`} {t('visionnage')}
             </span>
             <button className="btn !h-8 text-[0.75rem]" onClick={() => void cancelRewatch(detail.id)}>
-              Annuler ce visionnage
+              {t('Annuler ce visionnage')}
             </button>
           </>
         )}
@@ -288,8 +296,14 @@ function EpisodeGrid({
           ) : (
             <span className="text-faint">
               {hideFiller
-                ? `${episodes.length - shown.length} épisode${episodes.length - shown.length > 1 ? 's' : ''} hors intrigue masqué${episodes.length - shown.length > 1 ? 's' : ''}`
-                : `Clic pour cocher · Maj+clic jusque-là · Clic droit pour éditer${watchUrl ? ' · ▶ pour regarder' : ''}`}
+                ? t('{v0} épisode{v1} hors intrigue masqué{v2}', {
+                    v0: episodes.length - shown.length,
+                    v1: episodes.length - shown.length > 1 ? 's' : '',
+                    v2: episodes.length - shown.length > 1 ? 's' : ''
+                  })
+                : t('Clic pour cocher · Maj+clic jusque-là · Clic droit pour éditer{v0}', {
+                    v0: watchUrl ? t(' · ▶ pour regarder') : ''
+                  })}
             </span>
           )}
         </p>
@@ -327,13 +341,15 @@ function EpisodeGrid({
             !watched && progress && progress.animeId === detail.id && progress.episode === ep.number
               ? progress.ratio
               : null
-          const label = ep.title ? `EP ${ep.number} — ${ep.title}` : `Épisode ${ep.number}`
+          const label = ep.title
+            ? t('EP {number} — {title}', { number: ep.number, title: ep.title })
+            : t('Épisode {number}', { number: ep.number })
           const note = notOut
             ? watched
-              ? ' · pas encore diffusé — clic pour décocher'
-              : ' · pas encore diffusé'
+              ? t(' · pas encore diffusé — clic pour décocher')
+              : t(' · pas encore diffusé')
             : isFiller
-              ? ' · hors intrigue'
+              ? t(' · hors intrigue')
               : ''
           return (
             <button
@@ -355,7 +371,7 @@ function EpisodeGrid({
                 e.preventDefault()
                 if (!notOut) setEditing(ep.number)
               }}
-              title={`${label}${note}${lecture !== null ? ` · en cours, ${Math.round(lecture * 100)} %` : ''}`}
+              title={`${label}${note}${lecture !== null ? t(' · en cours, {v0} %', { v0: Math.round(lecture * 100) }) : ''}`}
               className={`group relative grid h-[38px] w-[42px] place-items-center rounded-[10px] text-[0.75rem] font-semibold tabular-nums transition-all duration-150 ${
                 locked ? 'cursor-not-allowed' : 'hover:scale-110'
               }`}
@@ -417,7 +433,7 @@ function EpisodeGrid({
                 <span
                   className="absolute right-1 top-1 h-[5px] w-[5px] rounded-full"
                   style={{ background: watched ? '#07080f' : glow }}
-                  title={pinned.has(ep.number) ? 'À revoir' : 'Cet épisode a une note'}
+                  title={pinned.has(ep.number) ? t('À revoir') : t('Cet épisode a une note')}
                 />
               )}
               {/* Coin bas-droit : le haut-droit porte déjà la pastille des
@@ -426,7 +442,7 @@ function EpisodeGrid({
                 <span
                   role="button"
                   tabIndex={-1}
-                  title={`Ouvrir l'épisode ${ep.number} sur Anime-Sama`}
+                  title={t("Ouvrir l'épisode {number} sur Anime-Sama", { number: ep.number })}
                   onClick={(e) => {
                     e.stopPropagation()
                     void window.api.watch.openEpisode(watchUrl, ep.number, detail.id)
@@ -485,7 +501,7 @@ function Trailer({
         return
       }
       // A malformed id, or the loopback port would not bind.
-      toast('Lecture impossible dans l’app, ouverture sur YouTube.', 'info')
+      toast(t('Lecture impossible dans l’app, ouverture sur YouTube.'), 'info')
       void window.api.app.openExternal(`https://www.youtube.com/watch?v=${id}`)
     } finally {
       setLoading(false)
@@ -500,7 +516,7 @@ function Trailer({
       {src ? (
         <iframe
           src={src}
-          title={`Bande-annonce de ${title}`}
+          title={t('Bande-annonce de {title}', { title })}
           allow="autoplay; encrypted-media; fullscreen"
           allowFullScreen
           className="h-full w-full"
@@ -510,7 +526,7 @@ function Trailer({
         <button
           onClick={() => void play()}
           className="absolute inset-0"
-          aria-label={`Lire la bande-annonce de ${title}`}
+          aria-label={t('Lire la bande-annonce de {title}', { title })}
         >
           <img
             src={thumb}
@@ -528,7 +544,7 @@ function Trailer({
             </span>
           </span>
           <span className="absolute bottom-3 left-4 text-[0.8rem] font-semibold">
-            {loading ? 'Chargement…' : 'Bande-annonce'}
+            {loading ? t('Chargement…') : 'Bande-annonce'}
           </span>
         </button>
       )}
@@ -544,18 +560,18 @@ function Trailer({
           <button
             onClick={() => void window.api.app.popoutTrailer(id, title, animeId)}
             className="flex items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1 text-[0.72rem] text-white/85 transition-colors hover:bg-black/80 hover:text-white"
-            title="Ouvrir dans une fenêtre plus grande"
+            title={t('Ouvrir dans une fenêtre plus grande')}
           >
             <Maximize2 size={12} />
-            Agrandir
+            {t('Agrandir')}
           </button>
         )}
         <button
           onClick={() => void window.api.app.openExternal(`https://www.youtube.com/watch?v=${id}`)}
           className="flex items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1 text-[0.72rem] text-white/85 transition-colors hover:bg-black/80 hover:text-white"
-          title="Ouvrir dans le navigateur"
+          title={t('Ouvrir dans le navigateur')}
         >
-          YouTube
+          {t('YouTube')}
           <ExternalLink size={12} />
         </button>
       </div>
@@ -752,7 +768,7 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
       <FicheSkeleton>
         <button className="btn !h-8" onClick={back}>
           <ArrowLeft size={14} />
-          Retour
+          {t('Retour')}
         </button>
       </FicheSkeleton>
     )
@@ -766,7 +782,7 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
             d'autre à offrir qu'un message d'erreur. */}
         <button className="btn mb-5 !h-8" onClick={back}>
           <ArrowLeft size={14} />
-          Retour
+          {t('Retour')}
         </button>
         {error ? (
           /**
@@ -781,8 +797,8 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
           <ErrorBox
             message={
               isOutage(error)
-                ? 'Cette série n’est pas dans ta bibliothèque, et le catalogue est indisponible : ' +
-                  'il n’y a rien à afficher pour l’instant. Sa fiche s’ouvrira dès qu’AniList aura rallumé.'
+                ? t('Cette série n’est pas dans ta bibliothèque, et le catalogue est indisponible : ') +
+                  t('il n’y a rien à afficher pour l’instant. Sa fiche s’ouvrira dès qu’AniList aura rallumé.')
                 : error
             }
             onRetry={retry}
@@ -813,11 +829,16 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
    * comme partout ailleurs dans l'app.
    */
   const episodesSubtitle = ((): string => {
-    if (!total) return `${seenCount} épisodes vus`
+    if (!total) return t('{seenCount} épisodes vus', { seenCount })
     const left = Math.max(0, total - seenCount)
-    if (left === 0) return `${seenCount} vus sur ${total} · terminé`
+    if (left === 0) return t('{seenCount} vus sur {total} · terminé', { seenCount, total })
     const minutes = left * (media.duration || defaultRuntime)
-    return `${seenCount} vus sur ${total} · ${left} à voir, ${minutesToHuman(minutes)}`
+    return t('{seenCount} vus sur {total} · {left} à voir, {v3}', {
+      seenCount,
+      total,
+      left,
+      v3: minutesToHuman(minutes)
+    })
   })()
 
   const watchAt = next !== null && media && !isUnaired(media, next) ? next : null
@@ -835,7 +856,7 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
   const parts: DetailParts = {
     synopsis: media.description ? (
       <section className="mb-8">
-        <h2 className="label mb-2">Synopsis</h2>
+        <h2 className="label mb-2">{t('Synopsis')}</h2>
         <p className={`whitespace-pre-line text-[0.885rem] leading-relaxed text-muted ${expanded ? '' : 'clamp-3'}`}>
           {synopsis ?? media.description}
         </p>
@@ -845,7 +866,7 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
             style={{ color: 'var(--accent-2)' }}
             onClick={() => setExpanded(!expanded)}
           >
-            {expanded ? 'Réduire' : 'Lire la suite'}
+            {expanded ? t('Réduire') : t('Lire la suite')}
           </button>
         )}
       </section>
@@ -869,14 +890,14 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
     language:
       langs.length > 1 ? (
         <div className="mb-4 flex items-center gap-2">
-          <span className="label mr-0.5">Langue</span>
+          <span className="label mr-0.5">{t('Langue')}</span>
           {langs.map((code) => (
             <button
               key={code}
               className="chip"
               data-on={code === current}
               aria-pressed={code === current}
-              title={code === 'vostfr' ? 'Version originale sous-titrée' : 'Version française'}
+              title={code === 'vostfr' ? t('Version originale sous-titrée') : t('Version française')}
               onClick={() => {
                 setSpoken(code)
                 void window.api.watch.setLanguage(id, code)
@@ -893,7 +914,7 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
       <>
         <button className="btn mb-4 !h-8 text-[0.75rem]" onClick={() => setTree(true)}>
           <GitBranch size={13} />
-          Arbre de la franchise
+          {t('Arbre de la franchise')}
         </button>
         <Modal open={tree} onClose={() => setTree(false)} width={680}>
           {tree && (
@@ -909,7 +930,7 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
       </>
     ),
     episodes: (
-      <Section title="Épisodes" subtitle={episodesSubtitle}>
+      <Section title={t('Épisodes')} subtitle={episodesSubtitle}>
         {loading && !detail ? (
           <Skeleton className="h-28 w-full" />
         ) : detail ? (
@@ -919,7 +940,7 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
           // décompte, puis un trou. On croit l'app cassée alors qu'elle a
           // simplement perdu le catalogue.
           <p className="text-[0.82rem] text-faint">
-            La liste des épisodes n’a pas pu être chargée. Ta progression, elle, est intacte.
+            {t('La liste des épisodes n’a pas pu être chargée. Ta progression, elle, est intacte.')}
           </p>
         )}
       </Section>
@@ -927,7 +948,7 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
     files: <LocalFiles animeId={id} title={titleOf(media, lang)} glow={glow} />,
     cast:
       detail && detail.characters.length > 0 ? (
-        <Section title="Personnages" subtitle="Voix japonaises">
+        <Section title={t('Personnages')} subtitle={t('Voix japonaises')}>
           <RowScroller>
             {detail.characters.map((c, i) => (
               <motion.div
@@ -954,7 +975,7 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
                 <button
                   className="clamp-2 mt-2 text-left text-[0.75rem] font-semibold leading-snug transition hover:text-white"
                   onClick={() => navigate({ name: 'person', kind: 'character', id: c.id })}
-                  title="Voir ses autres apparitions"
+                  title={t('Voir ses autres apparitions')}
                 >
                   {c.name}
                 </button>
@@ -964,7 +985,7 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
                     <button
                       className="clamp-2 mt-1 text-left text-[0.67rem] text-muted transition hover:text-white"
                       onClick={() => navigate({ name: 'person', kind: 'staff', id: c.vaId as number })}
-                      title="Voir ses autres rôles"
+                      title={t('Voir ses autres rôles')}
                     >
                       {c.va}
                     </button>
@@ -978,7 +999,7 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
       ) : null,
     relations:
       relationRow.length > 0 ? (
-        <Section title="Dans la même série">
+        <Section title={t('Dans la même série')}>
           <RowScroller>
             {relationRow.map((r, i) => (
               <MiniCard key={`${r.id}-${i}`} id={r.id} title={r.title} cover={r.cover} caption={r.extra} index={i} />
@@ -1011,7 +1032,7 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
       ) : null,
     films:
       filmRow.length > 0 ? (
-        <Section title="Films de la série" subtitle={`${filmRow.length} longs métrages`}>
+        <Section title={t('Films de la série')} subtitle={t('{length} longs métrages', { length: filmRow.length })}>
           <RowScroller>
             {filmRow.map((film, i) => (
               <MiniCard
@@ -1028,7 +1049,7 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
       ) : null,
     recommendations:
       detail && detail.recommendations.length > 0 ? (
-        <Section title="Tu aimeras peut-être">
+        <Section title={t('Tu aimeras peut-être')}>
           <RowScroller>
             {detail.recommendations.map((r, i) => (
               <MiniCard key={r.id} id={r.id} title={r.title} cover={r.cover} caption={r.extra} index={i} />
@@ -1067,17 +1088,19 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
               </motion.span>
               <span className="text-[0.9rem] text-faint"> / {total ?? '?'}</span>
             </p>
-            <p className="mt-1.5 text-[0.74rem] text-faint">{minutesToHuman(watchedMinutes)} de visionnage</p>
+            <p className="mt-1.5 text-[0.74rem] text-faint">
+              {minutesToHuman(watchedMinutes)} {t('de visionnage')}
+            </p>
           </div>
         </div>
       </div>
     ),
     rating: (
       <div className="glass rounded-[20px] p-4">
-        <h3 className="label mb-2.5">Ma note</h3>
+        <h3 className="label mb-2.5">{t('Ma note')}</h3>
         <Stars value={entry?.score ?? null} onChange={(score) => patch({ score })} />
 
-        <h3 className="label mb-2 mt-5">Ressenti</h3>
+        <h3 className="label mb-2 mt-5">{t('Ressenti')}</h3>
         <div className="flex flex-wrap gap-1.5">
           {EMOTIONS.map((emotion) => {
             const on = entry?.emotions.includes(emotion.id) ?? false
@@ -1095,19 +1118,19 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
           })}
         </div>
 
-        <h3 className="label mb-2 mt-5">Mes notes</h3>
+        <h3 className="label mb-2 mt-5">{t('Mes notes')}</h3>
         <textarea
           value={notes}
           onChange={(e) => onNotes(e.target.value)}
           rows={3}
-          placeholder="Une pensée, un moment marquant…"
+          placeholder={t('Une pensée, un moment marquant…')}
           className="field w-full !h-auto resize-y py-2 text-[0.8rem] leading-relaxed"
         />
 
         {/* La recherche pardonne déjà les accents, les abréviations et les
             fautes de frappe. Ce qu'elle ne peut pas deviner, c'est le nom que
             tu lui donnes, toi, et qu'aucun des trois titres ne contient. */}
-        <h3 className="label mb-2 mt-5">Ses surnoms</h3>
+        <h3 className="label mb-2 mt-5">{t('Ses surnoms')}</h3>
         <input
           type="text"
           value={nicknames?.animeId === id ? nicknames.text : aliasesOf(aliases, id).join(', ')}
@@ -1120,25 +1143,25 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
               e.currentTarget.blur()
             }
           }}
-          placeholder="jjk, le truc des sorciers"
+          placeholder={t('jjk, le truc des sorciers')}
           className="field w-full !h-[34px] text-[0.8rem]"
           spellCheck={false}
         />
         <p className="mt-1.5 text-[0.72rem] leading-snug text-faint">
-          Séparés par des virgules. Ils ne servent qu'à retrouver la série dans ta bibliothèque.
+          {t("Séparés par des virgules. Ils ne servent qu'à retrouver la série dans ta bibliothèque.")}
         </p>
       </div>
     ),
     info: (
       <div className="glass rounded-[20px] p-4">
-        <h3 className="label mb-1.5">Informations</h3>
-        <InfoRow label="Format" value={formatLabel(media.format)} />
-        <InfoRow label="Épisodes" value={total ?? '—'} />
-        <InfoRow label="Durée" value={media.duration ? `${media.duration} min` : '—'} />
-        <InfoRow label="Diffusion" value={seasonLabel(media.season, media.seasonYear)} />
-        <InfoRow label="Studio" value={media.studios.join(', ') || '—'} />
+        <h3 className="label mb-1.5">{t('Informations')}</h3>
+        <InfoRow label={t('Format')} value={formatLabel(media.format)} />
+        <InfoRow label={t('Épisodes')} value={total ?? '—'} />
+        <InfoRow label={t('Durée')} value={media.duration ? `${media.duration} min` : '—'} />
+        <InfoRow label={t('Diffusion')} value={seasonLabel(media.season, media.seasonYear)} />
+        <InfoRow label={t('Studio')} value={media.studios.join(', ') || '—'} />
         <InfoRow
-          label="Score AniList"
+          label={t('Score AniList')}
           value={
             media.averageScore !== null ? (
               <span className="inline-flex items-center gap-1">
@@ -1151,11 +1174,11 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
           }
         />
         <InfoRow
-          label="Popularité"
+          label={t('Popularité')}
           value={
             <span className="inline-flex items-center gap-1">
               <Users size={11} />
-              {media.popularity.toLocaleString('fr-FR')}
+              {media.popularity.toLocaleString(locale())}
             </span>
           }
         />
@@ -1166,7 +1189,7 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
               <button
                 key={tag}
                 className="chip !h-6 !text-[0.65rem]"
-                title={`Découvrir les séries « ${tag} »`}
+                title={t('Découvrir les séries « {tag} »', { tag })}
                 onClick={() => navigate({ name: 'discover', tag })}
               >
                 {tag}
@@ -1178,7 +1201,7 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
     ),
     watch: (
       <div className="glass rounded-[20px] p-4">
-        <h3 className="label mb-2.5">Regarder</h3>
+        <h3 className="label mb-2.5">{t('Regarder')}</h3>
         {/* Les rangées suivantes visent la série ; celle-ci vise l'épisode
                 où tu en es. C'est AniList qui fournit l'adresse exacte —
                 l'identifiant d'un épisode Crunchyroll ne se devine pas. */}
@@ -1191,7 +1214,9 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
           >
             <Play size={14} fill="currentColor" strokeWidth={0} style={{ color: rgba(glow, 1) }} />
             <span className="min-w-0 flex-1">
-              <span className="block text-[0.8rem] font-semibold">Épisode {nextLink.number}</span>
+              <span className="block text-[0.8rem] font-semibold">
+                {t('Épisode')} {nextLink.number}
+              </span>
               {nextLink.title && <span className="block truncate text-[0.68rem] text-faint">{nextLink.title}</span>}
             </span>
             <ExternalLink size={13} className="shrink-0 text-faint" />
@@ -1249,8 +1274,10 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
                 >
                   <TriangleAlert size={13} className="mt-[1px] shrink-0 text-amber-300" />
                   <span>
-                    <b className="font-semibold text-amber-300">Attention</b> — le lecteur Anime-Sama peut ouvrir un
-                    mauvais épisode, film ou saison : vérifie ce qui se lance.
+                    <b className="font-semibold text-amber-300">{t('Attention')}</b>{' '}
+                    {t(
+                      '— le lecteur Anime-Sama peut ouvrir un mauvais épisode, film ou saison : vérifie ce qui se lance.'
+                    )}
                   </span>
                 </p>
               )}
@@ -1260,15 +1287,16 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
 
         {media.status === 'NOT_YET_RELEASED' && (
           <p className="mt-3 text-[0.73rem] leading-snug text-faint">
-            Aucun service ne diffuse encore ce titre. Ajoute-le à « À voir » pour être prévenu à la sortie du premier
-            épisode.
+            {t(
+              'Aucun service ne diffuse encore ce titre. Ajoute-le à « À voir » pour être prévenu à la sortie du premier épisode.'
+            )}
           </p>
         )}
 
         {others.length > 0 && media.status !== 'NOT_YET_RELEASED' && (
           <>
             <div className="hairline my-3.5" />
-            <h4 className="label mb-2">Autres plateformes</h4>
+            <h4 className="label mb-2">{t('Autres plateformes')}</h4>
             <div className="flex flex-wrap gap-1.5">
               {others.map((link) => (
                 <button key={link.url} className="chip" onClick={() => window.api.app.openExternal(link.url)}>
@@ -1286,7 +1314,7 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
     error: error ? (
       <ErrorBox message={error} onRetry={retry} />
     ) : data?.stale ? (
-      <StaleNote at={data?.cachedAt ?? null} what="cette fiche" />
+      <StaleNote at={data?.cachedAt ?? null} what={t('cette fiche')} />
     ) : null
   }
 
@@ -1301,7 +1329,7 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
     onBack: back,
     onMark: () => {
       if (!next) return
-      void toggleEpisode(id, next, media).then(() => toast(`Épisode ${next} coché`))
+      void toggleEpisode(id, next, media).then(() => toast(t('Épisode {next} coché', { next })))
     },
     onAdd: () => void patch({ status: 'planned' }),
     onStatus: (status) => void patch({ status }),
@@ -1330,7 +1358,7 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
           <div className="absolute inset-x-0 top-0 z-10 mx-auto max-w-[1400px] px-7 pt-5">
             <button className="btn !h-8" onClick={back}>
               <ArrowLeft size={14} />
-              Retour
+              {t('Retour')}
             </button>
           </div>
 
@@ -1382,7 +1410,12 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
                 </span>
                 <span>{seasonLabel(media.season, media.seasonYear)}</span>
                 {media.studios[0] && <span>· {media.studios[0]}</span>}
-                {media.averageScore !== null && <span>· {media.averageScore}% AniList</span>}
+                {media.averageScore !== null && (
+                  <span>
+                    · {media.averageScore}
+                    {t('% AniList')}
+                  </span>
+                )}
               </div>
 
               <h1 className="title-xl text-[2.35rem] leading-[1.06]">{titleOf(media, lang)}</h1>
@@ -1393,7 +1426,7 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
                   className="mt-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-[0.76rem] font-semibold"
                   style={{ background: rgba(glow, 0.18), color: rgba(glow, 1) }}
                 >
-                  Épisode {media.nextAiring.episode} {countdown(media.nextAiring.airingAt)}
+                  {t('Épisode')} {media.nextAiring.episode} {countdown(media.nextAiring.airingAt)}
                 </p>
               )}
 
@@ -1403,18 +1436,18 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
                     className="btn btn-primary"
                     onClick={async () => {
                       await toggleEpisode(id, next, media)
-                      toast(`Épisode ${next} coché`)
+                      toast(t('Épisode {next} coché', { next }))
                     }}
                   >
                     <Play size={14} fill="currentColor" strokeWidth={0} />
-                    Marquer l'épisode {next}
+                    {t("Marquer l'épisode")} {next}
                   </button>
                 )}
 
                 {!entry ? (
                   <button className="btn" onClick={() => patch({ status: 'planned' })}>
                     <Bookmark size={14} />
-                    Ajouter à ma liste
+                    {t('Ajouter à ma liste')}
                   </button>
                 ) : (
                   <div className="flex flex-wrap gap-1.5">
@@ -1440,7 +1473,7 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
                 <button
                   className="icon-btn !h-[38px] !w-[38px]"
                   onClick={() => patch({ favorite: !entry?.favorite })}
-                  aria-label="Favori"
+                  aria-label={t('Favori')}
                   style={entry?.favorite ? { color: '#fb7185', background: 'rgba(251,113,133,.12)' } : undefined}
                 >
                   <Heart size={16} fill={entry?.favorite ? 'currentColor' : 'none'} />
@@ -1450,8 +1483,8 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
                   <button
                     className="icon-btn !h-[38px] !w-[38px]"
                     onClick={() => setPicking(true)}
-                    aria-label="Listes"
-                    title={inLists.length > 0 ? inLists.map((l) => l.name).join(', ') : 'Ranger dans une liste'}
+                    aria-label={t('Listes')}
+                    title={inLists.length > 0 ? inLists.map((l) => l.name).join(', ') : t('Ranger dans une liste')}
                     style={inLists.length > 0 ? { color: 'var(--accent)', background: 'var(--panel-2)' } : undefined}
                   >
                     <FolderPlus size={15} />
@@ -1462,11 +1495,13 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
                   <button
                     className="icon-btn !h-[38px] !w-[38px]"
                     onClick={() => patch({ notify: entry.notify === false })}
-                    aria-label={entry.notify === false ? 'Réactiver les notifications' : 'Couper les notifications'}
+                    aria-label={
+                      entry.notify === false ? t('Réactiver les notifications') : t('Couper les notifications')
+                    }
                     title={
                       entry.notify === false
-                        ? 'Notifications coupées pour cette série'
-                        : 'Prévenir quand un épisode sort'
+                        ? t('Notifications coupées pour cette série')
+                        : t('Prévenir quand un épisode sort')
                     }
                     style={entry.notify === false ? { color: 'var(--color-faint)' } : undefined}
                   >
@@ -1479,9 +1514,9 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
                     className="icon-btn !h-[38px] !w-[38px]"
                     onClick={async () => {
                       await removeEntry(id)
-                      toast('Retiré de ta bibliothèque', 'info')
+                      toast(t('Retiré de ta bibliothèque'), 'info')
                     }}
-                    aria-label="Retirer de ma liste"
+                    aria-label={t('Retirer de ma liste')}
                   >
                     <Trash2 size={15} />
                   </button>
@@ -1535,13 +1570,13 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
       <Modal open={mangaId !== null} onClose={() => setMangaId(null)} width={640}>
         {mangaSheet.id !== mangaId ? (
           <div className="p-12">
-            <Spinner label="Chargement de la fiche…" />
+            <Spinner label={t('Chargement de la fiche…')} />
           </div>
         ) : mangaSheet.data ? (
           <MangaSheet manga={mangaSheet.data} onClose={() => setMangaId(null)} />
         ) : (
           <div className="p-5">
-            <ErrorBox message={mangaSheet.error ?? 'Fiche introuvable.'} />
+            <ErrorBox message={mangaSheet.error ?? t('Fiche introuvable.')} />
           </div>
         )}
       </Modal>

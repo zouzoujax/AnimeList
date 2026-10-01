@@ -14,6 +14,7 @@
 import { BrowserWindow, dialog } from 'electron'
 import { promises as fs } from 'node:fs'
 import { basename } from 'node:path'
+import { t } from '@shared/i18n'
 
 export interface CardRect {
   x: number
@@ -38,7 +39,7 @@ export async function saveCard(rect: CardRect, name: string): Promise<string | n
   if (image.isEmpty()) return null
 
   const res = await dialog.showSaveDialog(win, {
-    title: 'Enregistrer l’image',
+    title: t('Enregistrer l’image'),
     defaultPath: name,
     filters: [{ name: 'Image PNG', extensions: ['png'] }]
   })

@@ -1,3 +1,4 @@
+import { t, lazy } from './i18n'
 /**
  * L'arbre d'une franchise : un tronc, et ce qui pousse dessus.
  *
@@ -26,13 +27,13 @@ export type Branch = 'film' | 'ova' | 'spinoff' | 'alternative' | 'resume'
 /** L'ordre d'affichage : du plus proche de l'histoire au plus lointain. */
 export const BRANCHES: Branch[] = ['film', 'ova', 'spinoff', 'alternative', 'resume']
 
-export const BRANCH_LABELS: Record<Branch, string> = {
-  film: 'Films',
-  ova: 'OVA et spéciaux',
+export const BRANCH_LABELS: Record<Branch, string> = lazy(() => ({
+  film: t('Films'),
+  ova: t('OVA et spéciaux'),
   spinoff: 'Spin-off',
-  alternative: 'Versions alternatives',
-  resume: 'Résumés'
-}
+  alternative: t('Versions alternatives'),
+  resume: t('Résumés')
+}))
 
 /** Une arête telle qu'AniList la donne, réduite à ce qui sert ici. */
 export interface Edge {

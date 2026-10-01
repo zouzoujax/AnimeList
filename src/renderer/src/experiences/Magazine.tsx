@@ -10,6 +10,7 @@ import { MagazineCalendar, MagazineDetailHero, MagazineDiscover, MagazineManga }
 import { MagazineBadges } from './badges-pages'
 import { MagazineDetailBody } from './detail-bodies'
 import type { Experience } from '.'
+import { t, locale, dayNames } from '@shared/i18n'
 
 /*
  * MAGAZINE — la bibliothèque lue comme un numéro papier : une manchette, une
@@ -18,14 +19,14 @@ import type { Experience } from '.'
  */
 
 const NAV: { route: Route; label: string }[] = [
-  { route: { name: 'home' }, label: 'À la une' },
-  { route: { name: 'library' }, label: 'Index' },
-  { route: { name: 'discover' }, label: 'Critiques' },
-  { route: { name: 'calendar' }, label: 'Programme' },
-  { route: { name: 'manga' }, label: 'Manga' },
-  { route: { name: 'stats' }, label: 'Chiffres' },
-  { route: { name: 'badges' }, label: 'Palmarès' },
-  { route: { name: 'settings' }, label: 'Rédaction' }
+  { route: { name: 'home' }, label: t('À la une') },
+  { route: { name: 'library' }, label: t('Index') },
+  { route: { name: 'discover' }, label: t('Critiques') },
+  { route: { name: 'calendar' }, label: t('Programme') },
+  { route: { name: 'manga' }, label: t('Manga') },
+  { route: { name: 'stats' }, label: t('Chiffres') },
+  { route: { name: 'badges' }, label: t('Palmarès') },
+  { route: { name: 'settings' }, label: t('Rédaction') }
 ]
 
 function issueNumber(): number {
@@ -39,7 +40,7 @@ function Nav(): React.JSX.Element {
   const route = useApp((s) => s.route)
   const navigate = useApp((s) => s.navigate)
   const setPalette = useApp((s) => s.setPalette)
-  const today = new Date().toLocaleDateString('fr-FR', {
+  const today = new Date().toLocaleDateString(locale(), {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -47,15 +48,15 @@ function Nav(): React.JSX.Element {
   })
 
   return (
-    <nav aria-label="Navigation principale" className="xm-nav shrink-0 px-12 pt-5">
+    <nav aria-label={t('Navigation principale')} className="xm-nav shrink-0 px-12 pt-5">
       <div className="xm-rule flex items-center justify-between pb-1.5 text-[0.72rem] uppercase tracking-[0.18em]">
         <span>N° {issueNumber()}</span>
         <span>{today}</span>
         <button className="flex items-center gap-1.5 uppercase" onClick={() => setPalette(true)}>
-          <Search size={12} /> Rechercher
+          <Search size={12} /> {t('Rechercher')}
         </button>
       </div>
-      <p className="xm-masthead select-none text-center">AnimeList</p>
+      <p className="xm-masthead select-none text-center">{t('AnimeList')}</p>
       <div className="xm-rule-double flex justify-center gap-8 py-2">
         {NAV.map(({ route: target, label }) => (
           <button
@@ -80,20 +81,28 @@ function Cover({ media }: { media: Media }): React.JSX.Element {
 
   return (
     <article className="xm-cover col-span-2 row-span-2 pr-8">
-      <p className="xm-kicker">Grand dossier · {formatLabel(media.format)}</p>
+      <p className="xm-kicker">
+        {t('Grand dossier ·')} {formatLabel(media.format)}
+      </p>
       <button className="block text-left" onClick={() => state.navigate({ name: 'anime', id: media.id })}>
         <h1 className="xm-headline mt-2">{titleOf(media, lang)}</h1>
       </button>
       <p className="xm-deck mt-3">
         {seen > 0
-          ? `Tu en es à ${seen} épisode${seen > 1 ? 's' : ''} sur ${media.episodes ?? '?'}. ${next ? `L’épisode ${next} t’attend.` : ''}`
-          : 'La série dont tout le monde parle cette semaine.'}
+          ? t('Tu en es à {seen} épisode{v1} sur {v2}. {v3}', {
+              seen,
+              v1: seen > 1 ? 's' : '',
+              v2: media.episodes ?? '?',
+              v3: next ? t('L’épisode {next} t’attend.', { next }) : ''
+            })
+          : t('La série dont tout le monde parle cette semaine.')}
       </p>
       <figure className="mt-5">
         <img src={media.banner ?? media.cover.xl} alt="" className="xm-photo aspect-[16/8] w-full object-cover" />
         <figcaption className="xm-caption mt-1.5">
-          {media.studios[0] ?? 'Studio inconnu'} · {media.seasonYear ?? ''}
-          {media.averageScore !== null && ` · ${media.averageScore}/100 d’appréciation`}
+          {media.studios[0] ?? t('Studio inconnu')} · {media.seasonYear ?? ''}
+          {media.averageScore !== null &&
+            t(' · {averageScore}/100 d’appréciation', { averageScore: media.averageScore })}
         </figcaption>
       </figure>
       {media.description && <p className="xm-body xm-dropcap mt-4 columns-2 gap-8">{media.description}</p>}
@@ -118,49 +127,50 @@ function Home(): React.JSX.Element {
         {lead ? <Cover media={lead} /> : <div className="skeleton col-span-2 row-span-2 h-[520px]" />}
 
         <aside className="xm-column pl-8">
-          <p className="xm-kicker">En bref</p>
+          <p className="xm-kicker">{t('En bref')}</p>
           <ol className="mt-3">
             {behind.slice(0, 6).map(({ media, behind: n }, i) => (
               <li key={media.id} className="xm-brief">
                 <span className="xm-num">{i + 1}</span>
                 <button className="text-left" onClick={() => navigate({ name: 'anime', id: media.id })}>
                   <span className="xm-brief-title">{titleOf(media, lang)}</span>
-                  <span className="xm-caption block">
-                    {n} épisode{n > 1 ? 's' : ''} en retard
-                  </span>
+                  <span className="xm-caption block">{t('{n} épisode{s} en retard', { n, s: n > 1 ? 's' : '' })}</span>
                 </button>
               </li>
             ))}
-            {behind.length === 0 && <li className="xm-caption">Aucun retard à signaler.</li>}
+            {behind.length === 0 && <li className="xm-caption">{t('Aucun retard à signaler.')}</li>}
           </ol>
         </aside>
 
         <aside className="xm-column pl-8">
-          <p className="xm-kicker">Au programme</p>
+          <p className="xm-kicker">{t('Au programme')}</p>
           <ul className="mt-3">
             {upcoming.slice(0, 6).map((media) => (
               <li key={media.id} className="xm-listing">
                 <span className="xm-listing-time">{airingLabel(media.nextAiring!.airingAt)}</span>
                 <span className="xm-leader" />
                 <button className="text-left font-semibold" onClick={() => navigate({ name: 'anime', id: media.id })}>
-                  {titleOf(media, lang)} <span className="font-normal">· ép. {media.nextAiring!.episode}</span>
+                  {titleOf(media, lang)}{' '}
+                  <span className="font-normal">
+                    {t('· ép.')} {media.nextAiring!.episode}
+                  </span>
                 </button>
               </li>
             ))}
-            {upcoming.length === 0 && <li className="xm-caption">Relâche cette semaine.</li>}
+            {upcoming.length === 0 && <li className="xm-caption">{t('Relâche cette semaine.')}</li>}
           </ul>
           <div className="xm-stat mt-6">
-            <p className="xm-kicker">Le chiffre</p>
+            <p className="xm-kicker">{t('Le chiffre')}</p>
             <p className="xm-big">{totals.week}</p>
             <p className="xm-caption">
-              épisodes vus ces sept derniers jours, soit {minutesToHuman(totals.weekMinutes)}.
+              {t('épisodes vus ces sept derniers jours, soit')} {minutesToHuman(totals.weekMinutes)}.
             </p>
           </div>
         </aside>
       </div>
 
       <div className="xm-rule-double mt-10 pt-6">
-        <p className="xm-kicker">Critiques de la saison</p>
+        <p className="xm-kicker">{t('Critiques de la saison')}</p>
         <div className="mt-4 grid grid-cols-4 gap-8">
           {season.items.slice(0, 4).map((media) => (
             <article key={media.id} className="xm-review">
@@ -176,7 +186,7 @@ function Home(): React.JSX.Element {
 
       <div className="xm-rule-double mt-10 grid grid-cols-2 gap-12 pt-6">
         <div>
-          <p className="xm-kicker">Palmarès de la semaine</p>
+          <p className="xm-kicker">{t('Palmarès de la semaine')}</p>
           <ol className="mt-3">
             {trending.items.map((media, i) => (
               <li key={media.id} className="xm-chart">
@@ -189,7 +199,7 @@ function Home(): React.JSX.Element {
           </ol>
         </div>
         <div>
-          <p className="xm-kicker">Sur la table de chevet</p>
+          <p className="xm-kicker">{t('Sur la table de chevet')}</p>
           <div className="mt-3 grid grid-cols-3 gap-4">
             {continuing.slice(1, 7).map((media) => (
               <button key={media.id} className="text-left" onClick={() => navigate({ name: 'anime', id: media.id })}>
@@ -224,8 +234,10 @@ function Library(): React.JSX.Element {
 
   return (
     <div className="px-12 pb-16 pt-8">
-      <h1 className="xm-headline">Index</h1>
-      <p className="xm-deck mt-2">{shelf.length} titres, de A à Z.</p>
+      <h1 className="xm-headline">{t('Index')}</h1>
+      <p className="xm-deck mt-2">
+        {shelf.length} {t('titres, de A à Z.')}
+      </p>
       <div className="mt-8 columns-3 gap-10">
         {letters.map(([letter, rows]) => (
           <section key={letter} className="mb-6 break-inside-avoid">
@@ -247,7 +259,8 @@ function Library(): React.JSX.Element {
   )
 }
 
-const DAY_NAMES = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']
+// Lundi d'abord.
+const DAY_NAMES = [...dayNames().slice(1), dayNames()[0]]
 
 /** La double page « L'année en chiffres » : gros chiffres, citation, infographies au trait. */
 function Stats(): React.JSX.Element {
@@ -262,16 +275,16 @@ function Stats(): React.JSX.Element {
 
   return (
     <div className="px-12 pb-16 pt-8">
-      <p className="xm-kicker">Dossier spécial</p>
-      <h1 className="xm-headline mt-2">L’année en chiffres</h1>
-      <p className="xm-deck mt-3">Ce que ton historique dit de toi, du premier épisode au dernier coché.</p>
+      <p className="xm-kicker">{t('Dossier spécial')}</p>
+      <h1 className="xm-headline mt-2">{t('L’année en chiffres')}</h1>
+      <p className="xm-deck mt-3">{t('Ce que ton historique dit de toi, du premier épisode au dernier coché.')}</p>
 
       <div className="xm-rule-double mt-8 grid grid-cols-4">
         {[
-          [Math.round(s.minutes / 60), 'heures passées devant l’écran'],
-          [s.episodes, 'épisodes cochés'],
-          [s.series, 'séries commencées'],
-          [s.bestStreak, 'jours d’affilée, au mieux']
+          [Math.round(s.minutes / 60), t('heures passées devant l’écran')],
+          [s.episodes, t('épisodes cochés')],
+          [s.series, t('séries commencées')],
+          [s.bestStreak, t('jours d’affilée, au mieux')]
         ].map(([value, caption]) => (
           <div key={caption} className="xm-figure">
             <p className="xm-big">{value}</p>
@@ -282,17 +295,17 @@ function Stats(): React.JSX.Element {
 
       {top && (
         <blockquote className="xm-quote my-12">
-          « Ta série de l’année, c’est{' '}
+          {t('« Ta série de l’année, c’est')}{' '}
           <button className="xm-quote-title" onClick={() => navigate({ name: 'anime', id: top.id })}>
             {titleOf(top, lang)}
           </button>{' '}
-          : {minutesToHuman(s.topSeries[0].minutes)} de ta vie. »
+          : {minutesToHuman(s.topSeries[0].minutes)} {t('de ta vie. »')}
         </blockquote>
       )}
 
       <div className="grid grid-cols-3 gap-10">
         <section className="col-span-2">
-          <p className="xm-kicker">Les genres, en part du temps</p>
+          <p className="xm-kicker">{t('Les genres, en part du temps')}</p>
           <ol className="mt-4">
             {s.genres.map((g) => (
               <li key={g.name} className="xm-share">
@@ -306,20 +319,26 @@ function Stats(): React.JSX.Element {
           </ol>
         </section>
         <aside className="xm-column pl-8">
-          <p className="xm-kicker">Le portrait</p>
+          <p className="xm-kicker">{t('Le portrait')}</p>
           <p className="xm-body mt-3">
-            Tu regardes surtout le <strong>{DAY_NAMES[favDay]}</strong>, vers <strong>{favHour} h</strong>.
+            {t('Tu regardes surtout le')} <strong>{DAY_NAMES[favDay]}</strong>
+            {t(', vers')} <strong>{favHour} h</strong>.
             {s.record &&
-              ` Ta plus grosse journée : ${s.record.episodes} épisodes, le ${new Date(s.record.at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}.`}
-            {s.avgScore !== null && ` Tu notes en moyenne ${s.avgScore.toFixed(1)} sur 10.`}
+              t(' Ta plus grosse journée : {episodes} épisodes, le {v1}.', {
+                episodes: s.record.episodes,
+                v1: new Date(s.record.at).toLocaleDateString(locale(), { day: 'numeric', month: 'long' })
+              })}
+            {s.avgScore !== null && t(' Tu notes en moyenne {v0} sur 10.', { v0: s.avgScore.toFixed(1) })}
           </p>
-          <p className="xm-kicker mt-6">Studios</p>
+          <p className="xm-kicker mt-6">{t('Studios')}</p>
           <ol className="mt-2">
             {s.studios.map((st, i) => (
               <li key={st.name} className="xm-chart">
                 <span className="xm-chart-rank">{String(i + 1).padStart(2, '0')}</span>
                 <span>{st.name}</span>
-                <span className="xm-entry-page ml-auto">{st.episodes} ép.</span>
+                <span className="xm-entry-page ml-auto">
+                  {st.episodes} {t('ép.')}
+                </span>
               </li>
             ))}
           </ol>
@@ -327,7 +346,7 @@ function Stats(): React.JSX.Element {
       </div>
 
       <section className="xm-rule-double mt-12 pt-6">
-        <p className="xm-kicker">Mois par mois</p>
+        <p className="xm-kicker">{t('Mois par mois')}</p>
         <div className="mt-4 grid grid-cols-12 gap-3">
           {s.months.map((m, i) => (
             <div key={i} className="flex flex-col items-center">

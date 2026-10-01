@@ -1,3 +1,4 @@
+import { t } from './i18n'
 /**
  * « Où en suis-je ? », calculé hors de la fenêtre.
  *
@@ -61,7 +62,7 @@ export function resumeTargets(
  * syllabe, et l'épisode — la seule information qui change — doit survivre.
  */
 export function shortcutLabel(target: ResumeTarget, max = 50): string {
-  const tail = ` — ép. ${target.episode}`
+  const tail = t(' — ép. {episode}', { episode: target.episode })
   const room = max - tail.length
   if (target.title.length <= room) return target.title + tail
 

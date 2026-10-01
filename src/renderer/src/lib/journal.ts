@@ -11,6 +11,7 @@ import { EMOTIONS, type EmotionId, type Media, type WatchEvent } from '@shared/t
 import { startOfDay, titleOf } from '@/lib/format'
 import { useSessionState } from '@/lib/hooks'
 import { useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
 export interface JournalRow {
   event: WatchEvent
@@ -20,15 +21,16 @@ export interface JournalRow {
 export type JournalFilter = 'all' | 'notes' | 'pinned'
 
 export const JOURNAL_FILTERS: { id: JournalFilter; label: string; hint: string }[] = [
-  { id: 'all', label: 'Tout', hint: 'Chaque épisode coché, du plus récent au plus ancien.' },
-  { id: 'notes', label: 'Avec une note', hint: 'Les épisodes dont tu as écrit quelque chose.' },
-  { id: 'pinned', label: 'À revoir', hint: 'Les épisodes que tu as mis de côté.' }
+  { id: 'all', label: t('Tout'), hint: t('Chaque épisode coché, du plus récent au plus ancien.') },
+  { id: 'notes', label: t('Avec une note'), hint: t('Les épisodes dont tu as écrit quelque chose.') },
+  { id: 'pinned', label: t('À revoir'), hint: t('Les épisodes que tu as mis de côté.') }
 ]
 
 /** Un pas de lecture : assez pour remplir l'écran, assez peu pour rester vif. */
 const PAGE = 120
 
-export const passLabel = (pass: number): string => (pass === 1 ? '2ᵉ visionnage' : `${pass + 1}ᵉ visionnage`)
+export const passLabel = (pass: number): string =>
+  pass === 1 ? t('2ᵉ visionnage') : t('{v0}ᵉ visionnage', { v0: pass + 1 })
 
 const EMOTION_BY_ID = new Map(EMOTIONS.map((e) => [e.id, e]))
 

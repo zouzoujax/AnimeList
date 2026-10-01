@@ -30,6 +30,7 @@ import type {
   SeasonEntry,
   SeasonName
 } from '@shared/types'
+import { t as tr, lazy } from '@shared/i18n'
 
 const ENDPOINT = 'https://graphql.anilist.co'
 const MIN_GAP_MS = 700
@@ -888,18 +889,18 @@ interface RawDetail extends RawMedia {
   } | null
 }
 
-const RELATION_LABELS: Record<string, string> = {
-  SEQUEL: 'Suite',
-  PREQUEL: 'Précédent',
+const RELATION_LABELS: Record<string, string> = lazy(() => ({
+  SEQUEL: tr('Suite'),
+  PREQUEL: tr('Précédent'),
   SIDE_STORY: 'Spin-off',
-  ALTERNATIVE: 'Alternative',
-  SUMMARY: 'Résumé',
+  ALTERNATIVE: tr('Alternative'),
+  SUMMARY: tr('Résumé'),
   SPIN_OFF: 'Spin-off',
-  PARENT: 'Série mère',
-  SOURCE: 'Source',
-  CHARACTER: 'Personnages',
-  OTHER: 'Autre'
-}
+  PARENT: tr('Série mère'),
+  SOURCE: tr('Source'),
+  CHARACTER: tr('Personnages'),
+  OTHER: tr('Autre')
+}))
 
 /** AniList only labels episodes that a streaming partner listed; the rest fall back to a number. */
 function buildEpisodeMeta(m: RawDetail): MediaDetail['episodeMeta'] {
@@ -1040,11 +1041,11 @@ interface RawPerson {
   } | null
 }
 
-const ROLE_LABELS: Record<string, string> = {
-  MAIN: 'Rôle principal',
-  SUPPORTING: 'Second rôle',
-  BACKGROUND: 'Apparition'
-}
+const ROLE_LABELS: Record<string, string> = lazy(() => ({
+  MAIN: tr('Rôle principal'),
+  SUPPORTING: tr('Second rôle'),
+  BACKGROUND: tr('Apparition')
+}))
 
 export async function personWorks(kind: 'character' | 'staff', id: number): Promise<PersonWorks | null> {
   const key = `person:${kind}:${id}`
@@ -1263,7 +1264,7 @@ export async function detail(id: number): Promise<MediaDetail & { stale: boolean
       id: e.node.id,
       name: e.node.name.full,
       image: e.node.image?.large ?? null,
-      role: e.role === 'MAIN' ? 'Principal' : e.role === 'SUPPORTING' ? 'Secondaire' : 'Apparition',
+      role: e.role === 'MAIN' ? tr('Principal') : e.role === 'SUPPORTING' ? tr('Secondaire') : tr('Apparition'),
       va: e.voiceActors?.[0]?.name.full ?? null,
       vaImage: e.voiceActors?.[0]?.image?.large ?? null,
       vaId: e.voiceActors?.[0]?.id ?? null

@@ -11,6 +11,7 @@ import { HudCalendar, HudDetailHero, HudDiscover, HudManga } from './hud-pages'
 import { HudBadges } from './badges-pages'
 import { HudDetailBody } from './detail-bodies'
 import type { Experience } from '.'
+import { t as tr, locale } from '@shared/i18n'
 
 /*
  * COCKPIT — un tableau de bord de vaisseau : rail de commande à gauche, écran
@@ -19,14 +20,14 @@ import type { Experience } from '.'
  */
 
 const NAV: { route: Route; code: string; label: string }[] = [
-  { route: { name: 'home' }, code: '01', label: 'Pont' },
-  { route: { name: 'library' }, code: '02', label: 'Registre' },
-  { route: { name: 'discover' }, code: '03', label: 'Scanner' },
-  { route: { name: 'calendar' }, code: '04', label: 'Orbites' },
-  { route: { name: 'manga' }, code: '05', label: 'Archives' },
-  { route: { name: 'stats' }, code: '06', label: 'Télémétrie' },
-  { route: { name: 'badges' }, code: '07', label: 'Décorations' },
-  { route: { name: 'settings' }, code: '08', label: 'Système' }
+  { route: { name: 'home' }, code: '01', label: tr('Pont') },
+  { route: { name: 'library' }, code: '02', label: tr('Registre') },
+  { route: { name: 'discover' }, code: '03', label: tr('Scanner') },
+  { route: { name: 'calendar' }, code: '04', label: tr('Orbites') },
+  { route: { name: 'manga' }, code: '05', label: tr('Archives') },
+  { route: { name: 'stats' }, code: '06', label: tr('Télémétrie') },
+  { route: { name: 'badges' }, code: '07', label: tr('Décorations') },
+  { route: { name: 'settings' }, code: '08', label: tr('Système') }
 ]
 
 function Nav(): React.JSX.Element {
@@ -37,10 +38,10 @@ function Nav(): React.JSX.Element {
   const now = useNow()
 
   return (
-    <nav aria-label="Navigation principale" className="xh-rail flex w-[212px] shrink-0 flex-col px-4 py-5">
-      <p className="xh-code">SYS // ANIMELIST</p>
+    <nav aria-label={tr('Navigation principale')} className="xh-rail flex w-[212px] shrink-0 flex-col px-4 py-5">
+      <p className="xh-code">{tr('SYS // ANIMELIST')}</p>
       <p className="xh-clock mt-1">
-        {new Date(now).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+        {new Date(now).toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
       </p>
       <button className="xh-cmd mt-5" onClick={() => setPalette(true)}>
         <Search size={13} /> RECHERCHE
@@ -59,7 +60,7 @@ function Nav(): React.JSX.Element {
         ))}
       </div>
       <div className="xh-panel mt-auto p-3">
-        <p className="xh-code">SÉRIE ACTIVE</p>
+        <p className="xh-code">{tr('SÉRIE ACTIVE')}</p>
         <p className="xh-value mt-1">{totals.streak} J</p>
         <div className="xh-segments mt-2">
           {Array.from({ length: 14 }, (_, i) => (
@@ -130,22 +131,22 @@ function Target({ media }: { media: Media }): React.JSX.Element {
     <div className="flex gap-5">
       <img src={media.cover.large} alt="" className="xh-frame h-[176px] w-[120px] object-cover" />
       <div className="min-w-0 flex-1">
-        <p className="xh-code">CIBLE VERROUILLÉE</p>
+        <p className="xh-code">{tr('CIBLE VERROUILLÉE')}</p>
         <button className="block text-left" onClick={() => state.navigate({ name: 'anime', id: media.id })}>
           <h1 className="title-xl clamp-2 mt-1 text-[1.7rem] leading-tight">{titleOf(media, lang)}</h1>
         </button>
         <p className="mt-2 text-[0.8rem] text-muted">
-          {seen} / {media.episodes ?? '?'} ÉP · {media.studios[0] ?? '—'}
+          {seen} / {media.episodes ?? '?'} {tr('ÉP ·')} {media.studios[0] ?? '—'}
         </p>
         {ready && (
           <button
             className="xh-cmd xh-cmd-hot mt-4"
             onClick={() => {
               void state.toggleEpisode(media.id, next, media)
-              state.toast(`Épisode ${next} coché · ${titleOf(media, lang)}`)
+              state.toast(tr('Épisode {next} coché · {v1}', { next, v1: titleOf(media, lang) }))
             }}
           >
-            ▶ ENGAGER ÉP. {next}
+            {tr('▶ ENGAGER ÉP.')} {next}
           </button>
         )}
       </div>
@@ -167,17 +168,21 @@ function Home(): React.JSX.Element {
 
   return (
     <div className="xh-screen grid grid-cols-12 gap-3 p-5">
-      <Panel code="A-01" title="Cible active" className="col-span-7">
-        {continuing[0] ? <Target media={continuing[0]} /> : <p className="text-faint">Aucune série en cours.</p>}
+      <Panel code="A-01" title={tr('Cible active')} className="col-span-7">
+        {continuing[0] ? (
+          <Target media={continuing[0]} />
+        ) : (
+          <p className="text-faint">{tr('Aucune série en cours.')}</p>
+        )}
       </Panel>
 
-      <Panel code="A-02" title="Télémétrie" className="col-span-5">
+      <Panel code="A-02" title={tr('Télémétrie')} className="col-span-5">
         <div className="grid grid-cols-2 gap-3">
           {[
-            ['TEMPS TOTAL', minutesToHuman(totals.minutes)],
-            ['ÉPISODES', String(totals.episodes)],
-            ['7 DERNIERS JOURS', `${totals.week} ép.`],
-            ['TERMINÉES', `${totals.completed}/${done}`]
+            [tr('TEMPS TOTAL'), minutesToHuman(totals.minutes)],
+            [tr('ÉPISODES'), String(totals.episodes)],
+            [tr('7 DERNIERS JOURS'), `${totals.week} ép.`],
+            [tr('TERMINÉES'), `${totals.completed}/${done}`]
           ].map(([k, v]) => (
             <div key={k} className="xh-readout">
               <p className="xh-code">{k}</p>
@@ -187,7 +192,7 @@ function Home(): React.JSX.Element {
         </div>
       </Panel>
 
-      <Panel code="B-01" title="Activité 14 jours" className="col-span-7">
+      <Panel code="B-01" title={tr('Activité 14 jours')} className="col-span-7">
         <div className="flex h-[120px] items-end gap-1.5">
           {totals.days.map((n, i) => (
             <motion.span
@@ -196,17 +201,17 @@ function Home(): React.JSX.Element {
               initial={{ height: 0 }}
               animate={{ height: `${Math.max(3, (n / peak) * 100)}%` }}
               transition={{ delay: i * 0.03, duration: 0.6 }}
-              title={`${n} épisode${n > 1 ? 's' : ''}`}
+              title={tr('{n} épisode{v1}', { n, v1: n > 1 ? 's' : '' })}
             />
           ))}
         </div>
         <div className="xh-code mt-1.5 flex justify-between">
           <span>J-13</span>
-          <span>AUJOURD’HUI</span>
+          <span>{tr('AUJOURD’HUI')}</span>
         </div>
       </Panel>
 
-      <Panel code="B-02" title="Radar des sorties" className="col-span-5">
+      <Panel code="B-02" title={tr('Radar des sorties')} className="col-span-5">
         <ul className="flex flex-col gap-2">
           {upcoming.slice(0, 5).map((m) => (
             <li key={m.id}>
@@ -219,11 +224,11 @@ function Home(): React.JSX.Element {
               </button>
             </li>
           ))}
-          {upcoming.length === 0 && <li className="text-faint">Aucun contact.</li>}
+          {upcoming.length === 0 && <li className="text-faint">{tr('Aucun contact.')}</li>}
         </ul>
       </Panel>
 
-      <Panel code="C-01" title="Alertes · retard" className="col-span-12">
+      <Panel code="C-01" title={tr('Alertes · retard')} className="col-span-12">
         <div className="grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-2">
           {behind.slice(0, 8).map(({ media, behind: n }) => (
             <button key={media.id} className="xh-alert" onClick={() => navigate({ name: 'anime', id: media.id })}>
@@ -231,11 +236,11 @@ function Home(): React.JSX.Element {
               <span className="truncate">{titleOf(media, lang)}</span>
             </button>
           ))}
-          {behind.length === 0 && <p className="text-faint">Nominal. Aucun retard.</p>}
+          {behind.length === 0 && <p className="text-faint">{tr('Nominal. Aucun retard.')}</p>}
         </div>
       </Panel>
 
-      <div className="xh-ticker col-span-12" aria-label="Tendances">
+      <div className="xh-ticker col-span-12" aria-label={tr('Tendances')}>
         <div className="xh-ticker-track">
           {[...trending.items, ...trending.items].map((m, i) => (
             <button key={`${m.id}-${i}`} onClick={() => navigate({ name: 'anime', id: m.id })}>
@@ -261,7 +266,7 @@ function Library(): React.JSX.Element {
 
   return (
     <div className="xh-screen p-5">
-      <Panel code="R-00" title={`Registre · ${rows.length} entrées`}>
+      <Panel code="R-00" title={tr('Registre · {length} entrées', { length: rows.length })}>
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -272,10 +277,10 @@ function Library(): React.JSX.Element {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Titre</th>
-              <th>Statut</th>
-              <th>Progression</th>
-              <th>Ép.</th>
+              <th>{tr('Titre')}</th>
+              <th>{tr('Statut')}</th>
+              <th>{tr('Progression')}</th>
+              <th>{tr('Ép.')}</th>
             </tr>
           </thead>
           <tbody>
@@ -333,11 +338,11 @@ function Stats(): React.JSX.Element {
     <div className="xh-screen grid grid-cols-12 gap-3 p-5">
       <div className="col-span-12 grid grid-cols-5 gap-3">
         {[
-          ['TEMPS CUMULÉ', `${Math.round(s.minutes / 60)} H`],
-          ['ÉPISODES', String(s.episodes)],
-          ['SÉRIES', String(s.series)],
-          ['SÉRIE RECORD', `${s.bestStreak} J`],
-          ['NOTE MOY.', s.avgScore === null ? '—' : s.avgScore.toFixed(1)]
+          [tr('TEMPS CUMULÉ'), `${Math.round(s.minutes / 60)} H`],
+          [tr('ÉPISODES'), String(s.episodes)],
+          [tr('SÉRIES'), String(s.series)],
+          [tr('SÉRIE RECORD'), `${s.bestStreak} J`],
+          [tr('NOTE MOY.'), s.avgScore === null ? '—' : s.avgScore.toFixed(1)]
         ].map(([k, v]) => (
           <div key={k} className="xh-panel relative p-4">
             <p className="xh-code">{k}</p>
@@ -346,7 +351,7 @@ function Stats(): React.JSX.Element {
         ))}
       </div>
 
-      <Panel code="T-01" title="Radar des genres" className="col-span-4">
+      <Panel code="T-01" title={tr('Radar des genres')} className="col-span-4">
         {/* Marges autour du radar : à 240 px pile, les noms de genres étaient rognés sur les bords. */}
         <svg viewBox="-44 -12 328 264" className="mx-auto w-full max-w-[340px]">
           {[40, 70, 100].map((r) => (
@@ -378,7 +383,7 @@ function Stats(): React.JSX.Element {
         </svg>
       </Panel>
 
-      <Panel code="T-02" title="Cadran horaire" className="col-span-4">
+      <Panel code="T-02" title={tr('Cadran horaire')} className="col-span-4">
         <svg viewBox="0 0 240 240" className="mx-auto w-full max-w-[300px]">
           {s.hours.map((n, h) => (
             <motion.rect
@@ -412,7 +417,7 @@ function Stats(): React.JSX.Element {
         </svg>
       </Panel>
 
-      <Panel code="T-03" title="Cycle hebdo" className="col-span-4">
+      <Panel code="T-03" title={tr('Cycle hebdo')} className="col-span-4">
         <div className="flex flex-col gap-2.5">
           {s.weekdays.map((n, i) => (
             <div key={i} className="grid grid-cols-[3rem_1fr_3rem] items-center gap-3">
@@ -430,7 +435,7 @@ function Stats(): React.JSX.Element {
         </div>
       </Panel>
 
-      <Panel code="T-04" title="Trajectoire 12 mois" className="col-span-7">
+      <Panel code="T-04" title={tr('Trajectoire 12 mois')} className="col-span-7">
         <svg viewBox="-10 -10 620 170" className="w-full">
           {[0, 40, 80, 120].map((y) => (
             <line key={y} x1="0" x2="600" y1={20 + y} y2={20 + y} className="xh-grid-line" />
@@ -450,7 +455,7 @@ function Stats(): React.JSX.Element {
         </svg>
       </Panel>
 
-      <Panel code="T-05" title="Cibles les plus suivies" className="col-span-5">
+      <Panel code="T-05" title={tr('Cibles les plus suivies')} className="col-span-5">
         <ul className="flex flex-col gap-2">
           {s.topSeries.slice(0, 7).map(({ media, minutes }, i) => (
             <li key={media.id}>
@@ -486,8 +491,8 @@ export const hud: Experience = {
   Badges: HudBadges,
   DetailBody: HudDetailBody,
   motion: {
-    initial: { opacity: 0, clipPath: 'inset(0 0 100% 0)' },
-    animate: { opacity: 1, clipPath: 'inset(0 0 0% 0)' },
+    initial: { opacity: 0, clipPath: tr('inset(0 0 100% 0)') },
+    animate: { opacity: 1, clipPath: tr('inset(0 0 0% 0)') },
     exit: { opacity: 0 },
     transition: { duration: 0.45, ease: [0.65, 0, 0.35, 1] }
   }

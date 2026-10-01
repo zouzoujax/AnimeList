@@ -1,3 +1,4 @@
+import { t as tr, uiLang } from './i18n'
 /**
  * Un profil de goût, construit à partir de ce qui a été regardé et noté.
  *
@@ -247,18 +248,21 @@ export function scoreAgainst(
   const reasons: string[] = []
   const topGenres = said(genres).slice(0, 2)
   if (topGenres.length) {
-    const names = topGenres.map((f) => label(f.name).toLowerCase())
+    // L'allemand garde la majuscule de ses noms ; le japonais n'en a pas.
+    const fr = uiLang() === 'fr'
+    const names = topGenres.map((f) => (uiLang() === 'de' ? label(f.name) : label(f.name).toLowerCase()))
     // La phrase dit d'où vient le classement. Promettre « tu notes haut » à
     // quelqu'un qui n'a rien noté serait un mensonge vérifiable en un clic.
+    // Les articles (« le », « du ») ne valent qu'en français.
     reasons.push(
       trust >= 0.5
-        ? `tu notes haut ${names.map((n) => `le ${n}`).join(' et ')}`
-        : `tu regardes beaucoup ${names.map(partitive).join(' et ')}`
+        ? tr('tu notes haut {v0}', { v0: fr ? names.map((n) => `le ${n}`).join(' et ') : names.join(tr(' et ')) })
+        : tr('tu regardes beaucoup {v0}', { v0: fr ? names.map(partitive).join(' et ') : names.join(tr(' et ')) })
     )
   }
 
   const topStudio = said(studios)[0]
-  if (topStudio) reasons.push(`et le studio ${topStudio.name}`)
+  if (topStudio) reasons.push(tr('et le studio {name}', { name: topStudio.name }))
 
   return { score, reasons }
 }

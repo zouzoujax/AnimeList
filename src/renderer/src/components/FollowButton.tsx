@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react'
 import { Bell, BellRing } from 'lucide-react'
 import type { FollowKind } from '@shared/types'
 import { useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
 export function FollowButton({
   kind,
@@ -48,16 +49,16 @@ export function FollowButton({
       if (following) {
         await window.api.follows.remove(key)
         setFollowing(false)
-        toast(`Tu ne suis plus ${name}.`, 'ok')
+        toast(t('Tu ne suis plus {name}.', { name }), 'ok')
       } else {
         const added = await window.api.follows.add(kind, target, name)
         if (!added) {
-          toast('AniList ne répond pas pour cette fiche.', 'error')
+          toast(t('AniList ne répond pas pour cette fiche.'), 'error')
           return
         }
         setFollowing(true)
         // Dire ce qui va se passer, parce qu'il ne se passe rien tout de suite.
-        toast(`Tu suis ${added.name}. Ses prochaines sorties te seront annoncées.`, 'ok')
+        toast(t('Tu suis {name}. Ses prochaines sorties te seront annoncées.', { name: added.name }), 'ok')
       }
     } finally {
       setBusy(false)
@@ -74,12 +75,12 @@ export function FollowButton({
       onClick={() => void toggle()}
       title={
         following
-          ? 'Ne plus être prévenu de ses nouvelles sorties'
-          : 'Être prévenu quand une nouvelle série est annoncée'
+          ? t('Ne plus être prévenu de ses nouvelles sorties')
+          : t('Être prévenu quand une nouvelle série est annoncée')
       }
     >
       {busy ? <Bell size={14} /> : following ? <BellRing size={14} /> : <Bell size={14} />}
-      {following ? 'Suivi' : 'Suivre'}
+      {following ? t('Suivi') : t('Suivre')}
     </button>
   )
 }

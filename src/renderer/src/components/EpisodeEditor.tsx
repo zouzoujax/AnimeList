@@ -12,6 +12,7 @@ import { CalendarClock, Clock, Play, Star, Trash2 } from 'lucide-react'
 import { EMOTIONS, type EmotionId, type WatchEvent } from '@shared/types'
 import { useApp } from '../store/app'
 import { Modal } from './ui'
+import { t } from '@shared/i18n'
 
 /** `<input type="datetime-local">` wants local wall-clock time, not an ISO instant. */
 function toLocalInput(at: number): string {
@@ -21,7 +22,7 @@ function toLocalInput(at: number): string {
 }
 
 const passLabel = (pass: number): string =>
-  pass === 0 ? 'Premier visionnage' : pass === 1 ? '2ᵉ visionnage' : `${pass + 1}ᵉ visionnage`
+  pass === 0 ? t('Premier visionnage') : pass === 1 ? t('2ᵉ visionnage') : t('{v0}ᵉ visionnage', { v0: pass + 1 })
 
 function ViewingForm({
   animeId,
@@ -77,7 +78,7 @@ function ViewingForm({
         <span className="text-[0.78rem] font-medium">{passLabel(pass)}</span>
         {event.imported && (
           <span className="rounded-full px-2 py-0.5 text-[0.66rem] text-faint" style={{ background: 'var(--line)' }}>
-            importé
+            {t('importé')}
           </span>
         )}
         {/* Marquer sans rien écrire : on n'a pas toujours quelque chose à dire
@@ -85,21 +86,22 @@ function ViewingForm({
         <button
           data-on={!!event.pinned}
           className="chip ml-auto !h-7 text-[0.72rem]"
-          title={event.pinned ? 'Retirer des épisodes à revoir' : 'Marquer comme à revoir'}
+          title={event.pinned ? t('Retirer des épisodes à revoir') : t('Marquer comme à revoir')}
           onClick={() => void updateEvent(ref, { pinned: !event.pinned })}
         >
-          <Star size={12} fill={event.pinned ? 'currentColor' : 'none'} />À revoir
+          <Star size={12} fill={event.pinned ? 'currentColor' : 'none'} />
+          {t('À revoir')}
         </button>
         <button
           className="btn !h-7 text-[0.72rem]"
           style={{ color: '#ff8080', borderColor: 'rgba(255,128,128,.3)' }}
           onClick={() => {
             void removeEvent(ref)
-            toast('Visionnage supprimé', 'ok')
+            toast(t('Visionnage supprimé'), 'ok')
           }}
         >
           <Trash2 size={12} />
-          Supprimer
+          {t('Supprimer')}
         </button>
       </div>
 
@@ -107,7 +109,7 @@ function ViewingForm({
         <label className="flex-1 basis-[15rem]">
           <span className="label mb-1 flex items-center gap-1.5">
             <CalendarClock size={12} />
-            Vu le
+            {t('Vu le')}
           </span>
           <input
             type="datetime-local"
@@ -121,7 +123,7 @@ function ViewingForm({
         <label className="basis-[7rem]">
           <span className="label mb-1 flex items-center gap-1.5">
             <Clock size={12} />
-            Durée
+            {t('Durée')}
           </span>
           <input
             type="number"
@@ -136,13 +138,14 @@ function ViewingForm({
 
       {event.imported && (
         <p className="mt-1.5 text-[0.7rem] text-faint">
-          Cette date est celle du pointage dans l'app d'origine, pas celle du visionnage — les statistiques par jour
-          l'ignorent. La corriger ici la rend réelle.
+          {t(
+            "Cette date est celle du pointage dans l'app d'origine, pas celle du visionnage — les statistiques par jour l'ignorent. La corriger ici la rend réelle."
+          )}
         </p>
       )}
 
       <div className="mt-3">
-        <span className="label mb-1.5 block">Ressenti</span>
+        <span className="label mb-1.5 block">{t('Ressenti')}</span>
         <div className="flex flex-wrap gap-1">
           {EMOTIONS.map((emotion) => (
             <button
@@ -160,10 +163,10 @@ function ViewingForm({
       </div>
 
       <div className="mt-3">
-        <span className="label mb-1.5 block">Note</span>
+        <span className="label mb-1.5 block">{t('Note')}</span>
         <textarea
           className="field min-h-[4.5rem] w-full resize-y py-2 text-[0.78rem] leading-relaxed"
-          placeholder="Ce que tu veux retenir de cet épisode…"
+          placeholder={t('Ce que tu veux retenir de cet épisode…')}
           value={note}
           onChange={(e) => setNote(e.target.value)}
           onBlur={() => void updateEvent(ref, { note })}
@@ -209,7 +212,9 @@ export default function EpisodeEditor({
       )}
       <div className="flex items-start gap-3 border-b px-5 py-4" style={{ borderColor: 'var(--line)' }}>
         <div className="min-w-0 flex-1">
-          <p className="text-[0.95rem] font-semibold">Épisode {episode}</p>
+          <p className="text-[0.95rem] font-semibold">
+            {t('Épisode')} {episode}
+          </p>
           {title && <p className="mt-0.5 text-[0.8rem] text-muted">{title}</p>}
         </div>
         {/* Le lien vise l'épisode lui-même, pas la série : c'est AniList qui le
@@ -217,19 +222,19 @@ export default function EpisodeEditor({
         {url && (
           <button className="btn shrink-0 !h-8" onClick={() => void window.api.app.openExternal(url)} title={url}>
             <Play size={13} fill="currentColor" strokeWidth={0} />
-            Regarder
+            {t('Regarder')}
           </button>
         )}
       </div>
 
       {viewings.length === 0 ? (
         <div className="px-5 py-6 text-center">
-          <p className="text-[0.82rem] text-muted">Cet épisode n'est pas marqué comme vu.</p>
+          <p className="text-[0.82rem] text-muted">{t("Cet épisode n'est pas marqué comme vu.")}</p>
           <button
             className="btn btn-primary mt-3"
             onClick={() => episode !== null && void toggleEpisode(animeId, episode)}
           >
-            Le marquer comme vu
+            {t('Le marquer comme vu')}
           </button>
         </div>
       ) : (
@@ -242,7 +247,7 @@ export default function EpisodeEditor({
 
       <div className="flex justify-end border-t px-5 py-3" style={{ borderColor: 'var(--line)' }}>
         <button className="btn" onClick={onClose}>
-          Fermer
+          {t('Fermer')}
         </button>
       </div>
     </Modal>

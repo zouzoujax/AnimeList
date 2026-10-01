@@ -1,3 +1,4 @@
+import { t, lazy } from './i18n'
 /**
  * Release notes, from the GitHub release body to something the app can draw.
  *
@@ -31,12 +32,12 @@ export interface ReleaseNote {
   sections: NoteSection[]
 }
 
-const HEADINGS: { kind: NoteKind; label: string; match: RegExp }[] = [
-  { kind: 'add', label: 'Ajouts', match: /^(ajouts?|nouveaut[ée]s?|added)$/i },
-  { kind: 'change', label: 'Modifications', match: /^(modifications?|changements?|changed)$/i },
-  { kind: 'fix', label: 'Corrections', match: /^(corrections?|correctifs?|fixed?)$/i },
-  { kind: 'remove', label: 'Suppressions', match: /^(suppressions?|retraits?|removed?)$/i }
-]
+const HEADINGS: { kind: NoteKind; label: string; match: RegExp }[] = lazy(() => [
+  { kind: 'add', label: t('Ajouts'), match: /^(ajouts?|nouveaut[ée]s?|added)$/i },
+  { kind: 'change', label: t('Modifications'), match: /^(modifications?|changements?|changed)$/i },
+  { kind: 'fix', label: t('Corrections'), match: /^(corrections?|correctifs?|fixed?)$/i },
+  { kind: 'remove', label: t('Suppressions'), match: /^(suppressions?|retraits?|removed?)$/i }
+])
 
 const ORDER: NoteKind[] = ['add', 'change', 'fix', 'remove', 'other']
 
@@ -103,7 +104,7 @@ export function parseReleaseNote(body: string): NoteSection[] {
     const text = clean(line)
     if (!text) continue
 
-    const label = HEADINGS.find((h) => h.kind === current)?.label ?? 'Notes'
+    const label = HEADINGS.find((h) => h.kind === current)?.label ?? t('Notes')
     const section = found.get(current) ?? { kind: current, label, items: [] }
     section.items.push(text)
     found.set(current, section)

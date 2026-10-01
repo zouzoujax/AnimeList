@@ -16,6 +16,7 @@ import { statusBlocked } from '@/lib/status'
 import { useApp } from '@/store/app'
 import { useCatalogue, useForYou, useMangaList, useWeek } from './pages-data'
 import type { DetailHeroProps } from '.'
+import { t as tr, locale } from '@shared/i18n'
 
 /*
  * CARNET — le reste du carnet de collectionneur : les trouvailles épinglées,
@@ -49,11 +50,11 @@ function Pinned({ media, index }: { media: Media; index: number }): React.JSX.El
 }
 
 const TAGS: { kind: BrowseKind; label: string }[] = [
-  { kind: 'trending', label: 'Du moment' },
-  { kind: 'season', label: 'De la saison' },
-  { kind: 'popular', label: 'Classiques' },
-  { kind: 'top', label: 'Pépites' },
-  { kind: 'upcoming', label: 'À guetter' }
+  { kind: 'trending', label: tr('Du moment') },
+  { kind: 'season', label: tr('De la saison') },
+  { kind: 'popular', label: tr('Classiques') },
+  { kind: 'top', label: tr('Pépites') },
+  { kind: 'upcoming', label: tr('À guetter') }
 ]
 
 export function CarnetDiscover({ initialSearch }: { initialSearch?: string }): React.JSX.Element {
@@ -69,10 +70,10 @@ export function CarnetDiscover({ initialSearch }: { initialSearch?: string }): R
       <div className="xk-page relative mx-auto max-w-[1180px] px-16 py-12">
         <span className="xk-rings" aria-hidden />
         <div className="flex flex-wrap items-end justify-between gap-6">
-          <h1 className="xk-title">Trouvailles</h1>
+          <h1 className="xk-title">{tr('Trouvailles')}</h1>
           <label className="xk-label-tape">
             <Search size={15} />
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="chercher une série…" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={tr('chercher une série…')} />
           </label>
         </div>
         {!searching && (
@@ -94,7 +95,7 @@ export function CarnetDiscover({ initialSearch }: { initialSearch?: string }): R
 
         {!searching && rec && rec.picks.length > 0 && (
           <>
-            <h2 className="xk-heading mt-10">Glissé par un ami</h2>
+            <h2 className="xk-heading mt-10">{tr('Glissé par un ami')}</h2>
             <div className="mt-4 flex flex-wrap gap-4">
               {rec.picks.slice(0, 6).map((pick, i) => (
                 <motion.button
@@ -105,24 +106,28 @@ export function CarnetDiscover({ initialSearch }: { initialSearch?: string }): R
                   onClick={() => navigate({ name: 'anime', id: pick.media.id })}
                 >
                   <span className="xk-hand clamp-2 block">{titleOf(pick.media, lang)}</span>
-                  {pick.from[0] && <span className="xk-note mt-1 block">« si tu as aimé {pick.from[0]} »</span>}
+                  {pick.from[0] && (
+                    <span className="xk-note mt-1 block">
+                      {tr('« si tu as aimé')} {pick.from[0]} »
+                    </span>
+                  )}
                 </motion.button>
               ))}
             </div>
           </>
         )}
 
-        <h2 className="xk-heading mt-10">{searching ? 'Ce que j’ai trouvé' : 'Sur le tableau'}</h2>
+        <h2 className="xk-heading mt-10">{searching ? tr('Ce que j’ai trouvé') : tr('Sur le tableau')}</h2>
         <div className="mt-6 grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-8">
           {items.map((media, i) => (
             <Pinned key={media.id} media={media} index={i} />
           ))}
         </div>
-        {loading && items.length === 0 && <p className="xk-hand mt-4">Je fouille les bacs…</p>}
+        {loading && items.length === 0 && <p className="xk-hand mt-4">{tr('Je fouille les bacs…')}</p>}
         {error && <p className="xk-note mt-4">{error}</p>}
         {hasMore && !loading && (
           <button className="xk-tag mt-10" style={{ background: '#3a2c20' }} onClick={loadMore}>
-            Fouiller encore
+            {tr('Fouiller encore')}
           </button>
         )}
       </div>
@@ -130,9 +135,9 @@ export function CarnetDiscover({ initialSearch }: { initialSearch?: string }): R
   )
 }
 
-const dayName = new Intl.DateTimeFormat('fr-FR', { weekday: 'long' })
-const dayNum = new Intl.DateTimeFormat('fr-FR', { day: 'numeric' })
-const monthName = new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric' })
+const dayName = new Intl.DateTimeFormat(locale(), { weekday: 'long' })
+const dayNum = new Intl.DateTimeFormat(locale(), { day: 'numeric' })
+const monthName = new Intl.DateTimeFormat(locale(), { month: 'long', year: 'numeric' })
 
 export function CarnetCalendar(): React.JSX.Element {
   const navigate = useApp((s) => s.navigate)
@@ -149,7 +154,7 @@ export function CarnetCalendar(): React.JSX.Element {
         <div className="flex flex-wrap items-end gap-6">
           <div>
             <p className="xk-note capitalize">{monthName.format(week.from)}</p>
-            <h1 className="xk-title">Mon agenda</h1>
+            <h1 className="xk-title">{tr('Mon agenda')}</h1>
           </div>
           <div className="ml-auto flex flex-wrap gap-3">
             <button
@@ -158,7 +163,7 @@ export function CarnetCalendar(): React.JSX.Element {
               data-on={scope === 'library'}
               onClick={() => setScope('library')}
             >
-              Mes séries
+              {tr('Mes séries')}
             </button>
             <button
               className="xk-tag"
@@ -166,13 +171,13 @@ export function CarnetCalendar(): React.JSX.Element {
               data-on={scope === 'all'}
               onClick={() => setScope('all')}
             >
-              Tout ce qui passe
+              {tr('Tout ce qui passe')}
             </button>
             <button className="xk-tag" style={{ background: '#3a2c20' }} onClick={() => setOffset((o) => o - 1)}>
-              ← page d’avant
+              {tr('← page d’avant')}
             </button>
             <button className="xk-tag" style={{ background: '#3a2c20' }} onClick={() => setOffset((o) => o + 1)}>
-              page d’après →
+              {tr('page d’après →')}
             </button>
           </div>
         </div>
@@ -198,11 +203,13 @@ export function CarnetCalendar(): React.JSX.Element {
                       />
                       <span className="xk-note shrink-0">{formatTime(slot.airingAt * 1000)}</span>
                       <span className="xk-hand truncate !text-[1rem]">{titleOf(slot.media, lang)}</span>
-                      <span className="xk-note shrink-0">ép. {slot.episode}</span>
+                      <span className="xk-note shrink-0">
+                        {tr('ép.')} {slot.episode}
+                      </span>
                     </button>
                   </li>
                 ))}
-                {day.items.length === 0 && <li className="xk-note">{week.loading ? '…' : 'rien de prévu'}</li>}
+                {day.items.length === 0 && <li className="xk-note">{week.loading ? '…' : tr('rien de prévu')}</li>}
               </ul>
             </section>
           ))}
@@ -213,9 +220,9 @@ export function CarnetCalendar(): React.JSX.Element {
 }
 
 const MANGA_TAGS: { kind: MangaKind; label: string }[] = [
-  { kind: 'trending', label: 'Du moment' },
-  { kind: 'popular', label: 'Les plus lus' },
-  { kind: 'top', label: 'Pépites' }
+  { kind: 'trending', label: tr('Du moment') },
+  { kind: 'popular', label: tr('Les plus lus') },
+  { kind: 'top', label: tr('Pépites') }
 ]
 
 export function CarnetManga(): React.JSX.Element {
@@ -227,7 +234,7 @@ export function CarnetManga(): React.JSX.Element {
   return (
     <div className="px-10 py-10">
       <div className="flex flex-wrap items-end gap-6">
-        <h1 className="xk-title xk-title-light">L’étagère manga</h1>
+        <h1 className="xk-title xk-title-light">{tr('L’étagère manga')}</h1>
         <div className="flex gap-3">
           {MANGA_TAGS.map((t, i) => (
             <button
@@ -243,10 +250,10 @@ export function CarnetManga(): React.JSX.Element {
         </div>
         <label className="xk-label-tape ml-auto">
           <Search size={15} />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="chercher un tome…" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={tr('chercher un tome…')} />
         </label>
       </div>
-      <p className="xk-label mt-6">Survole une tranche pour la sortir de l’étagère.</p>
+      <p className="xk-label mt-6">{tr('Survole une tranche pour la sortir de l’étagère.')}</p>
 
       <div className="xk-bookshelf mt-4">
         {items.map((manga, i) => (
@@ -263,7 +270,7 @@ export function CarnetManga(): React.JSX.Element {
           </motion.button>
         ))}
       </div>
-      {loading && <p className="xk-hand mt-4 text-[#f3e6cf]">Je range l’étagère…</p>}
+      {loading && <p className="xk-hand mt-4 text-[#f3e6cf]">{tr('Je range l’étagère…')}</p>}
       {error && <p className="xk-note mt-4">{error}</p>}
       <Modal open={open !== null} onClose={() => setOpen(null)} width={640}>
         {open && <MangaSheet manga={open} onClose={() => setOpen(null)} />}
@@ -283,7 +290,7 @@ export function CarnetDetailHero(props: DetailHeroProps): React.JSX.Element {
       <div className="xk-page relative mx-auto max-w-[1240px] px-16 py-10">
         <span className="xk-rings" aria-hidden />
         <button className="xk-tag mb-6" style={{ background: '#3a2c20' }} onClick={props.onBack}>
-          <ArrowLeft size={14} /> page précédente
+          <ArrowLeft size={14} /> {tr('page précédente')}
         </button>
         <div className="grid grid-cols-[260px_1fr] gap-12">
           <button className="xk-card xk-card-big" type="button">
@@ -296,7 +303,9 @@ export function CarnetDetailHero(props: DetailHeroProps): React.JSX.Element {
                 <span className="xk-hand">{titleOf(media, lang)}</span>
                 <span className="xk-note mt-3 block">{formatLabel(media.format)}</span>
                 <span className="xk-note block">{seasonLabel(media.season, media.seasonYear)}</span>
-                <span className="xk-note block">{total ?? '?'} épisodes</span>
+                <span className="xk-note block">
+                  {total ?? '?'} {tr('épisodes')}
+                </span>
                 <span className="xk-note block">{media.averageScore ?? '—'} / 100</span>
                 <span className="xk-note block">{media.studios[0] ?? ''}</span>
               </span>
@@ -305,10 +314,14 @@ export function CarnetDetailHero(props: DetailHeroProps): React.JSX.Element {
 
           <div>
             <p className="xk-note">
-              {media.studios[0] ?? 'Studio inconnu'} · {seasonLabel(media.season, media.seasonYear)}
+              {media.studios[0] ?? tr('Studio inconnu')} · {seasonLabel(media.season, media.seasonYear)}
             </p>
             <h1 className="xk-title !text-[3.6rem]">{titleOf(media, lang)}</h1>
-            {props.alsoKnownAs[0] && <p className="xk-hand mt-1">aussi appelé « {props.alsoKnownAs[0]} »</p>}
+            {props.alsoKnownAs[0] && (
+              <p className="xk-hand mt-1">
+                {tr('aussi appelé «')} {props.alsoKnownAs[0]} »
+              </p>
+            )}
 
             <figure className="xk-polaroid mt-6 w-[80%]" style={{ rotate: '-1.5deg' }}>
               <span className="xk-tape" aria-hidden />
@@ -323,7 +336,7 @@ export function CarnetDetailHero(props: DetailHeroProps): React.JSX.Element {
               )}
               {entry && total ? (
                 <span className="xk-hand">
-                  {seen} épisodes cochés sur {total}
+                  {seen} {tr('épisodes cochés sur')} {total}
                 </span>
               ) : null}
             </div>
@@ -336,7 +349,7 @@ export function CarnetDetailHero(props: DetailHeroProps): React.JSX.Element {
                   whileHover={{ y: -3 }}
                   onClick={props.onMark}
                 >
-                  ✓ cocher l’épisode {next}
+                  {tr('✓ cocher l’épisode')} {next}
                 </motion.button>
               )}
               {!entry && (
@@ -346,7 +359,7 @@ export function CarnetDetailHero(props: DetailHeroProps): React.JSX.Element {
                   whileHover={{ y: -3 }}
                   onClick={props.onAdd}
                 >
-                  + coller dans le carnet
+                  {tr('+ coller dans le carnet')}
                 </motion.button>
               )}
               <motion.button
@@ -355,7 +368,7 @@ export function CarnetDetailHero(props: DetailHeroProps): React.JSX.Element {
                 whileHover={{ y: -3 }}
                 onClick={props.onFavorite}
               >
-                {entry?.favorite ? '♥ coup de cœur' : '♡ coup de cœur'}
+                {entry?.favorite ? tr('♥ coup de cœur') : tr('♡ coup de cœur')}
               </motion.button>
               {entry && (
                 <motion.button
@@ -364,7 +377,8 @@ export function CarnetDetailHero(props: DetailHeroProps): React.JSX.Element {
                   whileHover={{ y: -3 }}
                   onClick={props.onLists}
                 >
-                  ranger dans une liste{props.inLists > 0 ? ` (${props.inLists})` : ''}
+                  {tr('ranger dans une liste')}
+                  {props.inLists > 0 ? ` (${props.inLists})` : ''}
                 </motion.button>
               )}
             </div>

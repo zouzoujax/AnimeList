@@ -1,3 +1,4 @@
+import { t } from '@shared/i18n'
 /**
  * Les sections des Réglages, dans leur ordre.
  *
@@ -8,33 +9,35 @@
 export const SETTINGS_SECTIONS = [
   {
     id: 'apparence',
-    title: 'Apparence',
-    keywords: 'thème couleur accent disposition mica nouveau design expérience mouvement animation badge son trophée'
+    title: t('Apparence'),
+    keywords: t('thème couleur accent disposition mica nouveau design expérience mouvement animation badge son trophée')
   },
-  { id: 'affichage', title: 'Affichage', keywords: 'titres langue romaji anglais semaine lundi durée adulte' },
-  { id: 'notifications', title: 'Notifications', keywords: 'rappel alerte diffusion délai sortie épisode' },
+  { id: 'affichage', title: t('Affichage'), keywords: t('titres langue romaji anglais semaine lundi durée adulte') },
+  { id: 'notifications', title: t('Notifications'), keywords: t('rappel alerte diffusion délai sortie épisode') },
   {
     id: 'lecture',
-    title: 'Lecture',
-    keywords:
+    title: t('Lecture'),
+    keywords: t(
       'lecteur coche automatique enchaîner épisode suivant anime-sama opening générique navigateur chrome firefox edge adn franime'
+    )
   },
-  { id: 'suites', title: 'Suites', keywords: 'saison suivante ajout automatique franchise' },
+  { id: 'suites', title: t('Suites'), keywords: t('saison suivante ajout automatique franchise') },
   {
     id: 'telecommande',
-    title: 'Télécommande',
-    keywords: 'téléphone qr code mobile mot de passe calendrier ics agenda abonnement diffusions'
+    title: t('Télécommande'),
+    keywords: t('téléphone qr code mobile mot de passe calendrier ics agenda abonnement diffusions')
   },
-  { id: 'discord', title: 'Statut Discord', keywords: 'discord rich presence profil' },
-  { id: 'traduction', title: 'Traduction', keywords: 'résumé français traduire deepl' },
-  { id: 'suivis', title: 'Ce que tu suis', keywords: 'studio doubleur suivre muets' },
+  { id: 'discord', title: t('Statut Discord'), keywords: t('discord rich presence profil') },
+  { id: 'traduction', title: t('Traduction'), keywords: t('résumé français traduire deepl') },
+  { id: 'suivis', title: t('Ce que tu suis'), keywords: t('studio doubleur suivre muets') },
   {
     id: 'donnees',
-    title: 'Mes données',
-    keywords:
+    title: t('Mes données'),
+    keywords: t(
       'import export sauvegarde automatique copie datée rotation restaurer tv time myanimelist anilist kitsu cache santé raccourcis clavier dossier effacer'
+    )
   },
-  { id: 'a-propos', title: 'À propos', keywords: 'version mise à jour auteur' }
+  { id: 'a-propos', title: t('À propos'), keywords: t('version mise à jour auteur') }
 ] as const
 
 export type SettingsSection = (typeof SETTINGS_SECTIONS)[number]['id']

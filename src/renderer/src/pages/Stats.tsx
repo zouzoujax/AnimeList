@@ -23,6 +23,7 @@ import { dayLabel, durationParts, hoursOf, minutesToHuman, monthLabel, num, star
 import { useApp } from '@/store/app'
 import { hoursLabel } from '@shared/backlog'
 import { BADGE_GROUPS, badgeTitle, useBadgeWall, type Badge } from '@/lib/badges'
+import { t as tr, locale } from '@shared/i18n'
 
 const DAY_MS = 86_400_000
 
@@ -146,7 +147,7 @@ export default function StatsPage(): React.JSX.Element {
       { x: box.x, y: box.y, width: box.width, height: box.height },
       `animelist-${activeYear}.png`
     )
-    if (name) toast(`Image enregistrée dans ${name}.`, 'ok')
+    if (name) toast(tr('Image enregistrée dans {name}.', { name }), 'ok')
   }
 
   const monthly = useMemo(() => {
@@ -157,9 +158,9 @@ export default function StatsPage(): React.JSX.Element {
       if (d.getFullYear() === activeYear) buckets[d.getMonth()] += ev.minutes
     }
     return buckets.map((mins, i) => ({
-      label: new Date(activeYear, i, 1).toLocaleDateString('fr-FR', { month: 'narrow' }),
+      label: new Date(activeYear, i, 1).toLocaleDateString(locale(), { month: 'narrow' }),
       value: hoursOf(mins),
-      detail: `${new Date(activeYear, i, 1).toLocaleDateString('fr-FR', { month: 'long' })} · ${minutesToHuman(mins)}`
+      detail: `${new Date(activeYear, i, 1).toLocaleDateString(locale(), { month: 'long' })} · ${minutesToHuman(mins)}`
     }))
   }, [events, activeYear])
 
@@ -274,11 +275,13 @@ export default function StatsPage(): React.JSX.Element {
       <div className="mx-auto max-w-[900px] px-7 py-16">
         <EmptyState
           icon={<ChartColumn size={24} />}
-          title="Aucune statistique pour l'instant"
-          hint="Coche ton premier épisode et cette page se remplit : heures, séries de jours, genres, badges et graphiques année par année."
+          title={tr("Aucune statistique pour l'instant")}
+          hint={tr(
+            'Coche ton premier épisode et cette page se remplit : heures, séries de jours, genres, badges et graphiques année par année.'
+          )}
           action={
             <button className="btn btn-primary" onClick={() => navigate({ name: 'library' })}>
-              Ouvrir ma bibliothèque
+              {tr('Ouvrir ma bibliothèque')}
             </button>
           }
         />
@@ -296,15 +299,17 @@ export default function StatsPage(): React.JSX.Element {
         ? badges.filter((b) => !b.earned).sort((a, b) => b.progress - a.progress)
         : badges
   const BADGE_FILTERS = [
-    { id: 'all' as const, label: 'Tous', count: badges.length },
-    { id: 'done' as const, label: 'Débloqués', count: unlocked },
-    { id: 'todo' as const, label: 'À faire', count: badges.length - unlocked }
+    { id: 'all' as const, label: tr('Tous'), count: badges.length },
+    { id: 'done' as const, label: tr('Débloqués'), count: unlocked },
+    { id: 'todo' as const, label: tr('À faire'), count: badges.length - unlocked }
   ]
 
   return (
     <div className="page">
-      <h1 className="title-xl mb-1 text-[1.85rem]">Statistiques</h1>
-      <p className="mb-7 text-[0.85rem] text-muted">Tout est calculé en local, à partir de tes épisodes cochés.</p>
+      <h1 className="title-xl mb-1 text-[1.85rem]">{tr('Statistiques')}</h1>
+      <p className="mb-7 text-[0.85rem] text-muted">
+        {tr('Tout est calculé en local, à partir de tes épisodes cochés.')}
+      </p>
 
       {/* hero figure */}
       <motion.div
@@ -316,7 +321,7 @@ export default function StatsPage(): React.JSX.Element {
           className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full opacity-30"
           style={{ background: `radial-gradient(circle, ${accent}, transparent 66%)`, filter: 'blur(50px)' }}
         />
-        <p className="label">Temps de visionnage total</p>
+        <p className="label">{tr('Temps de visionnage total')}</p>
         <p className="mt-2 flex flex-wrap items-baseline gap-x-3">
           {durationParts(stats.minutes).map((part) => (
             <span key={part.unit} className="flex items-baseline gap-1.5">
@@ -326,44 +331,46 @@ export default function StatsPage(): React.JSX.Element {
           ))}
         </p>
         <p className="mt-3 text-[0.85rem] text-muted">
-          {num(stats.episodes)} épisodes · soit {(stats.minutes / 1440).toFixed(1).replace('.', ',')} jours complets
-          devant l'écran.
+          {num(stats.episodes)} {tr('épisodes · soit')} {(stats.minutes / 1440).toFixed(1).replace('.', ',')}{' '}
+          {tr("jours complets devant l'écran.")}
         </p>
         {stats.importedCount > 0 && (
           <p className="mt-1.5 text-[0.76rem] text-faint">
-            Dont {num(stats.importedCount)} épisodes importés, sans date de visionnage réelle : ils comptent dans les
-            totaux, mais pas dans les graphiques ci-dessous.
+            {tr('Dont')} {num(stats.importedCount)}{' '}
+            {tr(
+              'épisodes importés, sans date de visionnage réelle : ils comptent dans les totaux, mais pas dans les graphiques ci-dessous.'
+            )}
           </p>
         )}
       </motion.div>
 
       <div className="mb-9 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatTile
-          label="Série en cours"
+          label={tr('Série en cours')}
           value={dayLabel(stats.streaks.current)}
-          hint={`Record : ${dayLabel(stats.streaks.best)} d'affilée`}
+          hint={tr("Record : {v0} d'affilée", { v0: dayLabel(stats.streaks.best) })}
           icon={<Flame size={22} />}
           accentText
         />
         <StatTile
-          label="Séries terminées"
+          label={tr('Séries terminées')}
           value={num(stats.completed)}
-          hint={`${num(stats.watching)} en cours · ${num(stats.tracked)} suivies`}
+          hint={tr('{v0} en cours · {v1} suivies', { v0: num(stats.watching), v1: num(stats.tracked) })}
           icon={<CheckCheck size={22} />}
         />
         <StatTile
-          label="Ma note moyenne"
+          label={tr('Ma note moyenne')}
           value={stats.meanScore ? `${stats.meanScore.toFixed(1).replace('.', ',')}/10` : '—'}
-          hint={`${num(stats.scoredCount)} titres notés`}
+          hint={tr('{v0} titres notés', { v0: num(stats.scoredCount) })}
           icon={<Star size={22} />}
         />
         <StatTile
-          label="Meilleure journée"
+          label={tr('Meilleure journée')}
           value={`${num(stats.bestDay)} ép.`}
           hint={
             stats.importedCount > 0
-              ? `${num(stats.activeDays)} jours actifs · hors import`
-              : `${num(stats.activeDays)} jours actifs`
+              ? tr('{v0} jours actifs · hors import', { v0: num(stats.activeDays) })
+              : tr('{v0} jours actifs', { v0: num(stats.activeDays) })
           }
           icon={<Clock size={22} />}
         />
@@ -371,21 +378,29 @@ export default function StatsPage(): React.JSX.Element {
 
       {backlog.series > 0 && (
         <Section
-          title="Ce qu'il te reste"
+          title={tr("Ce qu'il te reste")}
           subtitle={
             backlog.days === null
-              ? `${hoursLabel(backlog.total)} en attente`
-              : `${hoursLabel(backlog.total)} en attente · environ ${backlog.days} jour${backlog.days > 1 ? 's' : ''} à ton rythme${backlog.thin ? ', sur trop peu de séances pour être fiable' : ''}`
+              ? tr('{v0} en attente', { v0: hoursLabel(backlog.total) })
+              : tr('{v0} en attente · environ {days} jour{v2} à ton rythme{v3}', {
+                  v0: hoursLabel(backlog.total),
+                  days: backlog.days,
+                  v2: backlog.days > 1 ? 's' : '',
+                  v3: backlog.thin ? tr(', sur trop peu de séances pour être fiable') : ''
+                })
           }
         >
           <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <StatTile label="En cours" value={hoursLabel(backlog.watchingMin)} icon={<Hourglass size={15} />} />
-            <StatTile label="Dans la pile" value={hoursLabel(backlog.plannedMin)} icon={<ListTodo size={15} />} />
-            <StatTile label="Séries concernées" value={num(backlog.series)} icon={<Layers size={15} />} />
+            <StatTile label={tr('En cours')} value={hoursLabel(backlog.watchingMin)} icon={<Hourglass size={15} />} />
+            <StatTile label={tr('Dans la pile')} value={hoursLabel(backlog.plannedMin)} icon={<ListTodo size={15} />} />
+            <StatTile label={tr('Séries concernées')} value={num(backlog.series)} icon={<Layers size={15} />} />
             <StatTile
-              label="Ton rythme"
+              label={tr('Ton rythme')}
               value={`${num(backlog.perActiveDay)} min`}
-              hint={`par journée où tu regardes · mesuré sur ${num(stats.activeDays)} journée${stats.activeDays > 1 ? 's' : ''}`}
+              hint={tr('par journée où tu regardes · mesuré sur {v0} journée{v1}', {
+                v0: num(stats.activeDays),
+                v1: stats.activeDays > 1 ? 's' : ''
+              })}
               icon={<Gauge size={15} />}
             />
           </div>
@@ -394,12 +409,12 @@ export default function StatsPage(): React.JSX.Element {
 
       {yearCard.episodes > 0 && (
         <Section
-          title={`Ton année ${activeYear}`}
-          subtitle="À enregistrer et à partager"
+          title={tr('Ton année {activeYear}', { activeYear })}
+          subtitle={tr('À enregistrer et à partager')}
           action={
             <button className="chip shrink-0" onClick={() => void saveYearCard()}>
               <ImageDown size={13} />
-              Enregistrer l’image
+              {tr('Enregistrer l’image')}
             </button>
           }
         >
@@ -414,17 +429,19 @@ export default function StatsPage(): React.JSX.Element {
             }}
           >
             <p className="label" style={{ color: rgba(accent, 1) }}>
-              AnimeList · {activeYear}
+              {tr('AnimeList ·')} {activeYear}
             </p>
-            <p className="title-xl mt-1 text-[2rem] leading-tight">{minutesToHuman(yearCard.minutes)} d’anime</p>
+            <p className="title-xl mt-1 text-[2rem] leading-tight">
+              {minutesToHuman(yearCard.minutes)} {tr('d’anime')}
+            </p>
 
             <div className="mt-4 flex flex-wrap gap-x-8 gap-y-3">
               {[
-                { label: 'Épisodes', value: num(yearCard.episodes) },
-                { label: 'Séries', value: num(yearCard.series) },
-                { label: 'Journées', value: num(yearCard.days) },
+                { label: tr('Épisodes'), value: num(yearCard.episodes) },
+                { label: tr('Séries'), value: num(yearCard.series) },
+                { label: tr('Journées'), value: num(yearCard.days) },
                 {
-                  label: 'Par journée',
+                  label: tr('Par journée'),
                   value: yearCard.days ? minutesToHuman(Math.round(yearCard.minutes / yearCard.days)) : '—'
                 }
               ].map((tile) => (
@@ -437,13 +454,15 @@ export default function StatsPage(): React.JSX.Element {
 
             {yearCard.top.length > 0 && (
               <>
-                <p className="label mb-2 mt-5">Ce qui a occupé l’année</p>
+                <p className="label mb-2 mt-5">{tr('Ce qui a occupé l’année')}</p>
                 <div className="flex gap-2.5">
                   {yearCard.top.map((row) => (
                     <div key={row.media.id} className="w-[86px]">
                       <Poster src={row.media.cover.large} alt="" className="h-[122px] w-[86px]" />
                       <p className="clamp-2 mt-1 text-[0.66rem] leading-snug">{titleOf(row.media, lang)}</p>
-                      <p className="text-[0.62rem] tabular-nums text-faint">{row.count} ép.</p>
+                      <p className="text-[0.62rem] tabular-nums text-faint">
+                        {row.count} {tr('ép.')}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -454,7 +473,10 @@ export default function StatsPage(): React.JSX.Element {
       )}
 
       {timeline.length > 0 && (
-        <Section title="Ta frise" subtitle={`${timeline.length} mois de visionnage, du plus récent au plus ancien`}>
+        <Section
+          title={tr('Ta frise')}
+          subtitle={tr('{length} mois de visionnage, du plus récent au plus ancien', { length: timeline.length })}
+        >
           <div className="flex flex-col">
             {timeline.map((month) => (
               <div
@@ -465,7 +487,7 @@ export default function StatsPage(): React.JSX.Element {
                 <div className="w-[150px] shrink-0">
                   <p className="text-[0.86rem] font-semibold capitalize">{month.label}</p>
                   <p className="mt-0.5 text-[0.72rem] tabular-nums text-faint">
-                    {month.episodes} ép. · {minutesToHuman(month.minutes)}
+                    {month.episodes} {tr('ép. ·')} {minutesToHuman(month.minutes)}
                   </p>
                 </div>
                 <div className="flex min-w-0 flex-1 flex-wrap gap-1.5">
@@ -483,7 +505,9 @@ export default function StatsPage(): React.JSX.Element {
                       />
                       <span className="min-w-0">
                         <span className="block max-w-[180px] truncate text-[0.76rem]">{titleOf(row.media, lang)}</span>
-                        <span className="text-[0.68rem] tabular-nums text-faint">{row.count} ép.</span>
+                        <span className="text-[0.68rem] tabular-nums text-faint">
+                          {row.count} {tr('ép.')}
+                        </span>
                       </span>
                     </button>
                   ))}
@@ -495,8 +519,8 @@ export default function StatsPage(): React.JSX.Element {
       )}
 
       <Section
-        title="Activité"
-        subtitle="Un carré par jour, plus c'est clair plus tu as regardé · épisodes cochés dans l'app"
+        title={tr('Activité')}
+        subtitle={tr("Un carré par jour, plus c'est clair plus tu as regardé · épisodes cochés dans l'app")}
         action={
           <div className="flex gap-1.5">
             {years.slice(0, 5).map((y) => (
@@ -511,23 +535,24 @@ export default function StatsPage(): React.JSX.Element {
           <ActivityHeatmap days={heatDays} />
           {stats.importedCount > 0 && stats.activeDays === 0 && (
             <p className="mt-3 text-[0.76rem] leading-snug text-faint">
-              Encore vide : ta bibliothèque vient d'un import, et la source ne conserve pas la date à laquelle chaque
-              épisode a été regardé. La grille se remplira au fil des épisodes que tu cocheras ici.
+              {tr(
+                "Encore vide : ta bibliothèque vient d'un import, et la source ne conserve pas la date à laquelle chaque épisode a été regardé. La grille se remplira au fil des épisodes que tu cocheras ici."
+              )}
             </p>
           )}
         </div>
       </Section>
 
-      <Section title={`Mois par mois · ${activeYear}`} subtitle="Heures de visionnage">
+      <Section title={tr('Mois par mois · {activeYear}', { activeYear })} subtitle={tr('Heures de visionnage')}>
         <div className="glass rounded-[20px] p-5">
-          <MonthlyColumns data={monthly} unit="Heures de visionnage par mois" />
+          <MonthlyColumns data={monthly} unit={tr('Heures de visionnage par mois')} />
         </div>
       </Section>
 
       <div className="mb-9 grid gap-4 lg:grid-cols-2">
         <div className="glass rounded-[20px] p-5">
-          <h2 className="title-xl text-[1.05rem]">Genres les plus regardés</h2>
-          <p className="mb-3.5 mt-0.5 text-[0.75rem] text-faint">Clique pour filtrer ta bibliothèque</p>
+          <h2 className="title-xl text-[1.05rem]">{tr('Genres les plus regardés')}</h2>
+          <p className="mb-3.5 mt-0.5 text-[0.75rem] text-faint">{tr('Clique pour filtrer ta bibliothèque')}</p>
           <RankedBars
             rows={stats.genres
               .slice(0, 8)
@@ -537,8 +562,8 @@ export default function StatsPage(): React.JSX.Element {
           />
         </div>
         <div className="glass rounded-[20px] p-5">
-          <h2 className="title-xl text-[1.05rem]">Studios les plus vus</h2>
-          <p className="mb-3.5 mt-0.5 text-[0.75rem] text-faint">Clique pour voir tout son catalogue</p>
+          <h2 className="title-xl text-[1.05rem]">{tr('Studios les plus vus')}</h2>
+          <p className="mb-3.5 mt-0.5 text-[0.75rem] text-faint">{tr('Clique pour voir tout son catalogue')}</p>
           <RankedBars
             rows={stats.studios.map(([s, n]) => ({ key: s, label: s, value: n, detail: 'ép.' }))}
             suffix="ép."
@@ -551,8 +576,8 @@ export default function StatsPage(): React.JSX.Element {
 
       <Section
         id="badges"
-        title="Badges"
-        subtitle={`${unlocked} sur ${badges.length} débloqués`}
+        title={tr('Badges')}
+        subtitle={tr('{unlocked} sur {length} débloqués', { unlocked, length: badges.length })}
         action={
           <div className="flex shrink-0 gap-1.5">
             {BADGE_FILTERS.map((f) => (
@@ -567,7 +592,7 @@ export default function StatsPage(): React.JSX.Element {
         <div className="flex flex-col gap-7">
           {shownBadges.length === 0 && (
             <p className="px-1 text-[0.82rem] text-muted">
-              Aucun badge débloqué pour l'instant. Coche des épisodes et ils viendront.
+              {tr("Aucun badge débloqué pour l'instant. Coche des épisodes et ils viendront.")}
             </p>
           )}
           {BADGE_GROUPS.map((group) => {
@@ -598,7 +623,7 @@ export default function StatsPage(): React.JSX.Element {
       </Section>
 
       {topRated.length > 0 && (
-        <Section title="Mon panthéon" subtitle="Tes meilleures notes">
+        <Section title={tr('Mon panthéon')} subtitle={tr('Tes meilleures notes')}>
           <RowScroller>
             {topRated.map(({ entry, media }, i) => (
               <motion.button
@@ -630,7 +655,7 @@ export default function StatsPage(): React.JSX.Element {
         <Eye size={13} />
         <Layers size={13} />
         <Award size={13} />
-        <span>Aucune de ces données ne quitte ton PC.</span>
+        <span>{tr('Aucune de ces données ne quitte ton PC.')}</span>
       </div>
     </div>
   )

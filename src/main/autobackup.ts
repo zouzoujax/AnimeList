@@ -21,6 +21,7 @@ import { freshName, isDue, listBackups, toDelete } from '@shared/backups'
 import { isSnapshot, mergeSnapshot, previewRestore, type RestoreMode, type RestorePreview } from '@shared/restore'
 import type { BackupCopy, BackupStatus, Snapshot } from '@shared/types'
 import { getPrefs, importSnapshot, libraryState, setPrefs, snapshot } from './store'
+import { t } from '@shared/i18n'
 
 /** Le nom de la dernière copie écrite, pour que la restauration puisse le citer. */
 let lastWritten: string | null = null
@@ -40,7 +41,12 @@ export async function backupStatus(): Promise<BackupStatus> {
   } catch (err) {
     // Disque externe débranché, dossier renommé, partage réseau absent : la
     // ligne des Réglages doit le dire plutôt que d'afficher « jamais ».
-    return { folder, lastAt: 0, count: 0, error: `Dossier introuvable : ${(err as Error).message}` }
+    return {
+      folder,
+      lastAt: 0,
+      count: 0,
+      error: t('Dossier introuvable : {message}', { message: (err as Error).message })
+    }
   }
 }
 
@@ -79,7 +85,12 @@ export async function runBackup(force: boolean): Promise<BackupStatus> {
     return backupStatus()
   } catch (err) {
     console.error('[backup]', err)
-    return { folder, lastAt: getPrefs().backupAt, count: 0, error: `Sauvegarde impossible : ${(err as Error).message}` }
+    return {
+      folder,
+      lastAt: getPrefs().backupAt,
+      count: 0,
+      error: t('Sauvegarde impossible : {message}', { message: (err as Error).message })
+    }
   }
 }
 
@@ -100,7 +111,7 @@ export function backupOnLaunch(): void {
 
 export async function chooseBackupFolder(win: BrowserWindow): Promise<BackupStatus> {
   const res = await dialog.showOpenDialog(win, {
-    title: 'Où garder les sauvegardes automatiques',
+    title: t('Où garder les sauvegardes automatiques'),
     properties: ['openDirectory', 'createDirectory'],
     defaultPath: getPrefs().backupFolder ?? undefined
   })
@@ -172,7 +183,7 @@ export async function previewCopy(
     const before = libraryState()
     return { ok: true, preview: previewRestore(before, mergeSnapshot(before, incoming, mode), mode) }
   } catch (err) {
-    return { ok: false, error: `Copie illisible : ${(err as Error).message}` }
+    return { ok: false, error: t('Copie illisible : {message}', { message: (err as Error).message }) }
   }
 }
 
@@ -192,7 +203,7 @@ export async function restoreCopy(
   try {
     incoming = await readCopy(name)
   } catch (err) {
-    return { ok: false, message: `Copie illisible : ${(err as Error).message}`, safety: null }
+    return { ok: false, message: t('Copie illisible : {message}', { message: (err as Error).message }), safety: null }
   }
 
   lastWritten = null
@@ -201,7 +212,7 @@ export async function restoreCopy(
     // Sans filet, on ne saute pas : l'état actuel serait perdu pour de bon.
     return {
       ok: false,
-      message: `Restauration annulée : ${before.error ?? 'copie de sécurité non écrite'}`,
+      message: t('Restauration annulée : {v0}', { v0: before.error ?? t('copie de sécurité non écrite') }),
       safety: null
     }
   }
@@ -209,7 +220,8 @@ export async function restoreCopy(
   importSnapshot(incoming, mode)
   return {
     ok: true,
-    message: mode === 'replace' ? 'Bibliothèque remplacée par la copie.' : 'Copie fusionnée dans la bibliothèque.',
+    message:
+      mode === 'replace' ? t('Bibliothèque remplacée par la copie.') : t('Copie fusionnée dans la bibliothèque.'),
     safety: lastWritten
   }
 }

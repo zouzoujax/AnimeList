@@ -7,22 +7,23 @@ import { toneAccent } from '@/lib/color'
 import { currentSeasonOf, formatLabel, seasonLabel, titleOf } from '@/lib/format'
 import { useBrowse } from '@/lib/hooks'
 import { useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
 type Group = 'sort' | 'watching' | 'planned' | 'skipped'
 
 const GROUPS: { id: Group; label: string }[] = [
-  { id: 'sort', label: 'À trier' },
-  { id: 'watching', label: 'Tu suis' },
-  { id: 'planned', label: 'Prévues' },
-  { id: 'skipped', label: 'Écartées' }
+  { id: 'sort', label: t('À trier') },
+  { id: 'watching', label: t('Tu suis') },
+  { id: 'planned', label: t('Prévues') },
+  { id: 'skipped', label: t('Écartées') }
 ]
 
 /** Ce que chaque groupe est, dit en une phrase sous les onglets. */
 const LINES: Record<Group, string> = {
   sort: 'Ni suivies, ni prévues, ni écartées : celles sur lesquelles tu ne t’es pas encore prononcé.',
-  watching: 'Les séries de la saison déjà dans ta bibliothèque, et où tu en es.',
-  planned: 'Mises de côté pour plus tard. Elles t’attendent dans « À voir ».',
-  skipped: 'Abandonnées, ou écartées d’un « pas pour moi ». Rien n’a été ajouté à ta bibliothèque.'
+  watching: t('Les séries de la saison déjà dans ta bibliothèque, et où tu en es.'),
+  planned: t('Mises de côté pour plus tard. Elles t’attendent dans « À voir ».'),
+  skipped: t('Abandonnées, ou écartées d’un « pas pour moi ». Rien n’a été ajouté à ta bibliothèque.')
 }
 
 /**
@@ -55,7 +56,7 @@ function SortCard({
       <button
         className="shrink-0"
         onClick={() => navigate({ name: 'anime', id: media.id })}
-        aria-label={`Ouvrir ${titleOf(media, lang)}`}
+        aria-label={t('Ouvrir {v0}', { v0: titleOf(media, lang) })}
       >
         <Poster src={media.cover.large} alt="" className="h-[124px] w-[86px]" rounded="rounded-[11px]" />
       </button>
@@ -70,7 +71,7 @@ function SortCard({
           {[formatLabel(media.format), genres].filter(Boolean).join(' · ')}
         </p>
         <p className="mt-0.5 text-[0.76rem] text-faint">
-          {aired > 0 ? `${plural(aired, 'épisode sorti', 'épisodes sortis')}` : 'Pas encore commencée'}
+          {aired > 0 ? `${plural(aired, 'épisode sorti', 'épisodes sortis')}` : t('Pas encore commencée')}
         </p>
         <div className="mt-auto flex flex-wrap items-center gap-1.5 pt-2.5">{actions}</div>
       </div>
@@ -78,7 +79,7 @@ function SortCard({
           même rang que « je regarde », et à côté des deux autres il passait à
           la ligne tout seul. */}
       {onSkip && (
-        <button className="nd-sort-skip" onClick={onSkip} aria-label="Pas pour moi" title="Pas pour moi">
+        <button className="nd-sort-skip" onClick={onSkip} aria-label={t('Pas pour moi')} title={t('Pas pour moi')}>
           <X size={14} />
         </button>
       )}
@@ -139,17 +140,26 @@ export default function NdSeasonPage(): React.JSX.Element {
 
   const sub =
     loading && !items.length
-      ? 'Les séries de la saison arrivent…'
+      ? t('Les séries de la saison arrivent…')
       : grouped.sort.length === 0
-        ? `Tout est tranché : ${plural(grouped.watching.length, 'série suivie', 'séries suivies')}, ${plural(grouped.planned.length, 'prévue', 'prévues')}, ${plural(grouped.skipped.length, 'écartée', 'écartées')} sur ${total}.`
-        : `${plural(total, 'série')} cette saison, ${plural(grouped.sort.length, 'reste', 'restent')} à trier. Tu en suis ${grouped.watching.length}.`
+        ? t('Tout est tranché : {v0}, {v1}, {v2} sur {total}.', {
+            v0: plural(grouped.watching.length, 'série suivie', 'séries suivies'),
+            v1: plural(grouped.planned.length, 'prévue', 'prévues'),
+            v2: plural(grouped.skipped.length, 'écartée', 'écartées'),
+            total
+          })
+        : t('{v0} cette saison, {v1} à trier. Tu en suis {length}.', {
+            v0: plural(total, 'série'),
+            v1: plural(grouped.sort.length, 'reste', 'restent'),
+            length: grouped.watching.length
+          })
 
   return (
     <div className="page">
       <NdHeader title={seasonLabel(season, year)} sub={sub} />
 
       <NdTabs
-        label="Groupes"
+        label={t('Groupes')}
         tabs={GROUPS.map((g) => ({ ...g, count: grouped[g.id].length }))}
         value={group}
         onChange={setGroup}
@@ -163,8 +173,8 @@ export default function NdSeasonPage(): React.JSX.Element {
       ) : shown.length === 0 ? (
         <p className="py-16 text-center text-sm text-muted">
           {group === 'sort'
-            ? 'Chaque série de la saison a sa place. Les nouvelles apparaîtront ici.'
-            : 'Aucune série dans ce groupe pour l’instant.'}
+            ? t('Chaque série de la saison a sa place. Les nouvelles apparaîtront ici.')
+            : t('Aucune série dans ce groupe pour l’instant.')}
         </p>
       ) : group === 'watching' ? (
         // Là, on ne choisit plus : on regarde où on en est.
@@ -188,14 +198,14 @@ export default function NdSeasonPage(): React.JSX.Element {
                       onClick={() => void saveEntry(media.id, { status: 'watching' }, media)}
                     >
                       <Eye size={13} />
-                      Je regarde
+                      {t('Je regarde')}
                     </button>
                     <button
                       className="btn !h-7 !px-2.5 text-[0.74rem]"
                       onClick={() => void saveEntry(media.id, { status: 'planned' }, media)}
                     >
                       <Clock size={13} />
-                      Plus tard
+                      {t('Plus tard')}
                     </button>
                   </>
                 ) : group === 'planned' ? (
@@ -204,17 +214,17 @@ export default function NdSeasonPage(): React.JSX.Element {
                     onClick={() => void saveEntry(media.id, { status: 'watching' })}
                   >
                     <Eye size={13} />
-                    Je commence
+                    {t('Je commence')}
                   </button>
                 ) : entries.has(media.id) ? (
                   <span className="flex items-center gap-1.5 text-[0.74rem] text-faint">
                     <Check size={13} />
-                    Abandonnée : à reprendre depuis sa fiche.
+                    {t('Abandonnée : à reprendre depuis sa fiche.')}
                   </span>
                 ) : (
                   <button className="btn !h-7 !px-2.5 text-[0.74rem]" onClick={() => skip(media.id, false)}>
                     <RotateCcw size={13} />
-                    Remettre à trier
+                    {t('Remettre à trier')}
                   </button>
                 )
               }
@@ -223,7 +233,7 @@ export default function NdSeasonPage(): React.JSX.Element {
         </ul>
       )}
 
-      {loadingMore && <Spinner label="La suite de la saison…" />}
+      {loadingMore && <Spinner label={t('La suite de la saison…')} />}
     </div>
   )
 }

@@ -1,3 +1,4 @@
+import { t } from './i18n'
 /**
  * Les séries en pause qu'on a oubliées.
  *
@@ -74,13 +75,13 @@ export function dormantSeries(rows: PausedRow[], now: number, minDays = DORMANT_
 export function sleepLabel(days: number): string {
   const years = Math.floor(days / 365)
   if (years >= 2) return `${years} ans`
-  if (years === 1) return 'un an'
+  if (years === 1) return t('un an')
   const months = Math.floor(days / 30)
   if (months >= 2) return `${months} mois`
-  if (months === 1) return 'un mois'
+  if (months === 1) return t('un mois')
   const weeks = Math.floor(days / 7)
   if (weeks >= 2) return `${weeks} semaines`
-  return 'une semaine'
+  return t('une semaine')
 }
 
 /**

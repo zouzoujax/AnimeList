@@ -22,6 +22,7 @@ import { ConsoleCalendar, ConsoleDetailHero, ConsoleDiscover, ConsoleManga } fro
 import { ConsoleBadges } from './badges-pages'
 import { ConsoleDetailBody } from './detail-bodies'
 import type { Experience } from '.'
+import { t as tr, locale } from '@shared/i18n'
 
 /*
  * CONSOLE — l'écran d'accueil d'une console de salon : une barre de tuiles
@@ -30,14 +31,14 @@ import type { Experience } from '.'
  */
 
 const NAV: { route: Route; label: string; icon: typeof House }[] = [
-  { route: { name: 'home' }, label: 'Accueil', icon: House },
-  { route: { name: 'library' }, label: 'Collection', icon: LibraryBig },
-  { route: { name: 'discover' }, label: 'Store', icon: Compass },
-  { route: { name: 'calendar' }, label: 'Agenda', icon: CalendarDays },
-  { route: { name: 'manga' }, label: 'Manga', icon: BookOpen },
-  { route: { name: 'stats' }, label: 'Statistiques', icon: ChartColumn },
-  { route: { name: 'badges' }, label: 'Trophées', icon: Gamepad2 },
-  { route: { name: 'settings' }, label: 'Paramètres', icon: Settings }
+  { route: { name: 'home' }, label: tr('Accueil'), icon: House },
+  { route: { name: 'library' }, label: tr('Collection'), icon: LibraryBig },
+  { route: { name: 'discover' }, label: tr('Store'), icon: Compass },
+  { route: { name: 'calendar' }, label: tr('Agenda'), icon: CalendarDays },
+  { route: { name: 'manga' }, label: tr('Manga'), icon: BookOpen },
+  { route: { name: 'stats' }, label: tr('Statistiques'), icon: ChartColumn },
+  { route: { name: 'badges' }, label: tr('Trophées'), icon: Gamepad2 },
+  { route: { name: 'settings' }, label: tr('Paramètres'), icon: Settings }
 ]
 
 function Nav(): React.JSX.Element {
@@ -49,7 +50,7 @@ function Nav(): React.JSX.Element {
 
   return (
     <nav
-      aria-label="Navigation principale"
+      aria-label={tr('Navigation principale')}
       className="xc-nav absolute inset-x-0 top-0 z-30 flex h-20 items-center px-12"
     >
       <div className="flex items-center gap-1.5">
@@ -76,7 +77,7 @@ function Nav(): React.JSX.Element {
         })}
       </div>
       <div className="ml-auto flex items-center gap-5">
-        <button className="xc-round" onClick={() => setPalette(true)} aria-label="Rechercher">
+        <button className="xc-round" onClick={() => setPalette(true)} aria-label={tr('Rechercher')}>
           <Search size={19} />
         </button>
         <div className="flex items-center gap-2.5">
@@ -84,12 +85,16 @@ function Nav(): React.JSX.Element {
             <Gamepad2 size={18} />
           </span>
           <span className="text-[0.8rem] leading-tight">
-            <span className="block font-semibold">{totals.week} ép. cette semaine</span>
-            <span className="text-faint">série de {totals.streak} j</span>
+            <span className="block font-semibold">
+              {totals.week} {tr('ép. cette semaine')}
+            </span>
+            <span className="text-faint">
+              {tr('série de')} {totals.streak} j
+            </span>
           </span>
         </div>
         <span className="text-[1.15rem] font-light tabular-nums">
-          {new Date(now).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+          {new Date(now).toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit' })}
         </span>
       </div>
     </nav>
@@ -148,7 +153,7 @@ function Home(): React.JSX.Element {
       <div className="xc-shade absolute inset-0" />
 
       <div className="relative">
-        <div className="scroll-x flex items-start gap-3 py-4" role="listbox" aria-label="Séries">
+        <div className="scroll-x flex items-start gap-3 py-4" role="listbox" aria-label={tr('Séries')}>
           {bar.map((m, i) => {
             const on = i === index
             return (
@@ -183,9 +188,17 @@ function Home(): React.JSX.Element {
               <h1 className="title-xl clamp-2 text-[3rem] leading-[1.02]">{titleOf(media, lang)}</h1>
               <p className="mt-3 text-[0.95rem] text-muted">
                 {tracked
-                  ? `${seen} / ${media.episodes ?? '?'} épisodes · ${STATUS_LABELS[tracked.status]}`
-                  : 'Pas encore dans ta collection'}
-                {media.nextAiring && ` · épisode ${media.nextAiring.episode} ${countdown(media.nextAiring.airingAt)}`}
+                  ? tr('{seen} / {v1} épisodes · {v2}', {
+                      seen,
+                      v1: media.episodes ?? '?',
+                      v2: STATUS_LABELS[tracked.status]
+                    })
+                  : tr('Pas encore dans ta collection')}
+                {media.nextAiring &&
+                  tr(' · épisode {episode} {v1}', {
+                    episode: media.nextAiring.episode,
+                    v1: countdown(media.nextAiring.airingAt)
+                  })}
               </p>
               {media.episodes && tracked && (
                 <div className="xc-meter mt-4">
@@ -198,20 +211,20 @@ function Home(): React.JSX.Element {
                     className="xc-primary"
                     onClick={() => {
                       void state.toggleEpisode(media.id, next, media)
-                      state.toast(`Épisode ${next} coché · ${titleOf(media, lang)}`)
+                      state.toast(tr('Épisode {next} coché · {v1}', { next, v1: titleOf(media, lang) }))
                     }}
                   >
                     <Play size={20} fill="currentColor" strokeWidth={0} />
-                    Épisode {next}
+                    {tr('Épisode')} {next}
                   </button>
                 ) : (
                   <button className="xc-primary" onClick={() => state.navigate({ name: 'anime', id: media.id })}>
                     <Play size={20} fill="currentColor" strokeWidth={0} />
-                    Ouvrir
+                    {tr('Ouvrir')}
                   </button>
                 )}
                 <button className="xc-secondary" onClick={() => state.navigate({ name: 'anime', id: media.id })}>
-                  Fiche
+                  {tr('Fiche')}
                 </button>
               </div>
             </motion.div>
@@ -220,12 +233,14 @@ function Home(): React.JSX.Element {
 
         <div className="mt-14 grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-4">
           <div className="xc-card">
-            <p className="xc-card-kicker">Temps de jeu</p>
+            <p className="xc-card-kicker">{tr('Temps de jeu')}</p>
             <p className="mt-2 text-[2rem] font-semibold">{minutesToHuman(totals.minutes)}</p>
-            <p className="text-[0.85rem] text-faint">{totals.episodes} épisodes au total</p>
+            <p className="text-[0.85rem] text-faint">
+              {totals.episodes} {tr('épisodes au total')}
+            </p>
           </div>
           <div className="xc-card">
-            <p className="xc-card-kicker">À rattraper</p>
+            <p className="xc-card-kicker">{tr('À rattraper')}</p>
             {behind.slice(0, 3).map(({ media: m, behind: n }) => (
               <button
                 key={m.id}
@@ -237,17 +252,17 @@ function Home(): React.JSX.Element {
                 <span className="text-[0.8rem] font-semibold text-[var(--accent)]">+{n}</span>
               </button>
             ))}
-            {behind.length === 0 && <p className="mt-2 text-[0.88rem] text-faint">Tout est à jour.</p>}
+            {behind.length === 0 && <p className="mt-2 text-[0.88rem] text-faint">{tr('Tout est à jour.')}</p>}
           </div>
           <div className="xc-card">
-            <p className="xc-card-kicker">Prochaines sorties</p>
+            <p className="xc-card-kicker">{tr('Prochaines sorties')}</p>
             {upcoming.slice(0, 3).map((m) => (
               <p key={m.id} className="mt-2 flex justify-between gap-3 text-[0.88rem]">
                 <span className="truncate">{titleOf(m, lang)}</span>
                 <span className="shrink-0 text-faint">{countdown(m.nextAiring!.airingAt)}</span>
               </p>
             ))}
-            {upcoming.length === 0 && <p className="mt-2 text-[0.88rem] text-faint">Rien cette semaine.</p>}
+            {upcoming.length === 0 && <p className="mt-2 text-[0.88rem] text-faint">{tr('Rien cette semaine.')}</p>}
           </div>
         </div>
       </div>
@@ -268,13 +283,15 @@ function Library(): React.JSX.Element {
   return (
     <div className="px-12 pb-16 pt-28">
       <div className="mb-8 flex items-end justify-between">
-        <h1 className="title-xl text-[2.6rem]">Ta collection</h1>
-        <p className="text-[0.95rem] text-faint">{rows.length} titres</p>
+        <h1 className="title-xl text-[2.6rem]">{tr('Ta collection')}</h1>
+        <p className="text-[0.95rem] text-faint">
+          {rows.length} {tr('titres')}
+        </p>
       </div>
       <div className="mb-8 flex flex-wrap gap-2">
         {FILTERS.map((id) => (
           <button key={id} className="xc-filter" data-on={filter === id} onClick={() => setFilter(id)}>
-            {id === 'all' ? 'Tout' : STATUS_LABELS[id]}
+            {id === 'all' ? tr('Tout') : STATUS_LABELS[id]}
           </button>
         ))}
       </div>
@@ -321,14 +338,14 @@ function Stats(): React.JSX.Element {
   const peakDay = Math.max(1, ...s.weekdays)
 
   const trophies: { name: string; hint: string; tier: Tier; got: boolean }[] = [
-    { name: 'Premier pas', hint: 'Voir un épisode', tier: 'bronze', got: s.episodes >= 1 },
-    { name: 'Centurion', hint: '100 épisodes vus', tier: 'bronze', got: s.episodes >= 100 },
-    { name: 'Finisseur', hint: '10 séries terminées', tier: 'silver', got: s.completed >= 10 },
-    { name: 'Régulier', hint: '7 jours d’affilée', tier: 'silver', got: s.bestStreak >= 7 },
-    { name: 'Marathon', hint: '10 épisodes en un jour', tier: 'gold', got: (s.record?.episodes ?? 0) >= 10 },
-    { name: 'Éclectique', hint: '8 genres différents', tier: 'gold', got: s.genres.length >= 8 },
-    { name: 'Vétéran', hint: '500 heures de visionnage', tier: 'gold', got: hours >= 500 },
-    { name: 'Platine', hint: '1000 épisodes vus', tier: 'platinum', got: s.episodes >= 1000 }
+    { name: 'Premier pas', hint: tr('Voir un épisode'), tier: 'bronze', got: s.episodes >= 1 },
+    { name: 'Centurion', hint: tr('100 épisodes vus'), tier: 'bronze', got: s.episodes >= 100 },
+    { name: 'Finisseur', hint: tr('10 séries terminées'), tier: 'silver', got: s.completed >= 10 },
+    { name: 'Régulier', hint: tr('7 jours d’affilée'), tier: 'silver', got: s.bestStreak >= 7 },
+    { name: 'Marathon', hint: tr('10 épisodes en un jour'), tier: 'gold', got: (s.record?.episodes ?? 0) >= 10 },
+    { name: 'Éclectique', hint: tr('8 genres différents'), tier: 'gold', got: s.genres.length >= 8 },
+    { name: 'Vétéran', hint: tr('500 heures de visionnage'), tier: 'gold', got: hours >= 500 },
+    { name: 'Platine', hint: tr('1000 épisodes vus'), tier: 'platinum', got: s.episodes >= 1000 }
   ]
   const count = (tier: Tier): number => trophies.filter((t) => t.tier === tier && t.got).length
 
@@ -337,13 +354,15 @@ function Stats(): React.JSX.Element {
       <section className="xc-card flex items-center gap-8 !p-7">
         <span className="xc-level">{level}</span>
         <div className="min-w-0 flex-1">
-          <p className="xc-card-kicker">Niveau de spectateur</p>
-          <p className="title-xl mt-1 text-[2.2rem]">{Math.round(hours)} heures de jeu</p>
+          <p className="xc-card-kicker">{tr('Niveau de spectateur')}</p>
+          <p className="title-xl mt-1 text-[2.2rem]">
+            {Math.round(hours)} {tr('heures de jeu')}
+          </p>
           <div className="xc-meter mt-3 !max-w-none">
             <motion.span initial={{ width: 0 }} animate={{ width: `${into * 100}%` }} transition={{ duration: 1 }} />
           </div>
           <p className="mt-1.5 text-[0.85rem] text-faint">
-            {Math.round(into * 100)} % vers le niveau {level + 1}
+            {Math.round(into * 100)} {tr('% vers le niveau')} {level + 1}
           </p>
         </div>
         <div className="flex gap-5">
@@ -356,7 +375,7 @@ function Stats(): React.JSX.Element {
         </div>
       </section>
 
-      <h2 className="title-xl mb-4 mt-10 text-[1.5rem]">Trophées</h2>
+      <h2 className="title-xl mb-4 mt-10 text-[1.5rem]">{tr('Trophées')}</h2>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-3">
         {trophies.map((t, i) => (
           <motion.div
@@ -370,13 +389,13 @@ function Stats(): React.JSX.Element {
             <span className={`xc-cup xc-${t.tier}`} aria-hidden />
             <div>
               <p className="font-semibold">{t.name}</p>
-              <p className="text-[0.8rem] text-faint">{t.got ? t.hint : `Verrouillé · ${t.hint}`}</p>
+              <p className="text-[0.8rem] text-faint">{t.got ? t.hint : tr('Verrouillé · {hint}', { hint: t.hint })}</p>
             </div>
           </motion.div>
         ))}
       </div>
 
-      <h2 className="title-xl mb-4 mt-10 text-[1.5rem]">Les plus joués</h2>
+      <h2 className="title-xl mb-4 mt-10 text-[1.5rem]">{tr('Les plus joués')}</h2>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-3">
         {s.topSeries.slice(0, 6).map(({ media, episodes, minutes }) => (
           <button
@@ -390,7 +409,7 @@ function Stats(): React.JSX.Element {
             <span className="min-w-0 flex-1">
               <span className="block truncate font-semibold">{titleOf(media, lang)}</span>
               <span className="block text-[0.8rem] text-faint">
-                {minutesToHuman(minutes)} · {episodes} ép.
+                {minutesToHuman(minutes)} · {episodes} {tr('ép.')}
               </span>
               {media.episodes && (
                 <span className="xc-meter mt-2 block">
@@ -403,7 +422,7 @@ function Stats(): React.JSX.Element {
       </div>
 
       <section className="xc-card mt-10">
-        <p className="xc-card-kicker">Tes jours de jeu</p>
+        <p className="xc-card-kicker">{tr('Tes jours de jeu')}</p>
         <div className="mt-4 flex h-[120px] items-end gap-3">
           {s.weekdays.map((n, i) => (
             <div key={i} className="flex h-full flex-1 flex-col items-center justify-end gap-2">

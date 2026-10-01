@@ -15,6 +15,7 @@ import { statusBlocked } from '@/lib/status'
 import { useApp } from '@/store/app'
 import { useCatalogue, useForYou, useMangaList, useWeek } from './pages-data'
 import type { DetailHeroProps } from '.'
+import { t as tr, locale } from '@shared/i18n'
 
 /*
  * MAGAZINE — les rubriques du numéro : les critiques, le programme télé de la
@@ -29,11 +30,11 @@ function stars(score: number | null): string {
 }
 
 const SECTIONS: { kind: BrowseKind; label: string }[] = [
-  { kind: 'trending', label: 'L’actualité' },
-  { kind: 'season', label: 'La saison' },
-  { kind: 'popular', label: 'Les incontournables' },
-  { kind: 'top', label: 'Les chefs-d’œuvre' },
-  { kind: 'upcoming', label: 'Les sorties à venir' }
+  { kind: 'trending', label: tr('L’actualité') },
+  { kind: 'season', label: tr('La saison') },
+  { kind: 'popular', label: tr('Les incontournables') },
+  { kind: 'top', label: tr('Les chefs-d’œuvre') },
+  { kind: 'upcoming', label: tr('Les sorties à venir') }
 ]
 
 function Review({ media, lead = false }: { media: Media; lead?: boolean }): React.JSX.Element {
@@ -75,12 +76,16 @@ export function MagazineDiscover({ initialSearch }: { initialSearch?: string }):
     <div className="px-12 pb-16 pt-8">
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div>
-          <p className="xm-kicker">Rubrique</p>
-          <h1 className="xm-headline mt-2">{searching ? 'Aux archives' : 'Critiques'}</h1>
+          <p className="xm-kicker">{tr('Rubrique')}</p>
+          <h1 className="xm-headline mt-2">{searching ? tr('Aux archives') : tr('Critiques')}</h1>
         </div>
         <label className="xm-searchline">
           <Search size={15} />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Chercher dans les archives…" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={tr('Chercher dans les archives…')}
+          />
         </label>
       </div>
       {!searching && (
@@ -106,28 +111,32 @@ export function MagazineDiscover({ initialSearch }: { initialSearch?: string }):
               <Review key={media.id} media={media} />
             ))}
           </div>
-          {loading && items.length === 0 && <p className="xm-caption">Mise sous presse…</p>}
+          {loading && items.length === 0 && <p className="xm-caption">{tr('Mise sous presse…')}</p>}
           {error && <p className="xm-caption">{error}</p>}
           {hasMore && !loading && (
             <button className="xm-more mt-8" onClick={loadMore}>
-              Lire la suite du dossier →
+              {tr('Lire la suite du dossier →')}
             </button>
           )}
         </div>
 
         <aside className="xm-column border-l pl-8" style={{ borderColor: 'rgba(26,26,26,.2)' }}>
-          <p className="xm-kicker">Nos recommandations</p>
+          <p className="xm-kicker">{tr('Nos recommandations')}</p>
           <ol className="mt-3">
             {(rec?.picks ?? []).slice(0, 8).map((pick, i) => (
               <li key={pick.media.id} className="xm-brief">
                 <span className="xm-num">{i + 1}</span>
                 <button className="text-left" onClick={() => navigate({ name: 'anime', id: pick.media.id })}>
                   <span className="xm-brief-title">{titleOf(pick.media, lang)}</span>
-                  {pick.from[0] && <span className="xm-caption block">Si tu as aimé {pick.from[0]}</span>}
+                  {pick.from[0] && (
+                    <span className="xm-caption block">
+                      {tr('Si tu as aimé')} {pick.from[0]}
+                    </span>
+                  )}
                 </button>
               </li>
             ))}
-            {!rec && <li className="xm-caption">La rédaction prépare ta sélection…</li>}
+            {!rec && <li className="xm-caption">{tr('La rédaction prépare ta sélection…')}</li>}
           </ol>
         </aside>
       </div>
@@ -135,7 +144,7 @@ export function MagazineDiscover({ initialSearch }: { initialSearch?: string }):
   )
 }
 
-const dayTitle = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
+const dayTitle = new Intl.DateTimeFormat(locale(), { weekday: 'long', day: 'numeric', month: 'long' })
 
 export function MagazineCalendar(): React.JSX.Element {
   const navigate = useApp((s) => s.navigate)
@@ -147,37 +156,39 @@ export function MagazineCalendar(): React.JSX.Element {
 
   return (
     <div className="px-12 pb-16 pt-8">
-      <p className="xm-kicker">Guide de la semaine</p>
-      <h1 className="xm-headline mt-2">Le programme</h1>
+      <p className="xm-kicker">{tr('Guide de la semaine')}</p>
+      <h1 className="xm-headline mt-2">{tr('Le programme')}</h1>
       <div className="xm-rule-double mt-6 flex flex-wrap items-center gap-8 py-2">
         <button
           className="xm-section"
           aria-current={scope === 'library' ? 'page' : undefined}
           onClick={() => setScope('library')}
         >
-          Ta sélection
+          {tr('Ta sélection')}
         </button>
         <button
           className="xm-section"
           aria-current={scope === 'all' ? 'page' : undefined}
           onClick={() => setScope('all')}
         >
-          Toutes les chaînes
+          {tr('Toutes les chaînes')}
         </button>
         <span className="ml-auto flex gap-6">
           <button className="xm-section" onClick={() => setOffset((o) => o - 1)}>
-            ← Semaine précédente
+            {tr('← Semaine précédente')}
           </button>
           <button className="xm-section" onClick={() => setOffset(0)} aria-current={offset === 0 ? 'page' : undefined}>
-            Cette semaine
+            {tr('Cette semaine')}
           </button>
           <button className="xm-section" onClick={() => setOffset((o) => o + 1)}>
-            Semaine suivante →
+            {tr('Semaine suivante →')}
           </button>
         </span>
       </div>
       <p className="xm-deck mt-4">
-        {week.loading ? 'Impression en cours…' : `${week.total} diffusion${week.total > 1 ? 's' : ''} au programme.`}
+        {week.loading
+          ? tr('Impression en cours…')
+          : tr('{total} diffusion{v1} au programme.', { total: week.total, v1: week.total > 1 ? 's' : '' })}
       </p>
       {week.error && <p className="xm-caption">{week.error}</p>}
 
@@ -196,10 +207,12 @@ export function MagazineCalendar(): React.JSX.Element {
                 <span className="xm-listing-time">{formatTime(slot.airingAt * 1000)}</span>
                 <span className="xm-leader" />
                 <span className="font-semibold">{titleOf(slot.media, lang)}</span>
-                <span className="xm-caption whitespace-nowrap">ép. {slot.episode}</span>
+                <span className="xm-caption whitespace-nowrap">
+                  {tr('ép.')} {slot.episode}
+                </span>
               </button>
             ))}
-            {day.items.length === 0 && !week.loading && <p className="xm-caption">Relâche.</p>}
+            {day.items.length === 0 && !week.loading && <p className="xm-caption">{tr('Relâche.')}</p>}
           </section>
         ))}
       </div>
@@ -208,9 +221,9 @@ export function MagazineCalendar(): React.JSX.Element {
 }
 
 const MANGA_TABS: { kind: MangaKind; label: string }[] = [
-  { kind: 'trending', label: 'On en parle' },
-  { kind: 'popular', label: 'Les plus lus' },
-  { kind: 'top', label: 'Les mieux notés' }
+  { kind: 'trending', label: tr('On en parle') },
+  { kind: 'popular', label: tr('Les plus lus') },
+  { kind: 'top', label: tr('Les mieux notés') }
 ]
 
 export function MagazineManga(): React.JSX.Element {
@@ -224,12 +237,12 @@ export function MagazineManga(): React.JSX.Element {
     <div className="px-12 pb-16 pt-8">
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div>
-          <p className="xm-kicker">Supplément</p>
-          <h1 className="xm-headline mt-2">Le cahier manga</h1>
+          <p className="xm-kicker">{tr('Supplément')}</p>
+          <h1 className="xm-headline mt-2">{tr('Le cahier manga')}</h1>
         </div>
         <label className="xm-searchline">
           <Search size={15} />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Chercher un titre…" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={tr('Chercher un titre…')} />
         </label>
       </div>
       <div className="xm-rule-double mt-6 flex gap-8 py-2">
@@ -252,7 +265,7 @@ export function MagazineManga(): React.JSX.Element {
         >
           <img src={lead.cover.xl} alt="" className="xm-photo aspect-[2/3] w-full object-cover" />
           <span>
-            <span className="xm-kicker block">À la une du cahier</span>
+            <span className="xm-kicker block">{tr('À la une du cahier')}</span>
             <span className="xm-headline mt-2 block !text-[3.2rem]">{lead.title.english ?? lead.title.romaji}</span>
             {lead.description && <span className="xm-body xm-dropcap clamp-[7] mt-4 block">{lead.description}</span>}
           </span>
@@ -269,13 +282,13 @@ export function MagazineManga(): React.JSX.Element {
             <img src={manga.cover.large} alt="" className="xm-photo w-full object-cover" />
             <span className="xm-review-title mt-2 block">{manga.title.english ?? manga.title.romaji}</span>
             <span className="xm-caption block">
-              {manga.chapters ? `${manga.chapters} chapitres` : 'En cours de parution'}
-              {manga.startYear ? ` · depuis ${manga.startYear}` : ''}
+              {manga.chapters ? `${manga.chapters} chapitres` : tr('En cours de parution')}
+              {manga.startYear ? tr(' · depuis {startYear}', { startYear: manga.startYear }) : ''}
             </span>
           </button>
         ))}
       </div>
-      {loading && <p className="xm-caption">Mise sous presse…</p>}
+      {loading && <p className="xm-caption">{tr('Mise sous presse…')}</p>}
       {error && <p className="xm-caption">{error}</p>}
       <Modal open={open !== null} onClose={() => setOpen(null)} width={640}>
         {open && <MangaSheet manga={open} onClose={() => setOpen(null)} />}
@@ -293,33 +306,33 @@ export function MagazineDetailHero(props: DetailHeroProps): React.JSX.Element {
   return (
     <header className="px-12 pt-8">
       <button className="xm-section mb-6 flex items-center gap-2" onClick={props.onBack}>
-        <ArrowLeft size={14} /> Retour au numéro
+        <ArrowLeft size={14} /> {tr('Retour au numéro')}
       </button>
       <p className="xm-kicker">
         {formatLabel(media.format)} · {seasonLabel(media.season, media.seasonYear)}
       </p>
       <h1 className="xm-headline mt-2 !text-[5rem]">{titleOf(media, lang)}</h1>
       <p className="xm-deck mt-3">
-        {props.alsoKnownAs[0] ?? media.studios[0] ?? 'Une série à découvrir'}
-        {media.studios[0] && props.alsoKnownAs[0] ? ` — produit par ${media.studios[0]}` : ''}
+        {props.alsoKnownAs[0] ?? media.studios[0] ?? tr('Une série à découvrir')}
+        {media.studios[0] && props.alsoKnownAs[0] ? tr(' — produit par {v0}', { v0: media.studios[0] }) : ''}
       </p>
 
       <div className="xm-rule-double mt-6 grid grid-cols-[1fr_300px] gap-10 pt-6">
         <figure>
           <img src={media.banner ?? media.cover.xl} alt="" className="xm-photo aspect-[16/7] w-full object-cover" />
           <figcaption className="xm-caption mt-1.5">
-            {titleOf(media, lang)} · {media.studios[0] ?? 'Studio inconnu'}
+            {titleOf(media, lang)} · {media.studios[0] ?? tr('Studio inconnu')}
           </figcaption>
         </figure>
 
         <aside className="xm-stat">
-          <p className="xm-kicker">Fiche technique</p>
+          <p className="xm-kicker">{tr('Fiche technique')}</p>
           <dl className="mt-2 text-[0.9rem]">
             {[
-              ['Note', stars(media.averageScore)],
-              ['Épisodes', total ? String(total) : '—'],
-              ['Studio', media.studios[0] ?? '—'],
-              ['Statut', entry ? STATUS_LABELS[entry.status] : 'Pas dans ta bibliothèque']
+              [tr('Note'), stars(media.averageScore)],
+              [tr('Épisodes'), total ? String(total) : '—'],
+              [tr('Studio'), media.studios[0] ?? '—'],
+              [tr('Statut'), entry ? STATUS_LABELS[entry.status] : tr('Pas dans ta bibliothèque')]
             ].map(([k, v]) => (
               <div key={k} className="xm-entry !grid-cols-[auto_1fr_auto]">
                 <dt className="xm-caption">{k}</dt>
@@ -329,32 +342,33 @@ export function MagazineDetailHero(props: DetailHeroProps): React.JSX.Element {
             ))}
           </dl>
 
-          <p className="xm-kicker mt-6">Ta lecture</p>
+          <p className="xm-kicker mt-6">{tr('Ta lecture')}</p>
           {entry && total ? (
             <p className="xm-big mt-1 !text-[3.4rem]">
               {seen}
               <span className="xm-caption !text-[1rem]"> / {total}</span>
             </p>
           ) : (
-            <p className="xm-caption mt-1">Tu n’as pas encore commencé.</p>
+            <p className="xm-caption mt-1">{tr('Tu n’as pas encore commencé.')}</p>
           )}
           <div className="mt-3 flex flex-col items-start gap-2">
             {next !== null && (
               <button className="xm-more" onClick={props.onMark}>
-                Cocher l’épisode {next} →
+                {tr('Cocher l’épisode')} {next} →
               </button>
             )}
             {!entry && (
               <button className="xm-more" onClick={props.onAdd}>
-                Ajouter à ma pile de lecture →
+                {tr('Ajouter à ma pile de lecture →')}
               </button>
             )}
             <button className="xm-section" onClick={props.onFavorite}>
-              {entry?.favorite ? '♥ Coup de cœur' : '♡ Marquer comme coup de cœur'}
+              {entry?.favorite ? tr('♥ Coup de cœur') : tr('♡ Marquer comme coup de cœur')}
             </button>
             {entry && (
               <button className="xm-section" onClick={props.onLists}>
-                Ranger dans une liste{props.inLists > 0 ? ` (${props.inLists})` : ''}
+                {tr('Ranger dans une liste')}
+                {props.inLists > 0 ? ` (${props.inLists})` : ''}
               </button>
             )}
           </div>

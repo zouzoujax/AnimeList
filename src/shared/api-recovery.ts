@@ -1,3 +1,4 @@
+import { t } from './i18n'
 /**
  * La reprise après une panne d'AniList : quand revérifier, et quoi rejouer.
  *
@@ -94,9 +95,9 @@ export function oldestShown(current: number | undefined, at: number): number {
 /** « à l'instant », « il y a 12 min », « il y a 3 h », « il y a 2 j ». */
 export function ageLabel(at: number, now: number): string {
   const minutes = Math.max(0, Math.round((now - at) / 60_000))
-  if (minutes < 2) return 'à l’instant'
-  if (minutes < 60) return `il y a ${minutes} min`
+  if (minutes < 2) return t('à l’instant')
+  if (minutes < 60) return t('il y a {minutes} min', { minutes })
   const hours = Math.round(minutes / 60)
-  if (hours < 36) return `il y a ${hours} h`
-  return `il y a ${Math.round(hours / 24)} j`
+  if (hours < 36) return t('il y a {hours} h', { hours })
+  return t('il y a {v0} j', { v0: Math.round(hours / 24) })
 }

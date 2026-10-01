@@ -27,6 +27,7 @@ import {
 import type { NoteKind, ReleaseNote, UpdateStatus } from '@shared/types'
 import { Modal } from './ui'
 import { useApp } from '../store/app'
+import { t } from '@shared/i18n'
 
 const KIND: Record<NoteKind, { icon: typeof Plus; color: string }> = {
   add: { icon: Plus, color: 'var(--accent-2)' },
@@ -50,11 +51,11 @@ function NotesModal({
   return (
     <Modal open={open} onClose={onClose} width={560}>
       <div className="border-b px-5 py-4" style={{ borderColor: 'var(--line)' }}>
-        <p className="text-[1.02rem] font-semibold">Quoi de neuf</p>
+        <p className="text-[1.02rem] font-semibold">{t('Quoi de neuf')}</p>
         <p className="mt-0.5 text-[0.76rem] text-faint">
           {notes.length > 1
-            ? `${notes.length} versions depuis la tienne — voici tout ce qui change.`
-            : `Ce que la version ${notes[0]?.version ?? ''} apporte.`}
+            ? t('{length} versions depuis la tienne — voici tout ce qui change.', { length: notes.length })
+            : t('Ce que la version {v0} apporte.', { v0: notes[0]?.version ?? '' })}
         </p>
       </div>
 
@@ -63,7 +64,7 @@ function NotesModal({
           <section key={note.version} className="mb-5 last:mb-0">
             {notes.length > 1 && (
               <p className="label mb-2" style={{ color: 'var(--accent)' }}>
-                Version {note.version}
+                {t('Version')} {note.version}
               </p>
             )}
             {note.sections.map((section) => {
@@ -93,7 +94,7 @@ function NotesModal({
 
       <div className="flex justify-end gap-2 border-t px-5 py-3" style={{ borderColor: 'var(--line)' }}>
         <button className="btn" onClick={onClose}>
-          Fermer
+          {t('Fermer')}
         </button>
         {action}
       </div>
@@ -124,25 +125,25 @@ export default function UpdatePanel({ version }: { version: string | null }): Re
   const hint = ((): string => {
     switch (status.phase) {
       case 'checking':
-        return 'Recherche…'
+        return t('Recherche…')
       case 'current':
-        return `Version ${version ?? '—'} — à jour.`
+        return t('Version {v0} — à jour.', { v0: version ?? '—' })
       case 'available':
         return auto
-          ? `Version ${status.version} trouvée, téléchargement en cours…`
-          : `Version ${status.version} disponible.`
+          ? t('Version {version} trouvée, téléchargement en cours…', { version: status.version })
+          : t('Version {version} disponible.', { version: status.version })
       case 'downloading':
-        return `Téléchargement… ${status.percent} %`
+        return t('Téléchargement… {percent} %', { percent: status.percent })
       case 'ready':
-        return `Version ${status.version} prête. Elle s'installera à la fermeture de l'app.`
+        return t("Version {version} prête. Elle s'installera à la fermeture de l'app.", { version: status.version })
       case 'error':
-        return status.message ?? 'La vérification a échoué.'
+        return status.message ?? t('La vérification a échoué.')
       case 'unsupported':
-        return 'Lancé depuis les sources : il n’y a pas d’application installée à remplacer.'
+        return t('Lancé depuis les sources : il n’y a pas d’application installée à remplacer.')
       default:
         return auto
-          ? `Version ${version ?? '—'}. Les nouvelles versions s'installent toutes seules.`
-          : `Version ${version ?? '—'}.`
+          ? t("Version {v0}. Les nouvelles versions s'installent toutes seules.", { v0: version ?? '—' })
+          : t('Version {v0}.', { v0: version ?? '—' })
     }
   })()
 
@@ -155,14 +156,14 @@ export default function UpdatePanel({ version }: { version: string | null }): Re
       }}
     >
       <Download size={14} />
-      Télécharger
+      {t('Télécharger')}
     </button>
   )
 
   const restart = (
     <button className="btn btn-primary" onClick={() => void window.api.app.installUpdate()}>
       <RotateCw size={14} />
-      Redémarrer maintenant
+      {t('Redémarrer maintenant')}
     </button>
   )
 
@@ -170,7 +171,7 @@ export default function UpdatePanel({ version }: { version: string | null }): Re
     <div className="border-t py-3" style={{ borderColor: 'var(--line)' }}>
       <div className="flex flex-wrap items-center gap-3">
         <div className="min-w-[12rem] flex-1">
-          <p className="text-[0.85rem] font-medium">Mises à jour</p>
+          <p className="text-[0.85rem] font-medium">{t('Mises à jour')}</p>
           <p className="mt-0.5 flex items-center gap-1.5 text-[0.74rem] text-faint">
             {status.phase === 'error' && <TriangleAlert size={12} style={{ color: '#ff8080' }} />}
             {status.phase === 'current' && <Check size={12} style={{ color: 'var(--accent-2)' }} />}
@@ -183,7 +184,7 @@ export default function UpdatePanel({ version }: { version: string | null }): Re
         {hasNotes && (
           <button className="btn" onClick={() => setNotesOpen(true)}>
             <Sparkles size={14} />
-            Nouveautés
+            {t('Nouveautés')}
           </button>
         )}
 
@@ -200,19 +201,21 @@ export default function UpdatePanel({ version }: { version: string | null }): Re
               void window.api.app
                 .checkUpdate()
                 .then((next) => {
-                  if (next.phase === 'current') toast('Tu as déjà la dernière version.', 'ok')
+                  if (next.phase === 'current') toast(t('Tu as déjà la dernière version.'), 'ok')
                   // Trouver une version et ne rien montrer de ce qu'elle change
                   // reviendrait à demander un acte de foi.
                   if (next.notes.length > 0) setNotesOpen(true)
-                  else if (next.version) toast(`Version ${next.version} trouvée.`, 'ok')
+                  else if (next.version) toast(t('Version {version} trouvée.', { version: next.version }), 'ok')
                 })
                 // Sans ce filet, un rejet du canal laissait le bouton sans effet
                 // visible : rien ne se passait, et rien ne disait pourquoi.
-                .catch((err: Error) => toast(`Vérification impossible : ${humanMessage(err.message)}`, 'error'))
+                .catch((err: Error) =>
+                  toast(t('Vérification impossible : {v0}', { v0: humanMessage(err.message) }), 'error')
+                )
             }
           >
             <RefreshCw size={14} className={busy ? 'animate-spin' : undefined} />
-            Vérifier
+            {t('Vérifier')}
           </button>
         )}
       </div>

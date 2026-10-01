@@ -10,6 +10,7 @@ import { CarnetCalendar, CarnetDetailHero, CarnetDiscover, CarnetManga } from '.
 import { CarnetBadges } from './badges-pages'
 import { CarnetDetailBody } from './detail-bodies'
 import type { Experience } from '.'
+import { t, locale } from '@shared/i18n'
 
 /*
  * CARNET — un carnet de collectionneur posé sur du cuir : onglets en ruban sur
@@ -19,14 +20,14 @@ import type { Experience } from '.'
  */
 
 const TABS: { route: Route; label: string; color: string }[] = [
-  { route: { name: 'home' }, label: 'Carnet', color: '#c8553d' },
-  { route: { name: 'library' }, label: 'Étagères', color: '#e0a458' },
-  { route: { name: 'discover' }, label: 'Trouvailles', color: '#588b8b' },
-  { route: { name: 'calendar' }, label: 'Agenda', color: '#8f5d9a' },
-  { route: { name: 'manga' }, label: 'Manga', color: '#6b8f4e' },
-  { route: { name: 'stats' }, label: 'Bilan', color: '#3f6c9e' },
-  { route: { name: 'badges' }, label: 'Badges', color: '#b5838d' },
-  { route: { name: 'settings' }, label: 'Réglages', color: '#7a6a58' }
+  { route: { name: 'home' }, label: t('Carnet'), color: '#c8553d' },
+  { route: { name: 'library' }, label: t('Étagères'), color: '#e0a458' },
+  { route: { name: 'discover' }, label: t('Trouvailles'), color: '#588b8b' },
+  { route: { name: 'calendar' }, label: t('Agenda'), color: '#8f5d9a' },
+  { route: { name: 'manga' }, label: t('Manga'), color: '#6b8f4e' },
+  { route: { name: 'stats' }, label: t('Bilan'), color: '#3f6c9e' },
+  { route: { name: 'badges' }, label: t('Badges'), color: '#b5838d' },
+  { route: { name: 'settings' }, label: t('Réglages'), color: '#7a6a58' }
 ]
 
 /** Une inclinaison qui a l'air laissée au hasard, mais qui ne bouge pas d'un rendu à l'autre. */
@@ -39,10 +40,10 @@ function Nav(): React.JSX.Element {
 
   return (
     <nav
-      aria-label="Navigation principale"
+      aria-label={t('Navigation principale')}
       className="xk-tabs flex w-[64px] shrink-0 flex-col items-start gap-1.5 py-8"
     >
-      <button className="xk-tab xk-tab-search" onClick={() => setPalette(true)} aria-label="Rechercher">
+      <button className="xk-tab xk-tab-search" onClick={() => setPalette(true)} aria-label={t('Rechercher')}>
         <Search size={16} />
       </button>
       {TABS.map(({ route: target, label, color }) => {
@@ -80,8 +81,8 @@ function Polaroid({ media, index }: { media: Media; index: number }): React.JSX.
       <img src={media.cover.large} alt="" className="aspect-[3/4] w-full object-cover" />
       <span className="xk-hand mt-2 block clamp-2">{titleOf(media, state.prefs.titleLang)}</span>
       <span className="xk-note block">
-        ép. {seen}/{media.episodes ?? '?'}
-        {next ? ` · prochain : ${next}` : ''}
+        {t('ép.')} {seen}/{media.episodes ?? '?'}
+        {next ? t(' · prochain : {next}', { next }) : ''}
       </span>
     </motion.button>
   )
@@ -104,7 +105,9 @@ function TradingCard({ media, index }: { media: Media; index: number }): React.J
         <span className="xk-card-face xk-card-back">
           <span className="xk-hand">{titleOf(media, lang)}</span>
           <span className="xk-note mt-2 block">{formatLabel(media.format)}</span>
-          <span className="xk-note block">{media.episodes ?? '?'} épisodes</span>
+          <span className="xk-note block">
+            {media.episodes ?? '?'} {t('épisodes')}
+          </span>
           <span className="xk-note block">{media.averageScore ?? '—'} / 100</span>
           <span className="xk-note block">{media.studios[0] ?? ''}</span>
         </span>
@@ -130,18 +133,18 @@ function Home(): React.JSX.Element {
         <header className="flex items-end justify-between">
           <div>
             <p className="xk-note">
-              {new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+              {new Date().toLocaleDateString(locale(), { day: 'numeric', month: 'long', year: 'numeric' })}
             </p>
-            <h1 className="xk-title">Mon carnet</h1>
+            <h1 className="xk-title">{t('Mon carnet')}</h1>
           </div>
           <p className="xk-hand text-right">
-            {minutesToHuman(totals.minutes)} de visionnage
+            {minutesToHuman(totals.minutes)} {t('de visionnage')}
             <br />
-            {totals.completed} séries au complet
+            {totals.completed} {t('séries au complet')}
           </p>
         </header>
 
-        <h2 className="xk-heading mt-10">En cours</h2>
+        <h2 className="xk-heading mt-10">{t('En cours')}</h2>
         <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-7">
           {continuing.slice(0, 10).map((m, i) => (
             <Polaroid key={m.id} media={m} index={i} />
@@ -150,7 +153,7 @@ function Home(): React.JSX.Element {
 
         <div className="mt-12 grid grid-cols-[1fr_1.2fr] gap-12">
           <section>
-            <h2 className="xk-heading">À rattraper</h2>
+            <h2 className="xk-heading">{t('À rattraper')}</h2>
             <div className="mt-4 flex flex-wrap gap-4">
               {behind.slice(0, 6).map(({ media, behind: n }, i) => (
                 <motion.button
@@ -164,12 +167,12 @@ function Home(): React.JSX.Element {
                   <span className="xk-postit-count">+{n}</span>
                 </motion.button>
               ))}
-              {behind.length === 0 && <p className="xk-hand">Rien en retard. Bravo.</p>}
+              {behind.length === 0 && <p className="xk-hand">{t('Rien en retard. Bravo.')}</p>}
             </div>
           </section>
           <section>
-            <h2 className="xk-heading">Pioche du jour</h2>
-            <p className="xk-note">Survole une carte pour la retourner.</p>
+            <h2 className="xk-heading">{t('Pioche du jour')}</h2>
+            <p className="xk-note">{t('Survole une carte pour la retourner.')}</p>
             <div className="xk-fan mt-6">
               {trending.items.slice(0, 5).map((m, i) => (
                 <TradingCard key={m.id} media={m} index={i} />
@@ -180,7 +183,7 @@ function Home(): React.JSX.Element {
 
         {completed.length > 0 && (
           <>
-            <h2 className="xk-heading mt-12">Timbres de la collection</h2>
+            <h2 className="xk-heading mt-12">{t('Timbres de la collection')}</h2>
             <div className="mt-4 flex flex-wrap gap-3">
               {completed.map(({ media }, i) => (
                 <motion.button
@@ -209,7 +212,7 @@ function Library(): React.JSX.Element {
 
   return (
     <div className="px-10 py-10">
-      <h1 className="xk-title xk-title-light">Étagères</h1>
+      <h1 className="xk-title xk-title-light">{t('Étagères')}</h1>
       {SHELVES.map((status) => {
         const rows = shelf.filter((r) => r.entry.status === status)
         if (rows.length === 0) return null
@@ -258,16 +261,17 @@ function Stats(): React.JSX.Element {
       <div className="xk-page relative mx-auto max-w-[1180px] px-16 py-12">
         <span className="xk-rings" aria-hidden />
         <p className="xk-note">
-          Bilan arrêté au {new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+          {t('Bilan arrêté au')}{' '}
+          {new Date().toLocaleDateString(locale(), { day: 'numeric', month: 'long', year: 'numeric' })}
         </p>
-        <h1 className="xk-title">Mon bilan</h1>
+        <h1 className="xk-title">{t('Mon bilan')}</h1>
 
         <div className="mt-8 grid grid-cols-4 gap-6">
           {[
             [Math.round(s.minutes / 60), 'heures'],
-            [s.episodes, 'épisodes'],
-            [s.completed, 'séries finies'],
-            [s.bestStreak, 'jours d’affilée']
+            [s.episodes, t('épisodes')],
+            [s.completed, t('séries finies')],
+            [s.bestStreak, t('jours d’affilée')]
           ].map(([value, label], i) => (
             <motion.div
               key={label}
@@ -285,7 +289,7 @@ function Stats(): React.JSX.Element {
 
         <div className="mt-12 grid grid-cols-[320px_1fr] gap-12">
           <section>
-            <h2 className="xk-heading">Mes genres</h2>
+            <h2 className="xk-heading">{t('Mes genres')}</h2>
             <svg viewBox="0 0 200 200" className="mt-4 w-[240px]">
               {arcs.map((a) => (
                 <motion.circle
@@ -305,7 +309,7 @@ function Stats(): React.JSX.Element {
               ))}
               <circle cx="100" cy="100" r="52" fill="#f3e6cf" />
               <text x="100" y="104" textAnchor="middle" className="xk-donut-label">
-                {s.genres.length} genres
+                {s.genres.length} {t('genres')}
               </text>
             </svg>
             <ul className="mt-4 flex flex-col gap-1">
@@ -320,7 +324,7 @@ function Stats(): React.JSX.Element {
           </section>
 
           <section>
-            <h2 className="xk-heading">Mon podium</h2>
+            <h2 className="xk-heading">{t('Mon podium')}</h2>
             <div className="mt-6 flex items-end gap-6">
               {s.topSeries.slice(0, 3).map(({ media, minutes }, i) => (
                 <motion.button
@@ -339,7 +343,7 @@ function Stats(): React.JSX.Element {
               ))}
             </div>
 
-            <h2 className="xk-heading mt-10">Ma semaine type</h2>
+            <h2 className="xk-heading mt-10">{t('Ma semaine type')}</h2>
             <div className="mt-4 flex h-[120px] items-end gap-4">
               {s.weekdays.map((n, i) => (
                 <div key={i} className="flex h-full flex-1 flex-col items-center justify-end gap-1">
@@ -356,7 +360,7 @@ function Stats(): React.JSX.Element {
           </section>
         </div>
 
-        <h2 className="xk-heading mt-12">Mes mois en timbres</h2>
+        <h2 className="xk-heading mt-12">{t('Mes mois en timbres')}</h2>
         <div className="mt-4 grid grid-cols-6 gap-4">
           {s.months.map((m, i) => (
             <div
@@ -366,7 +370,7 @@ function Stats(): React.JSX.Element {
             >
               <span className="xk-hand block">{m.label}</span>
               <span className="xk-scribble-num !text-[2rem]">{m.episodes}</span>
-              <span className="xk-note block">épisodes</span>
+              <span className="xk-note block">{t('épisodes')}</span>
             </div>
           ))}
         </div>

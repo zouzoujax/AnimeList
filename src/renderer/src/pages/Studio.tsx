@@ -8,6 +8,7 @@ import { ErrorBox, PosterSkeletons, Section, Spinner } from '@/components/ui'
 import { num } from '@/lib/format'
 import { useInView } from '@/lib/hooks'
 import { useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
 const EMPTY_ITEMS: Media[] = []
 
@@ -103,7 +104,7 @@ export default function StudioPage({ studio }: { studio: string }): React.JSX.El
     <div className="page">
       <button className="btn btn-ghost mb-4 !px-2" onClick={back}>
         <ArrowLeft size={15} />
-        Retour
+        {t('Retour')}
       </button>
 
       <div className="mb-7 flex items-center gap-3.5">
@@ -116,7 +117,9 @@ export default function StudioPage({ studio }: { studio: string }): React.JSX.El
         <div className="min-w-0 flex-1">
           <h1 className="title-xl text-[1.85rem] leading-tight">{name}</h1>
           <p className="mt-0.5 text-[0.85rem] text-muted">
-            {loading ? 'Chargement…' : `${num(items.length)} titres chargés · ${num(seen.length)} dans ta bibliothèque`}
+            {loading
+              ? t('Chargement…')
+              : t('{v0} titres chargés · {v1} dans ta bibliothèque', { v0: num(items.length), v1: num(seen.length) })}
           </p>
         </div>
 
@@ -128,11 +131,11 @@ export default function StudioPage({ studio }: { studio: string }): React.JSX.El
       ) : error ? (
         <ErrorBox message={error} />
       ) : items.length === 0 ? (
-        <p className="py-16 text-center text-sm text-faint">Aucun titre trouvé pour ce studio.</p>
+        <p className="py-16 text-center text-sm text-faint">{t('Aucun titre trouvé pour ce studio.')}</p>
       ) : (
         <>
           {seen.length > 0 && (
-            <Section title="Déjà dans ta bibliothèque" subtitle={`${num(seen.length)} titres`}>
+            <Section title={t('Déjà dans ta bibliothèque')} subtitle={`${num(seen.length)} titres`}>
               <div className="card-grid">
                 {seen.map((media, i) => (
                   <AnimeCard key={media.id} media={media} width="100%" index={i % 24} />
@@ -142,7 +145,10 @@ export default function StudioPage({ studio }: { studio: string }): React.JSX.El
           )}
 
           {rest.length > 0 && (
-            <Section title={seen.length > 0 ? 'Le reste du catalogue' : 'Catalogue'} subtitle="Trié par popularité">
+            <Section
+              title={seen.length > 0 ? t('Le reste du catalogue') : t('Catalogue')}
+              subtitle={t('Trié par popularité')}
+            >
               <div className="card-grid">
                 {rest.map((media, i) => (
                   <AnimeCard key={media.id} media={media} width="100%" index={i % 24} />
@@ -152,7 +158,7 @@ export default function StudioPage({ studio }: { studio: string }): React.JSX.El
           )}
 
           {hasMore && <div ref={sentinel} className="h-4" />}
-          {loadingMore && <Spinner label="Chargement de la suite…" />}
+          {loadingMore && <Spinner label={t('Chargement de la suite…')} />}
         </>
       )}
     </div>

@@ -6,6 +6,7 @@ import { rgba, toneAccent } from '@/lib/color'
 import { airingLabel, countdown, formatLabel, isUnaired, titleOf } from '@/lib/format'
 import { nextEpisodeOf, useApp } from '@/store/app'
 import { Poster, ProgressRing } from './ui'
+import { t } from '@shared/i18n'
 
 export function AnimeCard({
   media,
@@ -54,7 +55,7 @@ export function AnimeCard({
     e.stopPropagation()
     if (entry) return
     await saveEntry(media.id, { status: 'planned' }, media)
-    toast(`${titleOf(media, lang)} ajouté à « À voir »`)
+    toast(t('{v0} ajouté à « À voir »', { v0: titleOf(media, lang) }))
   }
 
   return (
@@ -113,7 +114,7 @@ export function AnimeCard({
               <span
                 className="grid h-6 w-6 place-items-center rounded-full backdrop-blur-md"
                 style={{ background: 'rgba(0,0,0,.6)', color: rgba(glow, 1) }}
-                title="Dans ta bibliothèque"
+                title={t('Dans ta bibliothèque')}
               >
                 <Check size={12} strokeWidth={3} />
               </span>
@@ -122,7 +123,7 @@ export function AnimeCard({
                 onClick={quickAdd}
                 role="button"
                 tabIndex={-1}
-                title="Ajouter à « À voir »"
+                title={t('Ajouter à « À voir »')}
                 className="grid h-6 w-6 translate-y-1 place-items-center rounded-full opacity-0 backdrop-blur-md transition-all duration-200 hover:!bg-white/25 group-hover:translate-y-0 group-hover:opacity-100"
                 style={{ background: 'rgba(0,0,0,.6)' }}
               >
@@ -150,7 +151,9 @@ export function AnimeCard({
                   </span>
                 </div>
               ) : (
-                <div className="mx-2 mb-2 text-[0.62rem] font-semibold text-white/90">{seen} vus</div>
+                <div className="mx-2 mb-2 text-[0.62rem] font-semibold text-white/90">
+                  {seen} {t('vus')}
+                </div>
               )}
             </div>
           )}
@@ -197,7 +200,7 @@ export function ContinueCard({
     e.stopPropagation()
     if (!next) return
     await toggleEpisode(media.id, next, media)
-    toast(`Épisode ${next} coché · ${titleOf(media, lang)}`)
+    toast(t('Épisode {next} coché · {v1}', { next, v1: titleOf(media, lang) }))
   }
 
   return (
@@ -228,7 +231,7 @@ export function ContinueCard({
 
         <div className="flex h-full min-w-0 flex-1 flex-col">
           <p className="label flex items-center gap-1.5 pr-[52px]" style={{ color: rgba(glow, 0.95) }}>
-            {next ? `${pending ? 'Prochain épisode' : 'Épisode'} ${next}` : 'Terminé'}
+            {next ? `${pending ? t('Prochain épisode') : t('Épisode')} ${next}` : t('Terminé')}
             {note && (
               <span
                 className="rounded-full px-1.5 py-px text-[0.58rem] font-bold"
@@ -249,7 +252,9 @@ export function ContinueCard({
                */}
               <div className="mb-1.5 flex items-baseline gap-1.5 overflow-hidden whitespace-nowrap text-[0.72rem] text-muted">
                 <span className="font-semibold tabular-nums text-white">{seen}</span>
-                <span>/ {total ?? '?'} épisodes</span>
+                <span>
+                  / {total ?? '?'} {t('épisodes')}
+                </span>
               </div>
               <div className="h-1.5 overflow-hidden rounded-full bg-white/15">
                 <div
@@ -278,7 +283,7 @@ export function ContinueCard({
                   onClick={markNext}
                   role="button"
                   tabIndex={-1}
-                  title={`Marquer l'épisode ${next} comme vu`}
+                  title={t("Marquer l'épisode {next} comme vu", { next })}
                   className="grid h-10 w-10 shrink-0 place-items-center rounded-full transition-transform hover:scale-110 active:scale-95"
                   style={{ background: `linear-gradient(135deg, ${glow}, var(--accent-2))`, color: '#07080f' }}
                 >

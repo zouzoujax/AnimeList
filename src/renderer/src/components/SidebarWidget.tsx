@@ -15,6 +15,7 @@ import { Poster } from '@/components/ui'
 import { countdown, formatTime, titleOf } from '@/lib/format'
 import { useNow } from '@/lib/hooks'
 import { nextEpisodeOf, useApp } from '@/store/app'
+import { t } from '@shared/i18n'
 
 const DAY_MS = 86_400_000
 
@@ -80,12 +81,12 @@ function NextUp({ limit }: { limit: number }): React.JSX.Element | null {
   if (!rows.length) return null
   return (
     <section>
-      <p className="label mb-1.5 px-1.5">À suivre</p>
+      <p className="label mb-1.5 px-1.5">{t('À suivre')}</p>
       {rows.map(({ media: m, episode, behind }) => (
         <Row
           key={m.id}
           media={m}
-          detail={`Ép. ${episode}${behind > 1 ? ` · ${behind} en retard` : ''}`}
+          detail={`Ép. ${episode}${behind > 1 ? t(' · {behind} en retard', { behind }) : ''}`}
           onClick={() => navigate({ name: 'anime', id: m.id })}
         />
       ))}
@@ -138,15 +139,15 @@ function Tonight(): React.JSX.Element | null {
     .slice(0, 6)
   const tomorrow = dayStart + DAY_MS
   const days = [
-    { label: 'Aujourd’hui', rows: rows.filter((r) => r.item.airingAt * 1000 < tomorrow) },
-    { label: 'Demain', rows: rows.filter((r) => r.item.airingAt * 1000 >= tomorrow) }
+    { label: t('Aujourd’hui'), rows: rows.filter((r) => r.item.airingAt * 1000 < tomorrow) },
+    { label: t('Demain'), rows: rows.filter((r) => r.item.airingAt * 1000 >= tomorrow) }
   ].filter((d) => d.rows.length > 0)
 
   if (!days.length) {
     return (
       <section>
-        <p className="label mb-1.5 px-1.5">Aujourd’hui</p>
-        <p className="px-1.5 text-[0.72rem] text-faint">Rien ne sort aujourd’hui ni demain dans ta liste.</p>
+        <p className="label mb-1.5 px-1.5">{t('Aujourd’hui')}</p>
+        <p className="px-1.5 text-[0.72rem] text-faint">{t('Rien ne sort aujourd’hui ni demain dans ta liste.')}</p>
       </section>
     )
   }
@@ -162,7 +163,11 @@ function Tonight(): React.JSX.Element | null {
                 key={`${m.id}-${item.episode}`}
                 media={m}
                 faded={aired}
-                detail={`${formatTime(item.airingAt * 1000)} · ép. ${item.episode}${aired ? ' · sorti' : day.label === 'Demain' ? '' : ` · ${countdown(item.airingAt)}`}`}
+                detail={t('{v0} · ép. {episode}{v2}', {
+                  v0: formatTime(item.airingAt * 1000),
+                  episode: item.episode,
+                  v2: aired ? t(' · sorti') : day.label === 'Demain' ? '' : ` · ${countdown(item.airingAt)}`
+                })}
                 onClick={() => navigate({ name: 'anime', id: m.id })}
               />
             )
@@ -179,7 +184,7 @@ function Lists(): React.JSX.Element {
   const navigate = useApp((s) => s.navigate)
   return (
     <section>
-      <p className="label mb-1.5 px-1.5">Mes listes</p>
+      <p className="label mb-1.5 px-1.5">{t('Mes listes')}</p>
       {lists.map((list) => (
         <button
           key={list.id}
@@ -202,7 +207,7 @@ function Lists(): React.JSX.Element {
         style={{ color: 'var(--color-faint)' }}
       >
         <Plus size={15} className="shrink-0" />
-        {lists.length ? 'Gérer mes listes' : 'Créer une liste'}
+        {lists.length ? t('Gérer mes listes') : t('Créer une liste')}
       </button>
     </section>
   )

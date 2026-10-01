@@ -31,6 +31,7 @@ import {
 } from '@shared/import-list'
 import { mediaByMalIds, refreshMedia } from './anilist'
 import { importSnapshot } from './store'
+import { t } from '@shared/i18n'
 
 const KITSU = 'https://kitsu.app/api/edge'
 const KITSU_HEADERS = { Accept: 'application/vnd.api+json' }
@@ -96,15 +97,19 @@ function commit(rows: Row[], media: Media[], label: string, skipped: number): Im
     }
   }
 
-  if (!entries.length) return fail(`Rien à importer depuis ${label}.`)
+  if (!entries.length) return fail(t('Rien à importer depuis {label}.', { label }))
 
   importSnapshot({ version: 1, entries, media, history, prefs: {} as never }, 'merge')
 
   return {
     ok: true,
     message: skipped
-      ? `${entries.length} animes importés depuis ${label}. ${skipped} sans équivalent AniList ont été ignorés.`
-      : `${entries.length} animes importés depuis ${label}.`,
+      ? t('{length} animes importés depuis {label}. {skipped} sans équivalent AniList ont été ignorés.', {
+          length: entries.length,
+          label,
+          skipped
+        })
+      : t('{length} animes importés depuis {label}.', { length: entries.length, label }),
     added: entries.length,
     updated: 0,
     episodes: history.length,
@@ -143,7 +148,7 @@ interface RawAniListEntry {
 
 export async function importAniList(rawUser: string): Promise<ImportReport> {
   const user = cleanUsername(rawUser)
-  if (!user) return fail('Indique un pseudo AniList.')
+  if (!user) return fail(t('Indique un pseudo AniList.'))
 
   let lists: { entries: RawAniListEntry[] }[]
   try {
@@ -161,14 +166,14 @@ export async function importAniList(rawUser: string): Promise<ImportReport> {
       const first = body.errors[0]
       // Les deux seuls refus qu'on peut expliquer utilement.
       if (first.status === 404 && /private/i.test(first.message)) {
-        return fail(`La liste de ${user} est privée. Elle doit être publique pour être lue.`)
+        return fail(t('La liste de {user} est privée. Elle doit être publique pour être lue.', { user }))
       }
-      if (first.status === 404) return fail(`Aucun compte AniList nommé « ${user} ».`)
-      return fail(`AniList : ${first.message}`)
+      if (first.status === 404) return fail(t('Aucun compte AniList nommé « {user} ».', { user }))
+      return fail(t('AniList : {message}', { message: first.message }))
     }
     lists = body.data?.MediaListCollection?.lists ?? []
   } catch (err) {
-    return fail(`AniList injoignable : ${(err as Error).message}`)
+    return fail(t('AniList injoignable : {message}', { message: (err as Error).message }))
   }
 
   const rows: Row[] = []
@@ -193,16 +198,16 @@ export async function importAniList(rawUser: string): Promise<ImportReport> {
     }
   }
 
-  if (!rows.length) return fail(`La liste de ${user} est vide.`)
+  if (!rows.length) return fail(t('La liste de {user} est vide.', { user }))
 
   let media: Media[]
   try {
     media = await refreshMedia(rows.map((r) => r.animeId))
   } catch (err) {
-    return fail(`AniList injoignable : ${(err as Error).message}`)
+    return fail(t('AniList injoignable : {message}', { message: (err as Error).message }))
   }
 
-  return commit(rows, media, `AniList (${user})`, skipped)
+  return commit(rows, media, t('AniList ({user})', { user }), skipped)
 }
 
 // ---------------------------------------------------------------- Kitsu
@@ -234,15 +239,15 @@ async function kitsuJson<T>(url: string): Promise<T> {
 
 export async function importKitsu(rawUser: string): Promise<ImportReport> {
   const user = cleanUsername(rawUser)
-  if (!user) return fail('Indique un pseudo Kitsu.')
+  if (!user) return fail(t('Indique un pseudo Kitsu.'))
 
   let userId: string
   try {
     const found = await kitsuJson<{ data: { id: string }[] }>(`${KITSU}/users?filter[slug]=${encodeURIComponent(user)}`)
-    if (!found.data?.length) return fail(`Aucun compte Kitsu nommé « ${user} ».`)
+    if (!found.data?.length) return fail(t('Aucun compte Kitsu nommé « {user} ».', { user }))
     userId = found.data[0].id
   } catch (err) {
-    return fail(`Kitsu injoignable : ${(err as Error).message}`)
+    return fail(t('Kitsu injoignable : {message}', { message: (err as Error).message }))
   }
 
   /** Identifiant Kitsu de la série → identifiant MyAnimeList. */
@@ -279,17 +284,17 @@ export async function importKitsu(rawUser: string): Promise<ImportReport> {
       if ((body.data?.length ?? 0) < 100) break
     }
   } catch (err) {
-    return fail(`Kitsu injoignable : ${(err as Error).message}`)
+    return fail(t('Kitsu injoignable : {message}', { message: (err as Error).message }))
   }
 
-  if (!raw.length) return fail(`La liste de ${user} est vide, ou privée.`)
+  if (!raw.length) return fail(t('La liste de {user} est vide, ou privée.', { user }))
 
   const malIds = [...new Set([...malOf.values()])]
   let byMal: Map<number, Media>
   try {
     byMal = await mediaByMalIds(malIds)
   } catch (err) {
-    return fail(`AniList injoignable : ${(err as Error).message}`)
+    return fail(t('AniList injoignable : {message}', { message: (err as Error).message }))
   }
 
   const rows: Row[] = []
@@ -314,5 +319,5 @@ export async function importKitsu(rawUser: string): Promise<ImportReport> {
     })
   }
 
-  return commit(rows, [...byMal.values()], `Kitsu (${user})`, skipped)
+  return commit(rows, [...byMal.values()], t('Kitsu ({user})', { user }), skipped)
 }

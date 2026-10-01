@@ -54,6 +54,7 @@ import {
 import { getLaunched, getLocalWatching } from './now'
 import { playerState } from './playing'
 import { getMedia, getPrefs } from './store'
+import { t } from '@shared/i18n'
 
 /** Assez souvent pour suivre une pause, assez rare pour ne rien coûter. */
 const POLL_MS = 5000
@@ -136,7 +137,7 @@ function onFrame(op: number, body: string): void {
     const payload = safeParse(body) as { message?: string } | null
     // Le message vient de chez eux et vaut mieux que le nôtre : « Invalid
     // Client ID » dit exactement quoi corriger dans les réglages.
-    return drop(payload?.message ?? 'Discord a fermé la connexion.')
+    return drop(payload?.message ?? t('Discord a fermé la connexion.'))
   }
   if (op !== OP_FRAME) return
 
@@ -151,7 +152,7 @@ function onFrame(op: number, body: string): void {
     void tick()
     return
   }
-  if (payload.evt === 'ERROR') error = payload.data?.message ?? 'Discord a refusé la commande.'
+  if (payload.evt === 'ERROR') error = payload.data?.message ?? t('Discord a refusé la commande.')
 }
 
 function safeParse(body: string): unknown {
@@ -186,7 +187,7 @@ function onData(chunk: Buffer): void {
  */
 function open(index: number): void {
   if (!wanted) return
-  if (index >= PIPE_COUNT) return drop('Discord n’a pas l’air ouvert.')
+  if (index >= PIPE_COUNT) return drop(t('Discord n’a pas l’air ouvert.'))
 
   const socket = connect(pipePath(index))
 

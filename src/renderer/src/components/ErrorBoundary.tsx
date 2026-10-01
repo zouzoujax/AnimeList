@@ -1,5 +1,6 @@
 import { House, RotateCcw, TriangleAlert } from 'lucide-react'
 import { Component, type ErrorInfo, type ReactNode } from 'react'
+import { t } from '@shared/i18n'
 
 interface Props {
   children: ReactNode
@@ -44,12 +45,12 @@ function ErrorPanel({
           </span>
           <div>
             <h2 className="title-xl text-[1.15rem]">
-              {fatal ? "L'application a rencontré une erreur" : 'Cette page a rencontré une erreur'}
+              {fatal ? t("L'application a rencontré une erreur") : t('Cette page a rencontré une erreur')}
             </h2>
             <p className="mt-0.5 text-[0.8rem] text-muted">
               {fatal
-                ? 'Recharge la fenêtre pour repartir. Tes données sur le disque ne sont pas affectées.'
-                : 'Le reste de l’application fonctionne toujours. Tes données ne sont pas affectées.'}
+                ? t('Recharge la fenêtre pour repartir. Tes données sur le disque ne sont pas affectées.')
+                : t('Le reste de l’application fonctionne toujours. Tes données ne sont pas affectées.')}
             </p>
           </div>
         </div>
@@ -63,7 +64,9 @@ function ErrorPanel({
 
         {(error.stack || stack) && (
           <details className="mb-4">
-            <summary className="cursor-pointer text-[0.78rem] font-semibold text-muted">Détail technique</summary>
+            <summary className="cursor-pointer text-[0.78rem] font-semibold text-muted">
+              {t('Détail technique')}
+            </summary>
             <pre
               className="scroll-y mt-2 max-h-[220px] whitespace-pre-wrap rounded-[12px] px-3 py-2.5 font-mono text-[0.7rem] leading-relaxed text-faint"
               style={{ background: 'rgba(0,0,0,.3)' }}
@@ -76,19 +79,19 @@ function ErrorPanel({
         <div className="flex flex-wrap gap-2">
           <button className="btn btn-primary" onClick={onRetry}>
             <RotateCcw size={14} />
-            Réessayer
+            {t('Réessayer')}
           </button>
           {onGoHome && !fatal && (
             <button className="btn" onClick={onGoHome}>
               <House size={14} />
-              Retour à l’accueil
+              {t('Retour à l’accueil')}
             </button>
           )}
           <button className="btn" onClick={() => window.location.reload()}>
-            Recharger la fenêtre
+            {t('Recharger la fenêtre')}
           </button>
           <button className="btn btn-ghost" onClick={() => void navigator.clipboard.writeText(detail)}>
-            Copier le détail
+            {t('Copier le détail')}
           </button>
         </div>
       </div>

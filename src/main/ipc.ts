@@ -28,6 +28,7 @@ import {
 import { cancelImport, importTvTime } from './tvtime/service'
 import { planUpcoming } from './notifications'
 import { checkForUpdates, downloadUpdate, installUpdate, updateStatus } from './updater'
+import { setUiLang } from '@shared/i18n'
 import { closeTrailerWindow, openTrailerWindow, trailerUrl } from './trailer'
 import { fillerFor } from './filler'
 import { chooseFolder, forgetFolder, forgetPosition, openInSystemPlayer, rememberPosition, scanFolder } from './videos'
@@ -42,7 +43,7 @@ import { addFollow, followNews, markSeen, removeFollow, sweepFollows } from './f
 import { forYou } from './foryou'
 import { identifyImage } from './identify'
 import { importAniList, importKitsu } from './import-list'
-import { setPlayerActive } from './taskbar'
+import { refreshJumpList, setPlayerActive } from './taskbar'
 import { canTranslate, purgeTranslations, translate } from './translate'
 import { remoteStatus, startRemote, stopRemote } from './remote'
 import { startSoiree } from './soiree-queue'
@@ -140,8 +141,23 @@ export function registerIpc(): void {
 
   // ---- preferences ---------------------------------------------------
   ipcMain.handle('prefs:get', () => getPrefs())
+  // Synchrone : le préchargement doit connaître la langue avant le premier
+  // module de l'interface, qui évalue ses libellés dès son chargement.
+  ipcMain.on('prefs:ui-lang', (e) => {
+    e.returnValue = getPrefs().uiLang ?? 'fr'
+  })
   ipcMain.handle('prefs:set', (e, patch: Partial<Prefs>) => {
     const prefs = setPrefs(patch)
+    if (patch.uiLang !== undefined) {
+      setUiLang(prefs.uiLang)
+      refreshJumpList()
+      // Rechargée après la réponse : beaucoup de libellés de l'interface sont
+      // fixés au chargement de leur module (voir `@shared/i18n`).
+      const win = ownerOf(e)
+      setTimeout(() => {
+        if (!win.isDestroyed()) win.webContents.reload()
+      }, 60)
+    }
     const chrome = chromeFor(prefs.theme)
     if (patch.theme !== undefined) {
       ownerOf(e).setTitleBarOverlay({ ...chrome, height: 44 })

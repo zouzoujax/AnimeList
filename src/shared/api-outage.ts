@@ -1,3 +1,4 @@
+import { t } from './i18n'
 /**
  * Ce qu'on dit quand AniList ne répond pas, et pour combien de temps on se tait.
  *
@@ -50,10 +51,14 @@ const DISABLED = /disabled/i
  * constante permet de le reconnaître sans le recopier — reformuler la suite ne
  * peut donc pas désaccorder les deux côtés.
  */
-const OUTAGE_LEAD = 'Le catalogue AniList est indisponible'
+const OUTAGE_FR = 'Le catalogue AniList est indisponible'
+const outageLead = (): string => t(OUTAGE_FR)
 
-/** Ce message annonce-t-il un catalogue coupé, plutôt qu'une autre panne ? */
-export const isOutage = (message: string): boolean => message.startsWith(OUTAGE_LEAD)
+/**
+ * Ce message annonce-t-il un catalogue coupé, plutôt qu'une autre panne ?
+ * En français aussi : un message écrit avant un changement de langue reste lisible.
+ */
+export const isOutage = (message: string): boolean => message.startsWith(outageLead()) || message.startsWith(OUTAGE_FR)
 
 export function failureOf(status: number, apiMessage: string | null): Failure {
   if (status === 403 && apiMessage && DISABLED.test(apiMessage)) {
@@ -61,22 +66,24 @@ export function failureOf(status: number, apiMessage: string | null): Failure {
       // Court, parce qu'il s'affiche aussi dans une colonne étroite : la
       // version longue s'y déroulait sur dix lignes. Il dit quand même les deux
       // choses qui comptent — ce qui est cassé, et ce qui ne l'est pas.
-      message: `${OUTAGE_LEAD} : ils ont coupé leur API. Ta bibliothèque et tes statistiques n’en dépendent pas.`,
+      message: t('{OUTAGE_LEAD} : ils ont coupé leur API. Ta bibliothèque et tes statistiques n’en dépendent pas.', {
+        OUTAGE_LEAD: outageLead()
+      }),
       pauseMs: OUTAGE_MS
     }
   }
 
   if (status === 403 || status === 401) {
-    return { message: 'AniList refuse l’accès à son catalogue.', pauseMs: HICCUP_MS }
+    return { message: t('AniList refuse l’accès à son catalogue.'), pauseMs: HICCUP_MS }
   }
 
   if (status >= 500) {
-    return { message: 'AniList est momentanément en panne. Réessaie dans un instant.', pauseMs: HICCUP_MS }
+    return { message: t('AniList est momentanément en panne. Réessaie dans un instant.'), pauseMs: HICCUP_MS }
   }
 
   // Une réponse que le serveur juge fautive n'a pas de raison de faire taire
   // les autres : c'est cette requête-là qui ne va pas, pas le service.
-  return { message: apiMessage ?? `AniList a répondu ${status}.`, pauseMs: 0 }
+  return { message: apiMessage ?? t('AniList a répondu {status}.', { status }), pauseMs: 0 }
 }
 
 /**
