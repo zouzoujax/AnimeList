@@ -139,11 +139,17 @@ export async function openAnimeSamaEpisode(
        */
       autoplayPolicy: 'no-user-gesture-required',
       preload: join(__dirname, '../preload/watch.js'),
-      // Le préchargement écrit dans le stockage de la page : il doit partager
-      // son monde. Il n'expose rien en retour, et Node reste hors de portée.
-      contextIsolation: false,
+      /**
+       * Isolée et enfermée : c'est la page d'autrui, publicités comprises.
+       *
+       * Le préchargement n'a pas besoin de partager le monde du site pour
+       * écrire dans son stockage : `localStorage` appartient à l'origine, pas
+       * au monde JavaScript, et le site relit bien ce qu'on y a posé. Il ne lit
+       * que `process.argv`, que le sandbox laisse à portée.
+       */
+      contextIsolation: true,
       nodeIntegration: false,
-      sandbox: false,
+      sandbox: true,
       additionalArguments: args
     }
   })
