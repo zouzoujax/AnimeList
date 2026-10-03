@@ -284,6 +284,29 @@ export function useFiller(malId: number | null | undefined): FillerInfo | null {
   return useKeyed<FillerInfo | null>(id ? String(id) : '', null, () => window.api.anime.filler(id))
 }
 
+const NO_TITLES: Record<number, string> = {}
+
+/**
+ * Titres d'épisodes selon Anime News Network, pour combler ceux qu'AniList n'a
+ * pas. Vide tant que la réponse n'est pas là, et pour toujours si ANN ne
+ * connaît pas la série avec certitude.
+ */
+export function useEpisodeTitles(media: Media | null, needed: boolean): Record<number, string> {
+  const key = media && needed ? String(media.id) : ''
+  return useKeyed(key, NO_TITLES, () =>
+    window.api.anime.episodeTitles({
+      id: (media as Media).id,
+      romaji: (media as Media).title.romaji,
+      english: (media as Media).title.english,
+      format: (media as Media).format,
+      year: (media as Media).startDate?.year ?? (media as Media).seasonYear,
+      month: (media as Media).startDate?.month ?? null,
+      episodes: (media as Media).episodes,
+      airing: (media as Media).status === 'RELEASING'
+    })
+  )
+}
+
 /**
  * Every season of this anime's franchise, in broadcast order.
  *

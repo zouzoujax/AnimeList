@@ -31,6 +31,8 @@ import { checkForUpdates, downloadUpdate, installUpdate, updateStatus } from './
 import { setUiLang } from '@shared/i18n'
 import { closeTrailerWindow, openTrailerWindow, trailerUrl } from './trailer'
 import { fillerFor } from './filler'
+import { episodeTitles } from './ann'
+import type { AnnRequest } from '@shared/ann'
 import { chooseFolder, forgetFolder, forgetPosition, openInSystemPlayer, rememberPosition, scanFolder } from './videos'
 import { openAnimeSamaEpisode } from './watch-window'
 import { applyBrowserWatch, takeReview } from './browser-watch'
@@ -266,6 +268,7 @@ export function registerIpc(): void {
     setWatchLang(animeId, isLang(lang) ? lang : null)
   })
   ipcMain.handle('anime:filler', (_e, malId: number | null) => fillerFor(malId))
+  ipcMain.handle('anime:episode-titles', (_e, req: AnnRequest) => episodeTitles(req))
   ipcMain.handle('anime:sweep-sequels', (e) => sweepSequels(ownerOf(e)))
   ipcMain.handle('anime:seasons', (_e, id: number) => anilist.seasonChain(id))
   // Essai : l'arbre d'une franchise. Voir src/main/franchise.ts.

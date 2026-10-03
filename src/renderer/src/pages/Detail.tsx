@@ -58,7 +58,15 @@ import { LANG_LABELS, langUrl, type Lang } from '@shared/langs'
 import { originTitle } from '@shared/origin'
 import { rgba, toneAccent } from '@/lib/color'
 import { countdown, formatLabel, isUnaired, minutesToHuman, otherTitles, seasonLabel, titleOf } from '@/lib/format'
-import { useAnimeSama, useDetail, useFiller, useFranchiseFilms, useSeasons, useTranslated } from '@/lib/hooks'
+import {
+  useAnimeSama,
+  useDetail,
+  useFiller,
+  useFranchiseFilms,
+  useSeasons,
+  useTranslated,
+  useEpisodeTitles
+} from '@/lib/hooks'
 import { WATCH_BADGE, isWatchDisabled, otherPlatforms, watchLinks } from '@/lib/watch'
 import { nextEpisodeOf, useApp } from '@/store/app'
 import { useExperience, type DetailHeroProps, type DetailParts } from '@/experiences'
@@ -157,7 +165,12 @@ function EpisodeGrid({
   const [hideFiller, setHideFiller] = useState(false)
   const fillerInfo = useFiller(detail.idMal)
 
-  const rawEpisodes = detail.episodeMeta
+  // AniList ne titre que ce qu'une plateforme lui a déclaré ; ANN comble le reste.
+  const missing = detail.episodeMeta.some((ep) => !ep.title)
+  const annTitles = useEpisodeTitles(detail, missing)
+  const rawEpisodes = detail.episodeMeta.map((ep) =>
+    ep.title || !annTitles[ep.number] ? ep : { ...ep, title: annTitles[ep.number] }
+  )
   /**
    * Les titres d'épisodes, traduits eux aussi.
    *

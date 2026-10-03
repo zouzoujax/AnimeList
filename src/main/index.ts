@@ -5,6 +5,7 @@ import { join } from 'node:path'
 import { initAniList } from './anilist'
 import { initAnimeSama } from './animesama'
 import { initFiller } from './filler'
+import { initAnn } from './ann'
 import { initTranslate } from './translate'
 import { stopRemote } from './remote'
 import { applyDiscord, stopDiscord } from './discord'
@@ -173,6 +174,7 @@ void app.whenReady().then(() => {
   initAniList()
   initAnimeSama()
   initFiller()
+  initAnn()
   initTranslate()
   registerIpc()
   serveMedia()

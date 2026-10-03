@@ -5,6 +5,7 @@ import type { DiscordStatus, LocalWatching } from '@shared/discord'
 import type { BrowserReviewBatch } from '@shared/browser-watch'
 import type { Slot } from '@shared/soiree'
 import type { Tree } from '@shared/franchise'
+import type { AnnRequest } from '@shared/ann'
 import type { Lang } from '@shared/langs'
 import type { MangaDates } from '@shared/manga-calendar'
 import type { ChapterRelease } from '@shared/mangadex'
@@ -115,6 +116,9 @@ const api = {
     studio: (name: string, page: number): Promise<StudioWorks> => ipcRenderer.invoke('anime:studio', name, page),
     /** Filler and recap episodes from MyAnimeList; null when it has no list. */
     filler: (malId: number | null): Promise<FillerInfo | null> => ipcRenderer.invoke('anime:filler', malId),
+    /** Titres anglais des épisodes selon Anime News Network, par numéro. */
+    episodeTitles: (req: AnnRequest): Promise<Record<number, string>> =>
+      ipcRenderer.invoke('anime:episode-titles', req),
     /** Every season of this anime's franchise, in broadcast order. */
     seasons: (id: number): Promise<SeasonEntry[]> => ipcRenderer.invoke('anime:seasons', id),
     /** Essai : l'arbre d'une franchise, tronc et branches. */
