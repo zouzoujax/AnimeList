@@ -823,6 +823,15 @@ export default function SettingsBody(): React.JSX.Element {
         </Row>
 
         <Row
+          label={tr('Citation du jour')}
+          hint={tr(
+            'Une réplique tirée d’une série que tu as regardée, sur l’accueil. En anglais, d’après AnimeChan, qui n’est interrogé que quelques fois par semaine.'
+          )}
+        >
+          <Toggle on={prefs.dailyQuote !== false} onChange={(on) => setPrefs({ dailyQuote: on })} />
+        </Row>
+
+        <Row
           label={tr('Bas de la barre latérale')}
           hint={tr(
             'Ce qui s’affiche entre la navigation et « Ces 7 jours » : les séries à reprendre, les sorties du jour, les deux, ou tes listes.'

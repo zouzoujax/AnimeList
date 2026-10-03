@@ -6,6 +6,7 @@ import { initAniList } from './anilist'
 import { initAnimeSama } from './animesama'
 import { initFiller } from './filler'
 import { initAnn } from './ann'
+import { initQuotes } from './quotes'
 import { initTranslate } from './translate'
 import { stopRemote } from './remote'
 import { applyDiscord, stopDiscord } from './discord'
@@ -175,6 +176,7 @@ void app.whenReady().then(() => {
   initAnimeSama()
   initFiller()
   initAnn()
+  initQuotes()
   initTranslate()
   registerIpc()
   serveMedia()

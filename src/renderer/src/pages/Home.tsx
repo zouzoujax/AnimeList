@@ -6,6 +6,7 @@ import { MIN_BEHIND } from '@shared/catch-up'
 import { AnimeCard, ContinueCard, MiniCard } from '@/components/AnimeCard'
 import { EmptyState, ErrorBox, PosterSkeletons, Poster, RowScroller, Section } from '@/components/ui'
 import { Soiree } from '@/components/Soiree'
+import { DailyQuote } from '@/components/DailyQuote'
 import { Dormant } from '@/components/Dormant'
 import { PlanGrid, planSentence, useCatchUpPlan } from '@/components/CatchUp'
 import { rgba, toneAccent } from '@/lib/color'
@@ -353,6 +354,8 @@ export default function HomePage(): React.JSX.Element {
         )}
 
         {!empty && <Soiree />}
+
+        {!empty && <DailyQuote />}
 
         {empty && (
           <div className="span-all mb-9">

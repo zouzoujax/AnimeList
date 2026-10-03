@@ -6,6 +6,7 @@ import type { BrowserReviewBatch } from '@shared/browser-watch'
 import type { Slot } from '@shared/soiree'
 import type { Tree } from '@shared/franchise'
 import type { AnnRequest } from '@shared/ann'
+import type { Quote } from '@shared/quotes'
 import type { Lang } from '@shared/langs'
 import type { MangaDates } from '@shared/manga-calendar'
 import type { ChapterRelease } from '@shared/mangadex'
@@ -119,6 +120,8 @@ const api = {
     /** Titres anglais des épisodes selon Anime News Network, par numéro. */
     episodeTitles: (req: AnnRequest): Promise<Record<number, string>> =>
       ipcRenderer.invoke('anime:episode-titles', req),
+    /** La citation du jour, tirée des séries de la bibliothèque. */
+    quote: (): Promise<Quote | null> => ipcRenderer.invoke('quote:today'),
     /** Every season of this anime's franchise, in broadcast order. */
     seasons: (id: number): Promise<SeasonEntry[]> => ipcRenderer.invoke('anime:seasons', id),
     /** Essai : l'arbre d'une franchise, tronc et branches. */

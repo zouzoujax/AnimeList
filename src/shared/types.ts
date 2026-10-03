@@ -480,6 +480,8 @@ export interface Prefs {
   titleLang: TitleLang
   /** La langue des boutons et des textes de l'app, pas celle des titres. */
   uiLang: UiLang
+  /** Une citation tirée des séries de la bibliothèque, sur l'accueil. */
+  dailyQuote: boolean
   theme: ThemeId
   layout: LayoutId
   accent: string
@@ -1142,6 +1144,7 @@ export const GENRE_LABELS: Record<string, string> = lazy(() => ({
 export const DEFAULT_PREFS: Prefs = {
   titleLang: 'romaji',
   uiLang: 'fr',
+  dailyQuote: true,
   theme: 'nebula',
   layout: 'classic',
   accent: '#7C5CFF',

@@ -2085,4 +2085,7 @@
 "· ÉP. {n}":["· EP. {n}","· EP. {n}","· 第{n}話","· FOLGE {n}"],
 "Marquer l'épisode {n}":["Mark episode {n}","Marcar el episodio {n}","第{n}話を視聴済みにする","Folge {n} markieren"],
 "Prochain épisode {n}":["Next episode {n}","Próximo episodio {n}","次は第{n}話","Nächste Folge {n}"],
-"Cocher l'épisode {n}":["Check episode {n}","Marcar el episodio {n}","第{n}話を視聴済みにする","Folge {n} abhaken"]}
+"Cocher l'épisode {n}":["Check episode {n}","Marcar el episodio {n}","第{n}話を視聴済みにする","Folge {n} abhaken"],
+"Citation du jour":["Quote of the day","Cita del día","今日の名言","Zitat des Tages"],
+"— {character}, dans":["— {character}, in","— {character}, en","— {character}／","– {character}, in"],
+"Une réplique tirée d’une série que tu as regardée, sur l’accueil. En anglais, d’après AnimeChan, qui n’est interrogé que quelques fois par semaine.":["A line from a series you’ve watched, on the home page. In English, from AnimeChan, which is only queried a few times a week.","Una frase de una serie que has visto, en el inicio. En inglés, según AnimeChan, que solo se consulta unas pocas veces por semana.","視聴したシリーズのセリフをホームに表示します。AnimeChan から英語で取得し、問い合わせは週に数回だけです。","Ein Satz aus einer Serie, die du gesehen hast, auf der Startseite. Auf Englisch, von AnimeChan, das nur ein paar Mal pro Woche abgefragt wird."]}
