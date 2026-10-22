@@ -8,6 +8,7 @@ import Shortcuts, { useShortcutsKey } from '@/components/Shortcuts'
 import { Aurora, NAV, Sidebar, TitleBar } from '@/components/Shell'
 import { FICHE_MOTION, PAGE_MOTION, useExperienceState } from '@/experiences'
 import { Toasts } from '@/components/Toasts'
+import { DevPanel } from '@/components/DevPanel'
 import { FicheSkeleton, Spinner } from '@/components/ui'
 import HomePage from '@/pages/Home'
 import { useNewDesign } from '@/lib/nd'
@@ -287,6 +288,7 @@ export default function App(): React.JSX.Element {
         <CommandPalette />
         <Shortcuts open={helpOpen} onClose={() => setHelp(false)} />
         <Toasts />
+        <DevPanel />
       </div>
     </MotionConfig>
   )

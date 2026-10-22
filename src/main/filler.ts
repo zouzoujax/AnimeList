@@ -197,3 +197,13 @@ export async function fillerFor(malId: number | null): Promise<FillerInfo | null
     return hit ? { filler: hit.filler, recap: hit.recap, total: hit.total } : null
   }
 }
+
+/** Pour le panneau de développement. */
+export function fillerStats(): { series: number } {
+  return { series: cache.size }
+}
+
+export function clearFiller(): void {
+  cache.clear()
+  persist()
+}

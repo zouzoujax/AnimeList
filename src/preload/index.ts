@@ -374,6 +374,17 @@ const api = {
     }
   },
 
+  /** Le panneau secret : compteurs et vidage des caches annexes, DevTools. */
+  dev: {
+    stats: (): Promise<{
+      ann: { series: number; titled: number }
+      quotes: { quotes: number; asked: number; at: number; pausedUntil: number | null }
+      filler: { series: number }
+    }> => ipcRenderer.invoke('dev:stats'),
+    clear: (what: 'ann' | 'quotes' | 'filler'): Promise<void> => ipcRenderer.invoke('dev:clear', what),
+    devtools: (): Promise<void> => ipcRenderer.invoke('dev:devtools')
+  },
+
   app: {
     info: (): Promise<{
       version: string

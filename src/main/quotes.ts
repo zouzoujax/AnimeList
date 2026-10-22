@@ -155,3 +155,19 @@ export async function todaysQuote(): Promise<Quote | null> {
     new Date()
   )
 }
+
+/** Pour le panneau de développement. */
+export function quoteStats(): { quotes: number; asked: number; at: number; pausedUntil: number | null } {
+  return {
+    quotes: stock.quotes.length,
+    asked: stock.asked.length,
+    at: stock.at,
+    pausedUntil: stock.pausedUntil ?? null
+  }
+}
+
+/** Vide la réserve : la prochaine visite de l'accueil la remplit de nouveau. */
+export function clearQuotes(): void {
+  stock = { at: 0, quotes: [], asked: [] }
+  save()
+}

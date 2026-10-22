@@ -130,3 +130,15 @@ async function lookup(req: AnnRequest): Promise<Record<number, string>> {
   }
   return {}
 }
+
+/** Pour le panneau de développement : séries interrogées, et celles qui ont des titres. */
+export function annStats(): { series: number; titled: number } {
+  const rows = [...cache.values()]
+  return { series: rows.length, titled: rows.filter((r) => Object.keys(r.titles).length > 0).length }
+}
+
+/** Tout sera redemandé à ANN à la prochaine ouverture de fiche. */
+export function clearAnn(): void {
+  cache.clear()
+  persist()
+}
