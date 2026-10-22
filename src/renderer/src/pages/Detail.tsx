@@ -74,6 +74,7 @@ import { useNewDesign } from '@/lib/nd'
 import { NdDetailBody, NdDetailHero } from '@/pages/nd/detail'
 import { Stars } from '@/components/Stars'
 import { t, locale } from '@shared/i18n'
+import { CoverViewer } from '@/components/CoverViewer'
 
 const STATUS_ORDER: LibraryStatus[] = ['watching', 'planned', 'completed', 'paused', 'dropped']
 
@@ -668,6 +669,7 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
    */
   const [spoken, setSpoken] = useState<Lang | null>(null)
   const [picking, setPicking] = useState(false)
+  const [coverOpen, setCoverOpen] = useState(false)
 
   /**
    * Le manga s'ouvre par une requête à part : la relation ne porte qu'un
@@ -1403,7 +1405,20 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
               transition={{ type: 'spring', stiffness: 220, damping: 26 }}
               className="hidden shrink-0 md:block"
             >
-              <Poster src={media.cover.xl} alt="" className="h-[286px] w-[194px]" rounded="rounded-[18px]" />
+              <button
+                className="block cursor-zoom-in rounded-[18px] transition-transform hover:scale-[1.02]"
+                onClick={() => setCoverOpen(true)}
+                aria-label={t('Voir la jaquette en grand')}
+              >
+                <Poster src={media.cover.xl} alt="" className="h-[286px] w-[194px]" rounded="rounded-[18px]" />
+              </button>
+              <CoverViewer
+                open={coverOpen}
+                src={media.cover.xl}
+                title={titleOf(media, lang)}
+                subtitle={alsoKnownAs.length ? alsoKnownAs.join(' · ') : null}
+                onClose={() => setCoverOpen(false)}
+              />
             </motion.div>
 
             <motion.div
