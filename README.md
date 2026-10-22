@@ -26,6 +26,26 @@ Auteur : **Zaidal**
 <td><a href="docs/screenshots/bibliotheque.jpg"><img src="docs/screenshots/bibliotheque.jpg" alt="Bibliothèque"></a><br><sub><b>Bibliothèque.</b> Cinq statuts, favoris, filtres, listes personnalisées, actions groupées.</sub></td>
 <td><a href="docs/screenshots/statistiques.jpg"><img src="docs/screenshots/statistiques.jpg" alt="Statistiques"></a><br><sub><b>Statistiques.</b> Temps total, séries de jours, heatmap, top genres et studios, cent badges.</sub></td>
 </tr>
+<tr>
+<td><a href="docs/screenshots/decouvrir.jpg"><img src="docs/screenshots/decouvrir.jpg" alt="Découvrir"></a><br><sub><b>Découvrir.</b> Tout le catalogue AniList : tendances, saison, populaires, à venir, filtres par genre et format. Une image suffit à retrouver la série.</sub></td>
+<td><a href="docs/screenshots/saison.jpg"><img src="docs/screenshots/saison.jpg" alt="Saison en cours"></a><br><sub><b>Saison.</b> Les nouveautés à trier d'un clic : « Je regarde », « Plus tard » ou écartée.</sub></td>
+</tr>
+<tr>
+<td><a href="docs/screenshots/calendrier.jpg"><img src="docs/screenshots/calendrier.jpg" alt="Calendrier"></a><br><sub><b>Calendrier.</b> Les sorties de la semaine, pour ta liste ou tout le catalogue, à l'heure de diffusion.</sub></td>
+<td><a href="docs/screenshots/journal.jpg"><img src="docs/screenshots/journal.jpg" alt="Journal"></a><br><sub><b>Journal.</b> Chaque épisode regardé, jour par jour : ressentis, notes, revisionnages, épisodes à revoir. Recherche et export.</sub></td>
+</tr>
+<tr>
+<td><a href="docs/screenshots/manga.jpg"><img src="docs/screenshots/manga.jpg" alt="Manga"></a><br><sub><b>Manga.</b> Ce que tu lis, chapitre par chapitre, et le catalogue pour trouver la suite d'une série. Manga, manhwa et manhua distingués.</sub></td>
+<td><a href="docs/screenshots/manga-fiche.jpg"><img src="docs/screenshots/manga-fiche.jpg" alt="Fiche d'un manga"></a><br><sub><b>Fiche manga.</b> Statut, chapitres et tomes, notes. « +1 » compte une lecture du jour.</sub></td>
+</tr>
+<tr>
+<td><a href="docs/screenshots/lecture.jpg"><img src="docs/screenshots/lecture.jpg" alt="Statistiques de lecture"></a><br><sub><b>Lecture.</b> Chapitres lus, mangas en cours et finis, chapitres par mois.</sub></td>
+<td><a href="docs/screenshots/badges.jpg"><img src="docs/screenshots/badges.jpg" alt="Badges"></a><br><sub><b>Badges.</b> Cent badges par catégorie, avec la progression vers les suivants.</sub></td>
+</tr>
+<tr>
+<td><a href="docs/screenshots/reglages.jpg"><img src="docs/screenshots/reglages.jpg" alt="Réglages"></a><br><sub><b>Réglages.</b> Quinze thèmes et cinq expériences qui refont l'app entière. Chaque réglage se cherche.</sub></td>
+<td><a href="docs/screenshots/reglages-bas.jpg"><img src="docs/screenshots/reglages-bas.jpg" alt="Réglages de lecture"></a><br><sub><b>Automatismes.</b> Cocher l'épisode fini, enchaîner le suivant, passer les génériques : chacun se coupe.</sub></td>
+</tr>
 </table>
 
 <sub>Les captures sont générées sur une bibliothèque de démonstration : les fiches viennent du
