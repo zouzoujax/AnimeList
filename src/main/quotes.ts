@@ -86,10 +86,22 @@ interface Raw {
   character?: { name?: string }
 }
 
+/**
+ * La dernière réponse d'AnimeChan, pour le panneau secret : le sonder
+ * exprès coûterait une des rares requêtes de l'heure.
+ */
+let lastCall: { at: number; status: number } | null = null
+
+export const animechanLastCall = (): { at: number; status: number } | null => lastCall
+
 async function ask(media: Media, term: string): Promise<'quota' | Quote[]> {
   const res = await fetch(`${ENDPOINT}?anime=${encodeURIComponent(term)}&page=1`, {
     headers: { 'User-Agent': 'AnimeList (application de bureau)' }
+  }).catch((err: Error) => {
+    lastCall = { at: Date.now(), status: 0 }
+    throw err
   })
+  lastCall = { at: Date.now(), status: res.status }
   if (res.status === 429) return 'quota'
   if (!res.ok) return []
   const body = (await res.json()) as { data?: Raw[] }

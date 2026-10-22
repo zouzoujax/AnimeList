@@ -7,6 +7,7 @@ import type { Slot } from '@shared/soiree'
 import type { Tree } from '@shared/franchise'
 import type { AnnRequest } from '@shared/ann'
 import type { Quote } from '@shared/quotes'
+import type { ApiHealth } from '@shared/api-health'
 import type { Lang } from '@shared/langs'
 import type { MangaDates } from '@shared/manga-calendar'
 import type { ChapterRelease } from '@shared/mangadex'
@@ -382,6 +383,8 @@ const api = {
       filler: { series: number }
     }> => ipcRenderer.invoke('dev:stats'),
     clear: (what: 'ann' | 'quotes' | 'filler'): Promise<void> => ipcRenderer.invoke('dev:clear', what),
+    /** Sonde les services externes ; quelques secondes au plus. */
+    apis: (): Promise<ApiHealth[]> => ipcRenderer.invoke('dev:apis'),
     devtools: (): Promise<void> => ipcRenderer.invoke('dev:devtools')
   },
 

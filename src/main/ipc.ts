@@ -33,6 +33,7 @@ import { closeTrailerWindow, openTrailerWindow, trailerUrl } from './trailer'
 import { clearFiller, fillerFor, fillerStats } from './filler'
 import { annStats, clearAnn, episodeTitles } from './ann'
 import { clearQuotes, quoteStats, todaysQuote } from './quotes'
+import { apiHealth } from './api-health'
 import type { AnnRequest } from '@shared/ann'
 import { chooseFolder, forgetFolder, forgetPosition, openInSystemPlayer, rememberPosition, scanFolder } from './videos'
 import { openAnimeSamaEpisode } from './watch-window'
@@ -279,6 +280,7 @@ export function registerIpc(): void {
     else if (what === 'quotes') clearQuotes()
     else if (what === 'filler') clearFiller()
   })
+  ipcMain.handle('dev:apis', () => apiHealth())
   ipcMain.handle('dev:devtools', (e) => ownerOf(e).webContents.openDevTools({ mode: 'detach' }))
   ipcMain.handle('anime:sweep-sequels', (e) => sweepSequels(ownerOf(e)))
   ipcMain.handle('anime:seasons', (_e, id: number) => anilist.seasonChain(id))

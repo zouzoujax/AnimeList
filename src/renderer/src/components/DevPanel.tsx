@@ -9,7 +9,7 @@
 
 import { Bug, Database, FolderOpen, RefreshCw, Trash2, Wrench } from 'lucide-react'
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
-import type { ApiStatus } from '@shared/types'
+import type { ApiHealth } from '@shared/api-health'
 import { ageLabel } from '@shared/api-recovery'
 import { Modal } from './ui'
 import { useApp } from '@/store/app'
@@ -76,25 +76,52 @@ function Block({ title, icon, children }: { title: string; icon: ReactNode; chil
 
 const small = 'btn !h-7 !px-2.5 text-[0.74rem]'
 
+const DOT: Record<ApiHealth['state'], string> = {
+  ok: '#34d399',
+  limited: '#fbbf24',
+  down: '#f87171',
+  off: '#6b7392',
+  unknown: '#6b7392'
+}
+
+const STATE_LABEL: Record<ApiHealth['state'], string> = {
+  ok: t('Répond'),
+  limited: t('Limite atteinte'),
+  down: t('En panne'),
+  off: t('Non configuré'),
+  unknown: t('Inconnu')
+}
+
 export function DevPanel(): React.JSX.Element {
   const toast = useApp((s) => s.toast)
   const [open, setOpen] = useState(false)
   const [info, setInfo] = useState<Info | null>(null)
   const [stats, setStats] = useState<Stats | null>(null)
   const [cache, setCache] = useState<{ entries: number; bytes: number } | null>(null)
-  const [api, setApi] = useState<ApiStatus | null>(null)
+  const [apis, setApis] = useState<ApiHealth[] | null>(null)
+  const [probing, setProbing] = useState(false)
+
+  const probeAll = useCallback(async () => {
+    setProbing(true)
+    try {
+      setApis(await window.api.dev.apis())
+    } finally {
+      setProbing(false)
+    }
+  }, [])
 
   const refresh = useCallback(() => {
     void window.api.app.info().then(setInfo)
     void window.api.dev.stats().then(setStats)
     void window.api.cache.stats().then(setCache)
-    void window.api.anilist.status().then(setApi)
   }, [])
 
   const show = useCallback(() => {
     setOpen(true)
     refresh()
-  }, [refresh])
+    setApis(null)
+    void probeAll()
+  }, [refresh, probeAll])
   useKonami(show)
 
   const clear = async (what: 'ann' | 'quotes' | 'filler', label: string): Promise<void> => {
@@ -133,19 +160,34 @@ export function DevPanel(): React.JSX.Element {
           </Line>
         </Block>
 
-        <Block title="AniList" icon={<RefreshCw size={12} />}>
-          <Line label={t('État')}>
-            {api ? api.state : '…'}
-            {api?.pending ? ` · ${t('{n} en attente', { n: api.pending })}` : ''}
-            <button
-              className={small}
-              onClick={() => {
-                void window.api.anilist.probe().then(setApi)
-              }}
-            >
-              {t('Sonder')}
+        <Block title={t('Services')} icon={<RefreshCw size={12} />}>
+          <div className="mb-1 flex items-center justify-between gap-3 text-[0.72rem] text-faint">
+            <span>{t('Vert : répond · orange : limite atteinte · rouge : en panne')}</span>
+            <button className={small} disabled={probing} onClick={() => void probeAll()}>
+              {probing ? t('Sondage…') : t('Sonder')}
             </button>
-          </Line>
+          </div>
+          {apis === null && <p className="py-2 text-[0.78rem] text-faint">{t('Sondage…')}</p>}
+          {apis?.map((a) => (
+            <div key={a.id} className="flex items-start gap-2.5 py-1.5 text-[0.8rem]">
+              <span
+                className="mt-[5px] h-2.5 w-2.5 shrink-0 rounded-full"
+                style={{ background: DOT[a.state], boxShadow: a.state === 'off' ? 'none' : `0 0 8px ${DOT[a.state]}` }}
+                title={STATE_LABEL[a.state]}
+                aria-label={STATE_LABEL[a.state]}
+              />
+              <div className="min-w-0 flex-1">
+                <p className="font-medium">{a.name}</p>
+                <p className="text-[0.7rem] text-faint">{a.purpose}</p>
+              </div>
+              <div className="max-w-[55%] text-right">
+                <p className="text-[0.74rem] text-muted">{a.detail}</p>
+                {a.ms !== null && (
+                  <p className="text-[0.68rem] tabular-nums text-faint">{t('{ms} ms', { ms: a.ms })}</p>
+                )}
+              </div>
+            </div>
+          ))}
         </Block>
 
         <Block title={t('Caches')} icon={<Database size={12} />}>
