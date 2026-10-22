@@ -9,6 +9,14 @@ Un titre de niveau deux par version, puis des rubriques `### Ajouts`,
 changement, écrite pour quelqu'un qui utilise l'app, pas pour quelqu'un qui lit
 le code.
 
+## 0.13.5 — 22 octobre 2026
+
+### Ajouts
+
+- Les épisodes qu’AniList ne titre pas reçoivent leur titre d’Anime News Network : la grille de la fiche n’affiche plus seulement « Épisode 12 » pour des séries comme NANA, Gintama ou Dragon Ball Z. Les titres sont en anglais, et rien ne s’affiche quand la série n’est pas reconnue avec certitude
+- Une citation du jour sur l’accueil, tirée d’une série que tu as regardée (en anglais, d’après AnimeChan). Elle se coupe dans Réglages › Affichage
+- Un clic sur la jaquette d’une fiche l’affiche en grand, le titre centré dessous
+
 ## 0.13.4 — 1er octobre 2026
 
 ### Ajouts
