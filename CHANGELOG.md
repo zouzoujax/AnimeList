@@ -9,6 +9,16 @@ Un titre de niveau deux par version, puis des rubriques `### Ajouts`,
 changement, écrite pour quelqu'un qui utilise l'app, pas pour quelqu'un qui lit
 le code.
 
+## 0.13.6 — 1er novembre 2026
+
+### Ajouts
+
+- Un panneau caché pour les curieux : le code Konami (↑ ↑ ↓ ↓ ← → ← → B A), tapé hors d’un champ de saisie, ouvre une petite fenêtre avec les versions, l’état d’AniList et des autres services utilisés par l’app (une pastille verte, orange, rouge ou grise par service), les caches et de quoi les vider
+
+### Corrections
+
+- Anime-Sama : depuis la refonte de leur site, un clic sur un épisode ouvrait la page de la série dans le navigateur au lieu de lancer l’épisode dans l’app. Les saisons et leurs langues sont de nouveau trouvées, et les séries touchées se corrigent d’elles-mêmes à la prochaine ouverture
+
 ## 0.13.5 — 22 octobre 2026
 
 ### Ajouts
