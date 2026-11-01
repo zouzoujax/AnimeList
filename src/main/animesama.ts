@@ -80,7 +80,9 @@ interface Row extends WatchTarget {
 // 8 : les crossovers (lien « Personnage ») ne comptent plus parmi les films.
 // 9 : un lien « Alternative » donne la série mère à défaut d'autre — les films
 //     de Dragon Ball n'en avaient aucune.
-const RULE_VERSION = 9
+// 10 : `episodes.js` répond 403 depuis la refonte du site — chaque série
+//      résolue depuis tombait sur sa fiche, sans menu ni épisode à viser.
+const RULE_VERSION = 10
 
 let cache = new Map<number, Row>()
 let file = ''
@@ -114,14 +116,25 @@ async function text(url: string): Promise<{ status: number; body: string }> {
 }
 
 /**
- * Une vraie page d'épisodes déclare ses lecteurs : `var eps1 = ['https://…']`.
+ * Les langues qu'une page de section déclare : `var languesDispo = ["vostfr","vf"]`.
  *
- * Une saison qui n'existe pas répond 200 elle aussi, avec `//` pour tout
- * contenu — le code seul ne prouve donc rien. C'est ainsi que « Kaiju No. 8 »
- * ouvrait une huitième saison vide au lieu de la première.
+ * Depuis leur refonte de novembre 2026, `episodes.js` répond 403 à toute
+ * requête qui ne vient pas d'un navigateur : on ne peut plus y vérifier les
+ * lecteurs. La page de la section, elle, répond, et dit ses langues.
+ *
+ * Elle ne prouve pas que la section existe — la saison 9 de Naruto, qu'ils
+ * n'ont pas, répond 200 avec ses deux langues. C'est la page de la série qui
+ * tranche : voir `declaredSections`.
  */
-export function listsEpisodes(body: string): boolean {
-  return /var\s+eps\w*\s*=\s*\[\s*["']https?:/i.test(body)
+export function languagesIn(body: string): Lang[] {
+  const raw = body.match(/var\s+languesDispo\s*=\s*(\[[^\]]*\])/)?.[1]
+  if (!raw) return []
+  try {
+    const list: unknown = JSON.parse(raw)
+    return Array.isArray(list) ? LANGS.filter((l) => list.includes(l)) : []
+  } catch {
+    return []
+  }
 }
 
 /** Catalogue links appear in the search page markup as /catalogue/<slug>/. */
@@ -304,46 +317,45 @@ async function releaseSiblings(animeId: number, format: string): Promise<Sibling
 }
 
 /**
+ * La page d'une section et ses langues, ou `null` si elle n'en a aucune.
+ *
+ * Lue en VOSTFR d'abord, en VF ensuite : une section sans VOSTFR répond 404
+ * sous `vostfr/`. La langue lue doit figurer parmi celles que la page annonce,
+ * faute de quoi ce n'est pas la sienne.
+ */
+async function sectionPage(slug: string, base: string): Promise<{ body: string; langs: Lang[] } | null> {
+  for (const lang of LANGS) {
+    let page: { status: number; body: string }
+    try {
+      page = await text(`${ORIGIN}/catalogue/${slug}/${base}/${lang}/`)
+    } catch {
+      // Réseau muet : inutile d'insister sur les langues suivantes.
+      return null
+    }
+    if (page.status !== 200) continue
+    const langs = languagesIn(page.body)
+    if (langs.includes(lang)) return { body: page.body, langs }
+  }
+  return null
+}
+
+/**
  * La section d'un film ou d'un OAV, ou `null` si la série n'en déclare pas.
  *
- * Coûte la page de la série, puis pour chaque section candidate ses langues
- * et sa page — une seule fois, le résultat est mis en cache.
+ * Coûte, pour chaque section candidate, sa page — une seule fois, le résultat
+ * est mis en cache.
  */
 async function sideTarget(
   slug: string,
+  hub: string,
   format: string,
   titles: string[],
   animeId: number
 ): Promise<WatchTarget | null> {
-  let hub: { status: number; body: string }
-  try {
-    hub = await text(`${ORIGIN}/catalogue/${slug}/`)
-  } catch {
-    return null
-  }
-  if (hub.status !== 200) return null
-
   const found: { base: string; name: string; names: string[]; langs: Lang[] }[] = []
-  for (const section of sectionsFor(sectionsIn(hub.body), format).slice(0, 6)) {
-    const langs: Lang[] = []
-    for (const lang of LANGS) {
-      try {
-        const probe = await text(`${ORIGIN}/catalogue/${slug}/${section.base}/${lang}/episodes.js`)
-        if (probe.status === 200 && listsEpisodes(probe.body)) langs.push(lang)
-      } catch {
-        break
-      }
-    }
-    if (langs.length === 0) continue
-
-    let names: string[] = []
-    try {
-      const page = await text(`${ORIGIN}/catalogue/${slug}/${section.base}/${langs[0]}/`)
-      if (page.status === 200) names = entriesIn(page.body)
-    } catch {
-      // Sans la page, la section s'ouvre quand même — seulement sans entrée.
-    }
-    found.push({ ...section, names, langs })
+  for (const section of sectionsFor(sectionsIn(hub), format).slice(0, 6)) {
+    const page = await sectionPage(slug, section.base)
+    if (page) found.push({ ...section, names: entriesIn(page.body), langs: page.langs })
   }
 
   const choice = chooseSide(found, titles, await releaseSiblings(animeId, format), animeId)
@@ -412,12 +424,26 @@ export async function resolve(animeId: number, titles: string[]): Promise<WatchT
   }
 
   /**
+   * La page de la série déclare ses sections — `panneauAnime("Saison 1",
+   * "saison1/vostfr")` —, celles qu'elle ne montre pas restant en commentaire.
+   * C'est la seule preuve qu'une saison existe depuis que `episodes.js` nous
+   * est fermé : voir `languagesIn`.
+   */
+  let hub: { status: number; body: string } | null = null
+  try {
+    hub = await text(`${ORIGIN}/catalogue/${slug}/`)
+  } catch {
+    // Réseau muet : on retombe sur la recherche, comme partout ailleurs.
+  }
+  const declared = hub?.status === 200 ? sectionsIn(hub.body) : []
+
+  /**
    * Un film ou un OAV n'est jamais sous `saison<N>/` : chercher là ouvrait la
    * saison 1 de la série. Sans section à lui, il retombe sur la page de la
    * série plutôt que sur une saison qui n'est pas la sienne.
    */
-  if (isSideFormat(format)) {
-    const side = await sideTarget(slug, format as string, titles, animeId)
+  if (isSideFormat(format) && hub?.status === 200) {
+    const side = await sideTarget(slug, hub.body, format as string, titles, animeId)
     if (side) {
       cache.set(animeId, { ...side, at: Date.now(), v: RULE_VERSION })
       persist()
@@ -431,42 +457,32 @@ export async function resolve(animeId: number, titles: string[]): Promise<WatchT
    * contenir un seul épisode. Un simple code 200 ne prouvait donc rien — d'où
    * des liens qui tombaient sur la fiche de la série.
    *
-   * `episodes.js` tranche, à condition de le lire : il manque au hub, et il est
-   * vide sur une saison qui n'existe pas.
+   * Une saison inexistante répond 200 elle aussi : c'est ainsi que « Kaiju
+   * No. 8 » ouvrait une huitième saison vide. Seule compte donc une saison que
+   * la série déclare.
    *
-   * VOSTFR d'abord, VF ensuite. Saison 0 veut dire que le titre n'a pas donné
-   * de numéro exploitable (« Final Season ») : on tente la première saison,
-   * qui est le cas de très loin le plus courant.
+   * Saison 0 veut dire que le titre n'a pas donné de numéro exploitable
+   * (« Final Season ») : on tente la première saison, qui est le cas de très
+   * loin le plus courant.
    */
   const seasons = isSideFormat(format) ? [] : season > 0 ? [...new Set([season, 1])] : [1]
 
   /**
-   * Toutes les langues d'une saison, et non la première qui répond.
-   *
-   * S'arrêter au premier succès coûtait une requête de moins et rendait la VF
-   * introuvable dès que la VO existait — c'est-à-dire presque toujours. Le
-   * surcoût est d'une requête par saison retenue, une seule fois : le résultat
-   * est mis en cache avec le reste.
+   * Toutes les langues d'une saison, et non la première qui répond : sa page
+   * les annonce toutes, VF comprise — longtemps introuvable dès que la VO
+   * existait.
    */
   for (const n of seasons) {
-    const found: Lang[] = []
-    for (const lang of LANGS) {
-      try {
-        const probe = await text(`${ORIGIN}/catalogue/${slug}/saison${n}/${lang}/episodes.js`)
-        if (probe.status === 200 && listsEpisodes(probe.body)) found.push(lang)
-      } catch {
-        // Réseau muet : inutile d'insister sur les langues suivantes.
-        break
-      }
-    }
-    if (found.length === 0) continue
+    if (!declared.some((s) => s.base === `saison${n}`)) continue
+    const page = await sectionPage(slug, `saison${n}`)
+    if (!page) continue
 
     const target: WatchTarget = {
-      url: `${ORIGIN}/catalogue/${slug}/saison${n}/${found[0]}/`,
+      url: `${ORIGIN}/catalogue/${slug}/saison${n}/${page.langs[0]}/`,
       direct: true,
       episodes: true,
-      languages: found,
-      language: found[0]
+      languages: page.langs,
+      language: page.langs[0]
     }
     cache.set(animeId, { ...target, at: Date.now(), v: RULE_VERSION })
     persist()
@@ -475,17 +491,11 @@ export async function resolve(animeId: number, titles: string[]): Promise<WatchT
 
   // Aucune page d'épisodes trouvée : la fiche de la série reste utile, mais
   // elle n'a pas de menu, et il ne faut pas laisser croire le contraire.
-  try {
-    const hub = `/catalogue/${slug}/`
-    const probe = await text(ORIGIN + hub)
-    if (probe.status === 200) {
-      const target: WatchTarget = { url: ORIGIN + hub, direct: true, episodes: false }
-      cache.set(animeId, { ...target, at: Date.now(), v: RULE_VERSION })
-      persist()
-      return target
-    }
-  } catch {
-    // Réseau muet : on retombe sur la recherche, comme partout ailleurs.
+  if (hub?.status === 200) {
+    const target: WatchTarget = { url: `${ORIGIN}/catalogue/${slug}/`, direct: true, episodes: false }
+    cache.set(animeId, { ...target, at: Date.now(), v: RULE_VERSION })
+    persist()
+    return target
   }
 
   cache.set(animeId, { ...fallback, at: Date.now(), v: RULE_VERSION })

@@ -1,29 +1,28 @@
 import { describe, expect, it } from 'vitest'
-import { listsEpisodes, searchUrl, slugOf } from './animesama'
+import { languagesIn, searchUrl, slugOf } from './animesama'
 
-// Relevés sur le site : la saison 1 de « Kaiju No. 8 » liste ses lecteurs, la
-// saison 8 — qui n'existe pas — répond 200 avec un commentaire vide pour tout
-// contenu. C'est elle que l'app ouvrait.
-describe('listsEpisodes', () => {
-  it('accepts a real episode list', () => {
-    const body = ['var eps1 = [', "'https://video.sibnet.ru/shell.php?videoid=5503622',", ']'].join('\n')
-    expect(listsEpisodes(body)).toBe(true)
+// Relevés sur anime-sama.to après la refonte de novembre 2026.
+describe('languagesIn', () => {
+  it('lit les deux langues d’une saison', () => {
+    const body = '<script>\nvar languesDispo = ["vostfr","vf"];\nvar lecteursInfos = {};\n</script>'
+    expect(languagesIn(body)).toEqual(['vostfr', 'vf'])
   })
 
-  it('accepts a second player list', () => {
-    expect(listsEpisodes('var eps2 = ["https://vidmoly.to/embed-abc.html"]')).toBe(true)
+  // Tomb Raider King propose aussi une version coréenne, que l'app ne sait pas ouvrir.
+  it('écarte les langues inconnues de l’app', () => {
+    expect(languagesIn('var languesDispo = ["vostfr","vf","vkr"];')).toEqual(['vostfr', 'vf'])
   })
 
-  it('rejects the empty file a missing season serves', () => {
-    expect(listsEpisodes('//\n')).toBe(false)
+  it('garde l’ordre de l’app, pas celui de la page', () => {
+    expect(languagesIn('var languesDispo = ["vf","vostfr"];')).toEqual(['vostfr', 'vf'])
   })
 
-  it('rejects an empty array', () => {
-    expect(listsEpisodes('var eps1 = []')).toBe(false)
+  it('ne lit rien sur une page qui ne les déclare pas', () => {
+    expect(languagesIn('<!DOCTYPE html><html><body>Attention Required! | Cloudflare</body></html>')).toEqual([])
   })
 
-  it('rejects a page that is not the script at all', () => {
-    expect(listsEpisodes('<!DOCTYPE html><html><body>404</body></html>')).toBe(false)
+  it('ne lit rien d’une liste illisible', () => {
+    expect(languagesIn('var languesDispo = [vostfr];')).toEqual([])
   })
 })
 
