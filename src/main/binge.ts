@@ -424,8 +424,11 @@ async function goNext(animeId: number, episode: number): Promise<boolean> {
 
   const target = step.next ?? sameShowNext(animeId, episode)
   if (!target) return false
-  const opened =
-    target.animeId === animeId ? await playNext(target.episode) : await openOther(target.animeId, target.episode)
+  // Dans une section partagée, le numéro de la fiche n'est pas celui de leur
+  // menu : le second cour de Mushoku Tensei y commence à l'épisode 12.
+  const page = watchWindow()?.webContents.getURL().split('#')[0] ?? ''
+  const aimed = aimFor(animeId, page, target.episode).episode ?? target.episode
+  const opened = target.animeId === animeId ? await playNext(aimed) : await openOther(target.animeId, target.episode)
 
   if (opened) rememberLaunch(target.animeId, target.episode)
   else if (step.inSession) stopSoiree()

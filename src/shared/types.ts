@@ -862,6 +862,8 @@ export interface SeasonEntry {
   /** Cour d'une saison scindée : 2 pour « Part 2 », sinon null. */
   part: number | null
   title: string
+  /** Le titre anglais, quand AniList en a un. */
+  english?: string | null
   format: string | null
   status: string | null
   episodes: number | null

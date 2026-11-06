@@ -6,12 +6,14 @@ import {
   isSideFormat,
   sameKind,
   sectionsFor,
+  namesIn,
   sectionsIn,
   seasonBases,
   type Entry,
   type Sibling
 } from '@shared/as-sections'
-import { cachedMedia, cachedParentOf, relationsOf } from './anilist'
+import { belongs, isSeasonal, placeSeasons, type Placement } from '@shared/as-match'
+import { cachedMedia, cachedParentOf, relationsOf, seasonChain } from './anilist'
 import { getMedia, getWatchLang } from './store'
 import { existsSync, readFileSync } from 'node:fs'
 import { promises as fs } from 'node:fs'
@@ -77,6 +79,14 @@ interface Row extends WatchTarget {
    * réponse est refaite au prochain passage plutôt que gardée trente jours.
    */
   doubt?: boolean
+  /**
+   * Épisodes des fiches qui précèdent celle-ci dans la même section : chez
+   * eux, la deuxième moitié de la saison 1 de Mushoku Tensei commence à
+   * l'épisode 12 de `saison1`. Voir `@shared/as-match`.
+   */
+  offset?: number
+  /** Épisodes de toutes les fiches de la section, pour juger leur menu. */
+  span?: number
 }
 
 // 4 : les langues d'une saison sont désormais toutes relevées, pas seulement
@@ -93,7 +103,9 @@ interface Row extends WatchTarget {
 //      l'original.
 // 12 : la même chose pour une série hors de la bibliothèque, dont la 11
 //      ignorait l'année.
-const RULE_VERSION = 12
+// 13 : les saisons sont reliées à toute la franchise d'un bloc — l'arc du
+//      Train de l'infini, les deux parties de la saison 2 de Mushoku Tensei.
+const RULE_VERSION = 13
 
 let cache = new Map<number, Row>()
 let file = ''
@@ -139,13 +151,20 @@ export function sectionKey(url: string): string | null {
   return m ? `${m[1]}/${m[2]}` : null
 }
 
-/** Ce qu'AniList annonce d'une fiche, de la bibliothèque d'abord, du cache sinon. */
-function expectedOf(animeId: number): Expected {
+/**
+ * Ce qu'AniList annonce d'une fiche, de la bibliothèque d'abord, du cache sinon.
+ *
+ * Une section partagée — deux cours dans `saison1` — se juge sur toutes ses
+ * fiches : la première seule y paraîtrait deux fois trop courte.
+ */
+function expectedOf(animeId: number, row: Row): Expected {
   const known = getMedia(animeId)
   const cached = cachedMedia(animeId)
   const total = known?.episodes ?? cached?.episodes ?? null
   const next = known ? (known.nextAiring?.episode ?? null) : (cached?.nextEpisode ?? null)
-  return { total, aired: next ? next - 1 : total }
+  const aired = next ? next - 1 : total
+  if (row.span === undefined) return { total, aired }
+  return { total: row.span, aired: next ? (row.offset ?? 0) + (aired ?? 0) : row.span }
 }
 
 /**
@@ -167,7 +186,7 @@ export function menuCheck(animeId: number | null, url: string, found: number): M
   const row = rowFor(animeId, url)
   if (!row || row.side || row.episodes === false) return { kind: 'ok' }
 
-  const verdict = judgeMenu(found, expectedOf(animeId))
+  const verdict = judgeMenu(found, expectedOf(animeId, row))
   if (verdict.kind !== 'ok') {
     cache.set(animeId, { ...row, doubt: true })
     persist()
@@ -364,6 +383,8 @@ export function aimFor(
   const row = rowFor(animeId, url)
   if (row?.entry) return { episode, entry: row.entry }
   if (row?.side) return { episode: null, entry: null }
+  // Le second cour d'une saison partagée : son épisode 1 est leur douzième.
+  if (episode !== null && row?.offset) return { episode: episode + row.offset, entry: null }
   return { episode, entry: null }
 }
 
@@ -528,6 +549,37 @@ async function sideTarget(
 }
 
 /**
+ * La section de cette fiche, d'après toute sa franchise. `null` sans chaîne
+ * AniList, ou quand la liaison ne lui trouve aucune section.
+ *
+ * Ne garde de la chaîne que les fiches de cette série chez eux — celle de
+ * Dragon Ball mêle DB, Z, GT et Super, rangés à quatre adresses —, et prend
+ * le nombre d'épisodes des sections que la fenêtre de lecture a déjà vues.
+ */
+async function chainPlacement(
+  animeId: number,
+  slug: string,
+  hub: string,
+  declared: { base: string; name: string }[]
+): Promise<Placement | null> {
+  const chain = await seasonChain(animeId).catch(() => [])
+  if (!chain.some((e) => e.id === animeId)) return null
+
+  const names = [...namesIn(hub), slug.replace(/-/g, ' ')]
+  const titlesOf = (e: (typeof chain)[number]): string[] => [e.title, e.english ?? ''].filter(Boolean)
+  const group = chain.filter((e) => e.id === animeId || belongs(names, titlesOf(e)))
+  const sections = declared
+    .filter((s) => isSeasonal(s.base))
+    .map((s) => ({ ...s, count: menus.get(`${slug}/${s.base}`)?.count ?? null }))
+
+  const placed = placeSeasons(
+    sections,
+    group.map((e) => ({ id: e.id, titles: titlesOf(e), year: e.year, episodes: e.episodes }))
+  )
+  return placed.get(animeId) ?? null
+}
+
+/**
  * `year` vient de la fiche ouverte : une série qu'on consulte sans l'avoir
  * ajoutée n'est pas dans la bibliothèque, et sans son année un remake
  * retombait sur l'original. Voir `seasonBases`.
@@ -629,12 +681,25 @@ export async function resolve(animeId: number, titles: string[], year?: number |
   const seasons = isSideFormat(format) ? [] : season > 0 ? [...new Set([season, 1])] : [1]
 
   /**
+   * La section que la liaison à la franchise désigne passe d'abord : voir
+   * `@shared/as-match`. Les règles d'avant — le numéro écrit dans le titre,
+   * l'année d'un remake — restent derrière, pour quand AniList ne donne pas
+   * la chaîne.
+   */
+  const placed =
+    !isSideFormat(format) && hub?.status === 200 ? await chainPlacement(animeId, slug, hub.body, declared) : null
+  const released = year ?? getMedia(animeId)?.startDate?.year
+  const candidates = [
+    ...(placed ? [placed.base] : []),
+    ...seasons.flatMap((n) => seasonBases(declared, n, released))
+  ].filter((base, i, all) => all.indexOf(base) === i)
+
+  /**
    * Toutes les langues d'une saison, et non la première qui répond : sa page
    * les annonce toutes, VF comprise — longtemps introuvable dès que la VO
    * existait.
    */
-  const released = year ?? getMedia(animeId)?.startDate?.year
-  for (const base of seasons.flatMap((n) => seasonBases(declared, n, released))) {
+  for (const base of candidates) {
     const page = await sectionPage(slug, base)
     if (!page) continue
 
@@ -645,7 +710,11 @@ export async function resolve(animeId: number, titles: string[], year?: number |
       languages: page.langs,
       language: page.langs[0]
     }
-    cache.set(animeId, { ...target, at: Date.now(), v: RULE_VERSION })
+    const shared =
+      placed?.base === base
+        ? { ...(placed.offset ? { offset: placed.offset } : {}), ...(placed.span ? { span: placed.span } : {}) }
+        : {}
+    cache.set(animeId, { ...target, ...shared, at: Date.now(), v: RULE_VERSION })
     persist()
     settled(true)
     return withChoice(animeId, target)

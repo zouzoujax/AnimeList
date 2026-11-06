@@ -57,6 +57,30 @@ export function sectionsIn(html: string): Section[] {
   return out
 }
 
+const ENTITIES: Record<string, string> = { amp: '&', quot: '"', apos: "'", lt: '<', gt: '>', rsquo: '’', nbsp: ' ' }
+
+const decode = (text: string): string =>
+  text
+    .replace(/&#(\d+);/g, (_, n: string) => String.fromCodePoint(Number(n)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, n: string) => String.fromCodePoint(parseInt(n, 16)))
+    .replace(/&([a-z]+);/gi, (all, name: string) => ENTITIES[name.toLowerCase()] ?? all)
+
+/**
+ * Le nom de la série sur sa page, puis ses autres titres.
+ *
+ *     <h1 id="titreOeuvre" …>Demon Slayer</h1>
+ *     <p id="titreAlter" …>Demon Slayer : Kimetsu no Yaiba, Kimetsu no Yaiba, …</p>
+ *
+ * Ils disent quelles fiches d'AniList vivent sous cette série : voir
+ * `belongs` dans `@shared/as-match`.
+ */
+export function namesIn(html: string): string[] {
+  const own = html.match(/id="titreOeuvre"[^>]*>([^<]*)</)?.[1] ?? ''
+  const alter = html.match(/id="titreAlter"[^>]*>([^<]*)</)?.[1] ?? ''
+  const names = [own, ...alter.split(',')].map((n) => decode(n).trim()).filter(Boolean)
+  return [...new Set(names)]
+}
+
 /**
  * Les sections où chercher un film ou un OAV.
  *

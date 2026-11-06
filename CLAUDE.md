@@ -9,6 +9,7 @@ App de bureau Windows pour suivre ses animes. Electron + electron-vite, React 19
 - `npm run lint` · `npm run typecheck` · `npm test` (Vitest) · `npm run format`
 - `npm run build` : typecheck + build
 - `npm run screenshots -- <dossier> --themes=<ids|all> --only=<pages> [--new-design]` : captures avec les données de démo, jamais la vraie bibliothèque
+- `npm run check:anime-sama` : rejoue le résolveur Anime-Sama sur les séries témoins de `src/main/as-check.ts` (réseau réel, dossier jetable) — après toute retouche du résolveur ou refonte de leur site
 - `node scripts/install-electron.mjs` : réinstalle le programme d'Electron (npm 11 bloque les scripts d'installation, et `npm update` le supprime)
 - Rapports `session-report` : les enregistrer hors du dépôt (ils citent les messages de la conversation)
 

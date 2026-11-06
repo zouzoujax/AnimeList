@@ -4,6 +4,7 @@ import {
   chooseSide,
   entriesIn,
   isSideFormat,
+  namesIn,
   releaseOrder,
   sameKind,
   sectionsFor,
@@ -70,6 +71,19 @@ const KAIJU_OAV = `
     newSPF("Narumi's Week at Work - partie 2");
     finirListe(3);
   </script>`
+
+describe('namesIn', () => {
+  it('lit le nom de la série puis ses autres titres', () => {
+    const html = `
+      <h1 id="titreOeuvre" class="oe-titre">Demon Slayer</h1>
+      <p id="titreAlter" class="oe-alters">Demon Slayer : Kimetsu no Yaiba, Demon Slayer, Kimetsu no Yaiba, L&#039;arc</p>`
+    expect(namesIn(html)).toEqual(['Demon Slayer', 'Demon Slayer : Kimetsu no Yaiba', 'Kimetsu no Yaiba', "L'arc"])
+  })
+
+  it('ne lit rien d’une page sans nom', () => {
+    expect(namesIn('<html></html>')).toEqual([])
+  })
+})
 
 describe('sectionsIn', () => {
   it('lit les sections et écarte le modèle', () => {

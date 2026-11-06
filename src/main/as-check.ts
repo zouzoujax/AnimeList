@@ -13,7 +13,7 @@
 
 import { searchTitles } from '@shared/titles'
 import { detail } from './anilist'
-import { resolve, siteCheck } from './animesama'
+import { aimFor, resolve, siteCheck } from './animesama'
 
 interface Case {
   id: number
@@ -23,6 +23,8 @@ interface Case {
   expect: string | null
   /** L'entrée visée dans le menu, pour un film ou un OAV qui en partage un. */
   entry?: string
+  /** L'épisode de leur menu visé pour l'épisode 1 de la fiche, quand ce n'est pas le 1. */
+  first?: number
 }
 
 // Relevés sur anime-sama.to le 6 novembre 2026.
@@ -47,8 +49,23 @@ const CASES: Case[] = [
     entry: "Le train de l'Infini"
   },
   { id: 129874, note: 'Demon Slayer, l’arc du Train de l’infini en série', expect: 'demon-slayer/saison1hs/' },
-  { id: 127720, note: 'Mushoku Tensei, la deuxième moitié de la saison 1', expect: 'mushoku-tensei/saison1/' },
+  { id: 142329, note: 'Demon Slayer, leur saison 2 est le 3e maillon d’AniList', expect: 'demon-slayer/saison2/' },
+  {
+    id: 127720,
+    note: 'Mushoku Tensei, la deuxième moitié de la saison 1',
+    expect: 'mushoku-tensei/saison1/',
+    first: 12
+  },
   { id: 146065, note: 'Mushoku Tensei, saison 2 en deux parties', expect: 'mushoku-tensei/saison2-1/' },
+  { id: 166873, note: 'Mushoku Tensei, seconde partie de la saison 2', expect: 'mushoku-tensei/saison2-2/' },
+  { id: 178789, note: 'Mushoku Tensei, saison 3', expect: 'mushoku-tensei/saison3/' },
+  { id: 100182, note: 'SAO Alicization, saison sans numéro dans le titre', expect: 'sword-art-online/saison3/' },
+  {
+    id: 156822,
+    note: 'Slime, saison 3 au-delà d’un film intercalé',
+    expect: 'tensei-shitara-slime-datta-ken/saison3/'
+  },
+  { id: 20, note: 'Naruto, la version avec fillers', expect: 'naruto/saison1/' },
   { id: 11617, note: 'High School DxD, absent du site', expect: null }
 ]
 
@@ -71,17 +88,23 @@ export async function runAnimeSamaCheck(): Promise<number> {
     try {
       const media = await detail(c.id)
       const target = await resolve(c.id, searchTitles(media.title), media.startDate?.year ?? null)
+      const first = aimFor(c.id, target.url, 1).episode
       got = target.absent
         ? 'absent'
         : !target.direct
           ? 'recherche'
           : target.episodes === false
             ? `${path(target.url)} (page de la série)`
-            : path(target.url) + (target.entry ? ` « ${target.entry.name} »` : '')
+            : path(target.url) +
+              (target.entry ? ` « ${target.entry.name} »` : '') +
+              (first && first > 1 ? `, dès leur épisode ${first}` : '')
     } catch (err) {
       got = `erreur : ${(err as Error).message}`
     }
-    const want = c.expect === null ? 'absent' : c.expect + (c.entry ? ` « ${c.entry} »` : '')
+    const want =
+      c.expect === null
+        ? 'absent'
+        : c.expect + (c.entry ? ` « ${c.entry} »` : '') + (c.first ? `, dès leur épisode ${c.first}` : '')
     const ok = got === want
     if (!ok) failures++
     out(`${ok ? '✓' : '✗'} ${c.note}\n    ${ok ? got : `attendu ${want}, obtenu ${got}`}`)

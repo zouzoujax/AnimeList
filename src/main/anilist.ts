@@ -1707,6 +1707,7 @@ function numberSeasons(nodes: RawChainNode[]): SeasonEntry[] {
     number: rank.number,
     part: rank.part,
     title: titles[i],
+    english: nodes[i].title.english,
     format: nodes[i].format,
     status: nodes[i].status,
     episodes: nodes[i].episodes,
@@ -1731,7 +1732,10 @@ function numberSeasons(nodes: RawChainNode[]): SeasonEntry[] {
  * chaque ouverture de fiche, et la bande mettait plusieurs secondes à paraître.
  */
 export async function seasonChain(id: number): Promise<SeasonEntry[]> {
-  const hit = cache.get(`chain3:${id}`)
+  // `chain4` : les maillons gardent aussi leur titre anglais, que la liaison
+  // des sections d'Anime-Sama lit. Les maillons eux-mêmes restent en cache :
+  // refaire la chaîne ne coûte aucune requête.
+  const hit = cache.get(`chain4:${id}`)
   if (hit && Date.now() - hit.at < TTL.chain) return hit.data as SeasonEntry[]
 
   const chain = await walkChain(id)
@@ -1740,9 +1744,9 @@ export async function seasonChain(id: number): Promise<SeasonEntry[]> {
   if (!chain) return []
 
   const at = Date.now()
-  for (const season of chain) cache.set(`chain3:${season.id}`, { at, ttl: TTL.chain, data: chain })
+  for (const season of chain) cache.set(`chain4:${season.id}`, { at, ttl: TTL.chain, data: chain })
   // Une chaîne vide n'a qu'une clé à retenir, sinon on remarcherait pour rien.
-  if (!chain.length) cache.set(`chain3:${id}`, { at, ttl: TTL.chain, data: chain })
+  if (!chain.length) cache.set(`chain4:${id}`, { at, ttl: TTL.chain, data: chain })
   persistCache()
 
   return chain
