@@ -21,6 +21,7 @@
     "dist:dir": "npm run build && electron-builder --win --dir --config electron-builder.yml",
     "release": "npm run dist && node scripts/publish-release.mjs",
     "screenshots": "npm run build && node scripts/screenshots.mjs",
+    "check:anime-sama": "npm run build && node scripts/check-anime-sama.mjs",
     "nothing": "npm run build && node scripts/nothing.mjs"
   },
   "devDependencies": {

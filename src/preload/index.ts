@@ -179,6 +179,12 @@ const api = {
     /** Retient la langue choisie pour cette série, une fois pour toutes. */
     setLanguage: (animeId: number, lang: string | null): Promise<void> =>
       ipcRenderer.invoke('watch:set-language', animeId, lang),
+    /** Anime-Sama semble avoir changé son site : une fois par lancement au plus. */
+    onSiteTrouble: (cb: (kind: 'structure' | 'repeated') => void): (() => void) => {
+      const handler = (_e: unknown, kind: 'structure' | 'repeated'): void => cb(kind)
+      ipcRenderer.on('watch:site-trouble', handler)
+      return () => ipcRenderer.off('watch:site-trouble', handler)
+    },
     /**
      * Ouvre un épisode d'Anime-Sama dans une fenêtre de l'app, positionnée sur
      * le bon épisode — leur site n'ayant pas d'adresse par épisode. Faux si

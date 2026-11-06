@@ -115,9 +115,88 @@ export function searchUrl(term: string): string {
   return `${ORIGIN}/catalogue/?search=${encodeURIComponent(term)}`
 }
 
-async function text(url: string): Promise<{ status: number; body: string }> {
-  const res = await fetch(url, { redirect: 'follow' })
+async function text(url: string, signal?: AbortSignal): Promise<{ status: number; body: string }> {
+  const res = await fetch(url, { redirect: 'follow', signal })
   return { status: res.status, body: res.status === 200 ? await res.text() : '' }
+}
+
+/**
+ * Les signes qu'Anime-Sama a changé son site.
+ *
+ * Leur refonte de novembre 2026 n'a rien cassé de visible : chaque série
+ * retombait en silence sur sa page, et un clic sur un épisode ouvrait le
+ * navigateur au lieu du lecteur. Rien ne disait pourquoi. Deux signes le
+ * disent désormais, une fois par lancement :
+ *
+ * - `structure` : une page répond, mais ce qu'on y lit n'y est plus — la
+ *   liste des sections d'une série, les langues d'une saison.
+ * - `repeated` : plusieurs séries de suite trouvées dans leur catalogue, sans
+ *   qu'aucune saison n'y soit reconnue. Une seule ne dit rien : une saison pas
+ *   encore mise en ligne fait pareil.
+ */
+export type SiteTrouble = 'structure' | 'repeated'
+
+const REPEATED_ALERT = 3
+let troubleListener: ((kind: SiteTrouble) => void) | null = null
+let troubleSaid = false
+let missedInARow = 0
+
+export function onSiteTrouble(listener: (kind: SiteTrouble) => void): void {
+  troubleListener = listener
+}
+
+function trouble(kind: SiteTrouble): void {
+  if (troubleSaid) return
+  troubleSaid = true
+  troubleListener?.(kind)
+}
+
+/** Une série trouvée chez eux vient d'être résolue, sur une saison ou non. */
+function settled(reached: boolean): void {
+  missedInARow = reached ? 0 : missedInARow + 1
+  if (missedInARow >= REPEATED_ALERT) trouble('repeated')
+}
+
+/** La série témoin du diagnostic : une recherche, sa page, sa première saison. */
+const WITNESS = { search: 'Kaiju No. 8', slug: 'kaiju-n8', base: 'saison1' }
+
+export interface SiteCheck {
+  /** Le premier code qui n'est pas 200 ; 0 quand le site ne répond pas. */
+  status: number
+  ms: number
+  /** Ce qui ne se lit plus sur leurs pages, ou `null` quand tout se lit. */
+  broken: 'search' | 'sections' | 'languages' | null
+}
+
+/**
+ * Ce qu'il faut à l'app pour relier une série, vérifié sur une série témoin.
+ *
+ * Trois pages, dans l'ordre où le résolveur les lit : la recherche doit donner
+ * son slug, sa page déclarer sa saison, la saison annoncer ses langues. Sert
+ * au panneau secret et au test `npm run check:anime-sama`.
+ */
+export async function siteCheck(timeoutMs = 8000): Promise<SiteCheck> {
+  const started = Date.now()
+  const steps: [SiteCheck['broken'] & string, string, (body: string) => boolean][] = [
+    ['search', searchUrl(WITNESS.search), (body) => slugsIn(body).includes(WITNESS.slug)],
+    [
+      'sections',
+      `${ORIGIN}/catalogue/${WITNESS.slug}/`,
+      (body) => sectionsIn(body).some((s) => s.base === WITNESS.base)
+    ],
+    ['languages', `${ORIGIN}/catalogue/${WITNESS.slug}/${WITNESS.base}/vostfr/`, (body) => languagesIn(body).length > 0]
+  ]
+  for (const [step, url, readable] of steps) {
+    let page: { status: number; body: string }
+    try {
+      page = await text(url, AbortSignal.timeout(timeoutMs))
+    } catch {
+      return { status: 0, ms: Date.now() - started, broken: null }
+    }
+    if (page.status !== 200) return { status: page.status, ms: Date.now() - started, broken: null }
+    if (!readable(page.body)) return { status: 200, ms: Date.now() - started, broken: step }
+  }
+  return { status: 200, ms: Date.now() - started, broken: null }
 }
 
 /**
@@ -129,7 +208,7 @@ async function text(url: string): Promise<{ status: number; body: string }> {
  *
  * Elle ne prouve pas que la section existe — la saison 9 de Naruto, qu'ils
  * n'ont pas, répond 200 avec ses deux langues. C'est la page de la série qui
- * tranche : voir `declaredSections`.
+ * tranche : voir `resolve`.
  */
 export function languagesIn(body: string): Lang[] {
   const raw = body.match(/var\s+languesDispo\s*=\s*(\[[^\]]*\])/)?.[1]
@@ -289,7 +368,12 @@ async function carrierOf(animeId: number): Promise<number | null> {
 async function carrierSlug(animeId: number): Promise<string | null> {
   const carrier = await carrierOf(animeId)
   if (carrier === null) return null
-  const title = getMedia(carrier)?.title ?? cachedMedia(carrier)?.title
+  // Le lien du film porte le titre de sa série : sans lui, une série mère
+  // jamais ouverte — ni dans la bibliothèque, ni en cache — laissait le
+  // premier film de Naruto sur une simple recherche.
+  const linked = (await relationsOf(animeId).catch(() => [])).find((e) => e.id === carrier)?.title
+  const title =
+    getMedia(carrier)?.title ?? cachedMedia(carrier)?.title ?? (linked ? { romaji: linked, english: null } : null)
   if (!title) return null
   // La série porteuse est une saison : elle ne repasse jamais par ici.
   const target = await resolve(carrier, searchTitles(title)).catch(() => null)
@@ -339,6 +423,7 @@ async function sectionPage(slug: string, base: string): Promise<{ body: string; 
     }
     if (page.status !== 200) continue
     const langs = languagesIn(page.body)
+    if (langs.length === 0) trouble('structure')
     if (langs.includes(lang)) return { body: page.body, langs }
   }
   return null
@@ -446,6 +531,7 @@ export async function resolve(animeId: number, titles: string[], year?: number |
     // Réseau muet : on retombe sur la recherche, comme partout ailleurs.
   }
   const declared = hub?.status === 200 ? sectionsIn(hub.body) : []
+  if (hub?.status === 200 && declared.length === 0) trouble('structure')
 
   /**
    * Un film ou un OAV n'est jamais sous `saison<N>/` : chercher là ouvrait la
@@ -457,6 +543,7 @@ export async function resolve(animeId: number, titles: string[], year?: number |
     if (side) {
       cache.set(animeId, { ...side, at: Date.now(), v: RULE_VERSION })
       persist()
+      settled(true)
       return withChoice(animeId, side)
     }
   }
@@ -496,6 +583,7 @@ export async function resolve(animeId: number, titles: string[], year?: number |
     }
     cache.set(animeId, { ...target, at: Date.now(), v: RULE_VERSION })
     persist()
+    settled(true)
     return withChoice(animeId, target)
   }
 
@@ -505,6 +593,7 @@ export async function resolve(animeId: number, titles: string[], year?: number |
     const target: WatchTarget = { url: `${ORIGIN}/catalogue/${slug}/`, direct: true, episodes: false }
     cache.set(animeId, { ...target, at: Date.now(), v: RULE_VERSION })
     persist()
+    settled(false)
     return target
   }
 

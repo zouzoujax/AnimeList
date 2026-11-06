@@ -281,6 +281,12 @@ export const useApp = create<AppState>((set, get) => ({
     window.api.app.onGoto((route) => get().navigate(route as Route))
 
     // The sweep runs unattended, so it has to say what it did.
+    window.api.watch.onSiteTrouble(() => {
+      get().toast(
+        tr('Anime-Sama semble avoir changé son site : les épisodes risquent de s’ouvrir dans le navigateur.'),
+        'error'
+      )
+    })
     window.api.anime.onSequelsAdded((added) => {
       if (!added.length) return
       get().toast(

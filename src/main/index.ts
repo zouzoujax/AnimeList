@@ -3,7 +3,8 @@ import { chromeFor } from '@shared/types'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { initAniList } from './anilist'
-import { initAnimeSama } from './animesama'
+import { initAnimeSama, onSiteTrouble } from './animesama'
+import { isAnimeSamaCheck, runAnimeSamaCheck } from './as-check'
 import { initFiller } from './filler'
 import { initAnn } from './ann'
 import { initQuotes } from './quotes'
@@ -202,7 +203,23 @@ void app.whenReady().then(() => {
     })
   }
 
+  // Le test d'Anime-Sama n'a besoin d'aucune fenêtre : il rejoue le résolveur
+  // et rend la main. Voir `as-check.ts`.
+  if (isAnimeSamaCheck()) {
+    void runAnimeSamaCheck()
+      .then((failures) => app.exit(Math.min(failures, 100)))
+      .catch((err) => {
+        console.error('[check:anime-sama]', err)
+        app.exit(1)
+      })
+    return
+  }
+
   mainWindow = createWindow()
+
+  // Anime-Sama a changé son site : la fenêtre le dit, plutôt que d'ouvrir le
+  // navigateur sans un mot à chaque épisode. Voir `onSiteTrouble`.
+  onSiteTrouble((kind) => mainWindow?.webContents.send('watch:site-trouble', kind))
 
   // A screenshot run drives the window itself and quits; the airing sweep and
   // the update check would only add noise and network traffic to it.

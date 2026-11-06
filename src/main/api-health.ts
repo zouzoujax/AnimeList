@@ -19,6 +19,7 @@ import { ageLabel } from '@shared/api-recovery'
 import { t } from '@shared/i18n'
 import { deeplHost } from '@shared/translate'
 import { apiStatus } from './anilist'
+import { siteCheck } from './animesama'
 import { animechanLastCall, quoteStats } from './quotes'
 import { getPrefs } from './store'
 
@@ -138,6 +139,27 @@ async function deepl(): Promise<ApiHealth> {
   return { ...base, ...verdict }
 }
 
+/**
+ * Anime-Sama n'a pas d'API : on vérifie que ses pages se lisent encore.
+ *
+ * Un site qui répond ne suffit pas — leur refonte de novembre 2026 répondait
+ * 200 partout, et plus aucune saison n'était reconnue. La sonde lit donc,
+ * sur une série témoin, ce dont l'app a besoin : voir `siteCheck`.
+ */
+async function animeSama(): Promise<ApiHealth> {
+  const base = { id: 'anime-sama', name: 'Anime-Sama', purpose: t('Lecteur des épisodes') }
+  const check = await siteCheck(TIMEOUT_MS)
+  if (check.status !== 200) return { ...base, ...judge({ status: check.status, ms: check.ms, body: null }) }
+  const broken = {
+    search: t('Leur site a changé : la recherche ne donne plus de série'),
+    sections: t('Leur site a changé : la page d’une série ne liste plus ses saisons'),
+    languages: t('Leur site a changé : une saison n’annonce plus ses langues')
+  }
+  return check.broken
+    ? { ...base, state: 'down', detail: broken[check.broken], ms: check.ms }
+    : { ...base, state: 'ok', detail: t('Recherche, saisons et langues lisibles'), ms: check.ms }
+}
+
 const simple = async (id: string, name: string, purpose: string, url: string): Promise<ApiHealth> => ({
   id,
   name,
@@ -164,7 +186,8 @@ export async function apiHealth(): Promise<ApiHealth[]> {
     ),
     simple('kitsu', 'Kitsu', t('Import d’une liste Kitsu'), 'https://kitsu.app/api/edge/anime?page%5Blimit%5D=1'),
     traceMoe(),
-    deepl()
+    deepl(),
+    animeSama()
   ])
   return [anilist(), ...probed, animechan(now)]
 }
