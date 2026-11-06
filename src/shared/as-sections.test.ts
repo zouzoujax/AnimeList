@@ -8,8 +8,43 @@ import {
   sameKind,
   sectionsFor,
   sectionsIn,
+  seasonBases,
   type Sibling
 } from './as-sections'
+
+// Relevés sur anime-sama.to en novembre 2026.
+describe('seasonBases', () => {
+  const dbs = [
+    { name: 'Saison 1', base: 'saison1' },
+    { name: 'Film', base: 'film' },
+    { name: 'Saison 1 Remake 2026', base: 'saison1hs' }
+  ]
+  const naruto = [
+    { name: 'Avec Fillers', base: 'saison1' },
+    { name: 'Sans Fillers', base: 'saison1hs' }
+  ]
+
+  it('fait passer le remake de l’année devant l’original', () => {
+    expect(seasonBases(dbs, 1, 2026)).toEqual(['saison1hs', 'saison1'])
+  })
+
+  it('garde l’original pour la série de 2015', () => {
+    expect(seasonBases(dbs, 1, 2015)).toEqual(['saison1'])
+  })
+
+  it('n’ouvre pas une variante sans année à la place de la saison', () => {
+    expect(seasonBases(naruto, 1, 2002)).toEqual(['saison1'])
+    expect(seasonBases(naruto, 1, null)).toEqual(['saison1'])
+  })
+
+  it('ne confond pas la saison 1 et la saison 10', () => {
+    expect(seasonBases([{ name: 'Saison 10 (2026)', base: 'saison10' }], 1, 2026)).toEqual([])
+  })
+
+  it('ne rend rien pour une saison que la série ne déclare pas', () => {
+    expect(seasonBases(dbs, 2, 2026)).toEqual([])
+  })
+})
 
 // Relevés sur anime-sama.to : la page de « Kaiju No. 8 » et sa section OAV.
 const KAIJU_HUB = `

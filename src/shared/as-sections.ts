@@ -69,6 +69,28 @@ export function sectionsFor(sections: Section[], format: string | null | undefin
 }
 
 /**
+ * Les sections où chercher la saison `n`, dans l'ordre où les essayer.
+ *
+ * Un remake vit chez eux à côté de l'original, sous une variante de la même
+ * saison : « Dragon Ball Super: Beerus », sorti en 2026, est
+ * `panneauAnime("Saison 1 Remake 2026", "saison1hs/vostfr")`, et `saison1`
+ * ouvrait le Dragon Ball Super de 2015. Une variante dont le nom porte l'année
+ * de sortie de la fiche passe donc devant. Sans cette année, rien ne change :
+ * `saison1hs` est aussi le « Sans Fillers » de Naruto, qu'on n'ouvre pas à la
+ * place de la vraie saison.
+ */
+export function seasonBases(sections: Section[], n: number, year: number | null | undefined): string[] {
+  const plain = `saison${n}`
+  const variant = new RegExp(`^${plain}[a-z]+$`)
+  const dated = year
+    ? sections
+        .filter((s) => variant.test(s.base) && new RegExp(`(^|\\D)${year}(\\D|$)`).test(s.name))
+        .map((s) => s.base)
+    : []
+  return [...dated, ...(sections.some((s) => s.base === plain) ? [plain] : [])]
+}
+
+/**
  * Les noms du menu d'une section, dans l'ordre où leur script les crée.
  *
  * Seulement quand le menu est fait d'entrées nommées. Mêlé à des épisodes

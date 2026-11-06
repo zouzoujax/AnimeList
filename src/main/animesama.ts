@@ -7,6 +7,7 @@ import {
   sameKind,
   sectionsFor,
   sectionsIn,
+  seasonBases,
   type Entry,
   type Sibling
 } from '@shared/as-sections'
@@ -82,7 +83,9 @@ interface Row extends WatchTarget {
 //     de Dragon Ball n'en avaient aucune.
 // 10 : `episodes.js` répond 403 depuis la refonte du site — chaque série
 //      résolue depuis tombait sur sa fiche, sans menu ni épisode à viser.
-const RULE_VERSION = 10
+// 11 : un remake ouvre sa variante datée (« Saison 1 Remake 2026 »), pas
+//      l'original.
+const RULE_VERSION = 11
 
 let cache = new Map<number, Row>()
 let file = ''
@@ -472,13 +475,13 @@ export async function resolve(animeId: number, titles: string[]): Promise<WatchT
    * les annonce toutes, VF comprise — longtemps introuvable dès que la VO
    * existait.
    */
-  for (const n of seasons) {
-    if (!declared.some((s) => s.base === `saison${n}`)) continue
-    const page = await sectionPage(slug, `saison${n}`)
+  const year = getMedia(animeId)?.startDate?.year
+  for (const base of seasons.flatMap((n) => seasonBases(declared, n, year))) {
+    const page = await sectionPage(slug, base)
     if (!page) continue
 
     const target: WatchTarget = {
-      url: `${ORIGIN}/catalogue/${slug}/saison${n}/${page.langs[0]}/`,
+      url: `${ORIGIN}/catalogue/${slug}/${base}/${page.langs[0]}/`,
       direct: true,
       episodes: true,
       languages: page.langs,
