@@ -177,7 +177,7 @@ describe('regarder depuis l’arbre d’une franchise', () => {
     const res = await post('/api/watch', { id: 50, episode: 1 })
     expect(res.status).toBe(200)
     expect(anilist.refreshMedia).toHaveBeenCalledWith([50])
-    expect(watch.openAnimeSamaEpisode).toHaveBeenCalledWith('https://anime-sama.test/film', 1, null)
+    expect(watch.openAnimeSamaEpisode).toHaveBeenCalledWith('https://anime-sama.test/film', 1, null, 50)
     // Regarder n'ajoute rien à la liste : c'est le bouton d'à côté.
     expect(statusOf(50)).toBeUndefined()
   })

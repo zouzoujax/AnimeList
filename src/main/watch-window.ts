@@ -23,7 +23,8 @@ import { BrowserWindow } from 'electron'
 import { join } from 'node:path'
 import type { Entry } from '@shared/as-sections'
 import { parsePlayers, type PlayerChoice } from '@shared/as-players'
-import { ORIGIN } from './animesama'
+import { menuCheck, ORIGIN } from './animesama'
+import { t } from '@shared/i18n'
 import {
   autostart,
   enterCinema,
@@ -73,13 +74,101 @@ async function switchEpisode(target: BrowserWindow, episode: number, entry: Entr
 }
 
 /**
+ * Le nombre d'épisodes de leur menu, une fois que leur script l'a rempli.
+ *
+ * Leur page crée ses options au chargement, d'après `episodes.js` : on
+ * repasse toutes les demi-secondes, huit secondes au plus. `0` quand le menu
+ * n'est jamais venu — page changée, ou fenêtre fermée entre-temps.
+ */
+async function menuCount(target: BrowserWindow): Promise<number> {
+  for (let i = 0; i < 16; i += 1) {
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    if (target.isDestroyed()) return 0
+    const count: unknown = await target.webContents
+      .executeJavaScript(
+        `(function () {
+          var sel = document.getElementById('selectEpisodes')
+          return sel && sel.options ? sel.options.length : 0
+        })()`,
+        true
+      )
+      .catch(() => 0)
+    if (typeof count === 'number' && count > 0) return count
+  }
+  return 0
+}
+
+/**
+ * Un bandeau en haut de leur page : la saison ouverte n'a pas l'air d'être la bonne.
+ *
+ * Posé par-dessus, sans rien toucher de leur page, et refermable. Le texte
+ * passe par `textContent` : rien de ce qu'il contient n'est interprété.
+ */
+function showDoubt(target: BrowserWindow, message: string): void {
+  const script = `(function (text, close) {
+    if (document.getElementById('animelist-doubt')) return
+    var box = document.createElement('div')
+    box.id = 'animelist-doubt'
+    box.setAttribute('role', 'alert')
+    box.style.cssText = 'position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:2147483647;' +
+      'max-width:min(640px,92vw);padding:12px 44px 12px 16px;border-radius:12px;background:#1b1e2c;color:#fff;' +
+      'font:14px/1.45 system-ui,sans-serif;border:1px solid #f0a040;box-shadow:0 10px 30px rgba(0,0,0,.55)'
+    box.textContent = text
+    var button = document.createElement('button')
+    button.type = 'button'
+    button.textContent = '×'
+    button.setAttribute('aria-label', close)
+    button.style.cssText = 'position:absolute;top:6px;right:10px;background:none;border:0;color:#fff;' +
+      'font-size:22px;line-height:1;cursor:pointer'
+    button.onclick = function () { box.remove() }
+    box.appendChild(button)
+    document.body.appendChild(box)
+  })(${JSON.stringify(message)}, ${JSON.stringify(t('Fermer'))})`
+  void target.webContents.executeJavaScript(script, true).catch(() => {})
+}
+
+/**
+ * Relève leur menu, le juge contre la fiche, puis démarre la vidéo.
+ *
+ * Le plein écran n'est demandé que si le menu ressemble à la fiche : sur une
+ * saison qui n'est pas la bonne, il cacherait le bandeau qui le dit, et la
+ * vidéo partirait sur un épisode qu'on ne venait pas voir.
+ */
+async function inspectThenPlay(target: BrowserWindow, animeId: number | null, url: string): Promise<void> {
+  const found = await menuCount(target)
+  if (target.isDestroyed()) return
+  const verdict = menuCheck(animeId, url, found)
+  if (verdict.kind === 'ok') {
+    void autostart(target, true)
+    return
+  }
+  showDoubt(
+    target,
+    verdict.kind === 'long'
+      ? t(
+          'AnimeList : cette page compte {found} épisodes, AniList en annonce {expected}. Ce n’est peut-être pas la bonne saison : l’app la cherchera de nouveau la prochaine fois.',
+          { found: verdict.found, expected: verdict.expected }
+        )
+      : t(
+          'AnimeList : cette page ne compte que {found} épisodes, alors que {expected} sont sortis. Ce n’est peut-être pas la bonne saison : l’app la cherchera de nouveau la prochaine fois.',
+          { found: verdict.found, expected: verdict.expected }
+        )
+  )
+  void autostart(target, false)
+}
+
+/**
  * `entry` vise une entrée nommée — un film ou un OAV dans sa section — et
  * l'emporte alors sur le numéro : leur menu ne numérote pas ces entrées.
+ *
+ * `animeId` est la fiche qu'on ouvre : sans lui, le menu est relevé mais rien
+ * n'est jugé.
  */
 export async function openAnimeSamaEpisode(
   url: string,
   episode: number | null,
-  entry: Entry | null = null
+  entry: Entry | null = null,
+  animeId: number | null = null
 ): Promise<boolean> {
   // Une seule origine acceptée : cette fenêtre n'est pas un navigateur à tout
   // faire, et une URL venue d'ailleurs n'a rien à y faire.
@@ -245,7 +334,7 @@ export async function openAnimeSamaEpisode(
 
   // En arrière-plan : l'appelant n'a pas à attendre qu'une vidéo apparaisse
   // pour savoir que la fenêtre s'est ouverte.
-  void autostart(win, true)
+  void inspectThenPlay(win, animeId, url)
   return true
 }
 

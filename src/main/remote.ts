@@ -804,7 +804,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
     const episode = Number(body.episode)
     const at = target.episodes && Number.isInteger(episode) && episode > 0 ? episode : null
     const aim = aimFor(id, target.url, at)
-    const opened = await openAnimeSamaEpisode(target.url, aim.episode, aim.entry)
+    const opened = await openAnimeSamaEpisode(target.url, aim.episode, aim.entry, id)
     if (!opened) return json(res, 502, { error: t('Le lecteur n’a pas pu s’ouvrir.') })
     rememberLaunch(id, at, undefined, media)
     return json(res, 200, { player: await nowPlaying() })

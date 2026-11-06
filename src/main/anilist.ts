@@ -1204,13 +1204,25 @@ export async function relationsOfMany(ids: number[]): Promise<Map<number, Edge[]
  * lecture, Anime-Sama ignorait que c'était un film et le cherchait comme une
  * saison. Ne demande rien au réseau.
  */
-export function cachedMedia(
-  id: number
-): { format: string | null; title: { english: string | null; romaji: string } } | null {
+export function cachedMedia(id: number): {
+  format: string | null
+  title: { english: string | null; romaji: string }
+  /** Le total officiel, sinon celui du calendrier de diffusion, comme la grille. */
+  episodes: number | null
+  /** Le prochain épisode à diffuser, pour une saison en cours. */
+  nextEpisode: number | null
+} | null {
   const media = (cache.get(`${SHAPE}:detail:${id}`)?.data as { Media?: RawDetail } | undefined)?.Media
   if (!media) return null
   const romaji = media.title.romaji ?? media.title.english ?? `#${id}`
-  return { format: media.format, title: { english: media.title.english, romaji } }
+  const scheduled = (media.airingSchedule?.nodes ?? []).reduce((max, node) => Math.max(max, node.episode), 0)
+  const known = Math.max(media.nextAiringEpisode?.episode ?? 0, scheduled)
+  return {
+    format: media.format,
+    title: { english: media.title.english, romaji },
+    episodes: media.episodes ?? (known || null),
+    nextEpisode: media.nextAiringEpisode?.episode ?? null
+  }
 }
 
 /**

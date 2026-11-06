@@ -349,7 +349,7 @@ async function openOther(animeId: number, episode: number): Promise<boolean> {
   // la soirée que d'ouvrir une page au hasard pendant que personne ne regarde.
   if (!target?.url || !target.episodes) return false
   const aim = aimFor(animeId, target.url, episode)
-  return openAnimeSamaEpisode(target.url, aim.episode, aim.entry)
+  return openAnimeSamaEpisode(target.url, aim.episode, aim.entry, animeId)
 }
 
 /**

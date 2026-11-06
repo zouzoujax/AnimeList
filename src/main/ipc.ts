@@ -334,7 +334,7 @@ export function registerIpc(): void {
     // Un film ou un OAV se vise par son nom dans le menu de sa section — ou pas
     // du tout, quand on n'a pas su lequel c'était.
     const aim = typeof animeId === 'number' ? aimFor(animeId, url, episode) : { episode, entry: null }
-    return openAnimeSamaEpisode(url, aim.episode, aim.entry)
+    return openAnimeSamaEpisode(url, aim.episode, aim.entry, typeof animeId === 'number' ? animeId : null)
   })
 
   // La liste d'une soirée, composée dans la fenêtre et suivie par le

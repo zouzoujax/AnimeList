@@ -18,6 +18,7 @@ import { promises as fs } from 'node:fs'
 import { join } from 'node:path'
 import { baseAndSeason, compact, searchTitles, searchVariants, similarity } from '@shared/titles'
 import { overrideFor } from '@shared/watch-overrides'
+import { judgeMenu, type Expected, type MenuVerdict } from '@shared/as-menu'
 
 /**
  * Anime-Sama slugs cannot be derived from a title — "Kaiju No. 8" lives at
@@ -71,6 +72,11 @@ interface Row extends WatchTarget {
    * attendues trente jours.
    */
   v?: number
+  /**
+   * Le menu vu dans la fenêtre de lecture ne ressemblait pas à la fiche : la
+   * réponse est refaite au prochain passage plutôt que gardée trente jours.
+   */
+  doubt?: boolean
 }
 
 // 4 : les langues d'une saison sont désormais toutes relevées, pas seulement
@@ -93,14 +99,29 @@ let cache = new Map<number, Row>()
 let file = ''
 let timer: NodeJS.Timeout | null = null
 
+/**
+ * Le nombre d'épisodes de leur menu, section par section (`naruto/saison1`).
+ *
+ * Seule la fenêtre de lecture le voit : leur liste est fermée à l'app hors
+ * d'un navigateur. Gardé à part des réponses, parce qu'il décrit leur site et
+ * non une fiche : plusieurs fiches peuvent partager une section.
+ */
+let menus = new Map<string, { count: number; at: number }>()
+let menusFile = ''
+
 export function initAnimeSama(): void {
   file = join(app.getPath('userData'), 'anime-sama-cache.json')
-  if (!existsSync(file)) return
-  try {
-    cache = new Map(JSON.parse(readFileSync(file, 'utf8')) as [number, Row][])
-  } catch {
-    cache = new Map()
+  menusFile = join(app.getPath('userData'), 'anime-sama-menus.json')
+  const read = <T>(path: string): T[] => {
+    if (!existsSync(path)) return []
+    try {
+      return JSON.parse(readFileSync(path, 'utf8')) as T[]
+    } catch {
+      return []
+    }
   }
+  cache = new Map(read<[number, Row]>(file))
+  menus = new Map(read<[string, { count: number; at: number }]>(menusFile))
 }
 
 function persist(): void {
@@ -108,7 +129,50 @@ function persist(): void {
   timer = setTimeout(() => {
     timer = null
     fs.writeFile(file, JSON.stringify([...cache.entries()]), 'utf8').catch(() => {})
+    fs.writeFile(menusFile, JSON.stringify([...menus.entries()]), 'utf8').catch(() => {})
   }, 3000)
+}
+
+/** La section d'une adresse : `naruto/saison1` dans `/catalogue/naruto/saison1/vostfr/`. */
+export function sectionKey(url: string): string | null {
+  const m = url.match(/\/catalogue\/([a-z0-9-]+)\/([a-z0-9-]+)\/(?:vostfr|vf)\/?$/i)
+  return m ? `${m[1]}/${m[2]}` : null
+}
+
+/** Ce qu'AniList annonce d'une fiche, de la bibliothèque d'abord, du cache sinon. */
+function expectedOf(animeId: number): Expected {
+  const known = getMedia(animeId)
+  const cached = cachedMedia(animeId)
+  const total = known?.episodes ?? cached?.episodes ?? null
+  const next = known ? (known.nextAiring?.episode ?? null) : (cached?.nextEpisode ?? null)
+  return { total, aired: next ? next - 1 : total }
+}
+
+/**
+ * Le menu relevé dans la fenêtre de lecture, jugé contre la fiche ouverte.
+ *
+ * Le relevé est gardé quoi qu'il arrive : il dit combien d'épisodes compte
+ * cette section chez eux. Un menu qui ne ressemble pas à la fiche rend la
+ * réponse douteuse, refaite au prochain passage. Films et OAV n'en sont pas
+ * jugés : leur section en porte plusieurs, et c'est le nom qui les vise.
+ */
+export function menuCheck(animeId: number | null, url: string, found: number): MenuVerdict {
+  const section = sectionKey(url)
+  if (section && found > 0) {
+    menus.set(section, { count: found, at: Date.now() })
+    persist()
+  }
+  if (animeId === null) return { kind: 'ok' }
+
+  const row = rowFor(animeId, url)
+  if (!row || row.side || row.episodes === false) return { kind: 'ok' }
+
+  const verdict = judgeMenu(found, expectedOf(animeId))
+  if (verdict.kind !== 'ok') {
+    cache.set(animeId, { ...row, doubt: true })
+    persist()
+  }
+  return verdict
 }
 
 export function searchUrl(term: string): string {
@@ -476,7 +540,7 @@ export async function resolve(animeId: number, titles: string[], year?: number |
   }
 
   const hit = cache.get(animeId)
-  if (hit && hit.v === RULE_VERSION && Date.now() - hit.at < TTL) {
+  if (hit && hit.v === RULE_VERSION && !hit.doubt && Date.now() - hit.at < TTL) {
     return withChoice(animeId, {
       url: hit.url,
       direct: hit.direct,
