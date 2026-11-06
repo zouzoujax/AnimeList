@@ -611,6 +611,7 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
   const entry = useApp((s) => s.entries.get(id))
   const lang = useApp((s) => s.prefs.titleLang)
   const seenCount = useApp((s) => s.watched.get(id)?.size ?? 0)
+  const seenEpisodes = useApp((s) => s.watched.get(id))
   const defaultRuntime = useApp((s) => s.prefs.defaultRuntime)
   const aliases = useApp((s) => s.prefs.aliases)
   const setPrefs = useApp((s) => s.setPrefs)
@@ -745,7 +746,27 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
     return [...out.values()]
   }, [franchiseFilms, data, id, lang])
   const total = media?.episodes ?? null
-  const ratio = total ? Math.min(1, seenCount / total) : 0
+  /**
+   * Le total de l'anneau : celui d'AniList, sinon celui de la grille.
+   *
+   * Une saison en cours n'a souvent aucun total annoncé, et l'anneau restait
+   * à 0 % — « 4 / ? » pour Dragon Ball Super: Beerus, dont le calendrier
+   * prévoit pourtant douze épisodes. La grille les déduit déjà du calendrier
+   * de diffusion : l'anneau compte sur les mêmes. Le reste de la fiche garde
+   * le total officiel, qu'un calendrier incomplet ferait dire « terminé » trop
+   * tôt.
+   */
+  const planned = total ?? (data?.episodeMeta.length || null)
+  const ratio = planned ? Math.min(1, seenCount / planned) : 0
+  /**
+   * Tout ce qui est sorti est coché, et la suite n'est pas encore diffusée.
+   *
+   * Sans cette mention, « 4 / 12 » ne dit pas qu'il n'y a rien d'autre à
+   * voir pour l'instant.
+   */
+  const lastAired = media?.nextAiring ? media.nextAiring.episode - 1 : 0
+  const upToDate =
+    lastAired > 0 && Array.from({ length: lastAired }, (_, i) => i + 1).every((n) => seenEpisodes?.has(n) ?? false)
   const watchedMinutes = seenCount * (media?.duration || 24)
 
   const patch = async (values: Parameters<typeof saveEntry>[1]): Promise<void> => {
@@ -1091,18 +1112,31 @@ export default function DetailPage({ id }: { id: number }): React.JSX.Element {
             </ProgressRing>
           </div>
           <div className="min-w-0">
-            <p className="stat-num text-[1.5rem] leading-none">
-              <motion.span
-                key={seenCount}
-                className="inline-block"
-                initial={{ y: -10, opacity: 0, scale: 1.25 }}
-                animate={{ y: 0, opacity: 1, scale: 1 }}
-                transition={{ type: 'spring', stiffness: 420, damping: 22 }}
-              >
-                {seenCount}
-              </motion.span>
-              <span className="text-[0.9rem] text-faint"> / {total ?? '?'}</span>
-            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="stat-num text-[1.5rem] leading-none">
+                <motion.span
+                  key={seenCount}
+                  className="inline-block"
+                  initial={{ y: -10, opacity: 0, scale: 1.25 }}
+                  animate={{ y: 0, opacity: 1, scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 420, damping: 22 }}
+                >
+                  {seenCount}
+                </motion.span>
+                <span className="text-[0.9rem] text-faint"> / {planned ?? '?'}</span>
+              </p>
+              {upToDate && (
+                <span
+                  className="chip !h-6 !cursor-default !text-[0.68rem]"
+                  style={{ background: rgba(glow, 0.16), borderColor: rgba(glow, 0.4) }}
+                  title={t('Tous les épisodes sortis sont vus : le prochain arrive {when}', {
+                    when: countdown(media.nextAiring?.airingAt ?? 0)
+                  })}
+                >
+                  {t('À jour')}
+                </span>
+              )}
+            </div>
             <p className="mt-1.5 text-[0.74rem] text-faint">
               {minutesToHuman(watchedMinutes)} {t('de visionnage')}
             </p>

@@ -1250,6 +1250,8 @@
 "{seenCount} épisodes vus":["{seenCount} episodes watched","{seenCount} episodios vistos","{seenCount}話視聴","{seenCount} Folgen gesehen"],
 "{seenCount} vus sur {total} · terminé":["{seenCount} of {total} watched · completed","{seenCount} de {total} vistos · terminado","{total}話中{seenCount}話視聴 · 完了","{seenCount} von {total} gesehen · beendet"],
 "{seenCount} vus sur {total} · {left} à voir, {v3}":["{seenCount} of {total} watched · {left} to go, {v3}","{seenCount} de {total} vistos · {left} por ver, {v3}","{total}話中{seenCount}話視聴 · 残り{left}話、{v3}","{seenCount} von {total} gesehen · noch {left}, {v3}"],
+"À jour":["Up to date","Al día","最新話まで","Aktuell"],
+"Tous les épisodes sortis sont vus : le prochain arrive {when}":["Every aired episode is watched: the next one arrives {when}","Todos los episodios emitidos están vistos: el siguiente llega {when}","放送済みの話はすべて視聴済み:次の話は{when}","Alle ausgestrahlten Folgen gesehen: die nächste kommt {when}"],
 "Réduire":["Collapse","Reducir","折りたたむ","Einklappen"],
 "Lire la suite":["Read more","Leer más","続きを読む","Weiterlesen"],
 "Version originale sous-titrée":["Original version with subtitles","Versión original subtitulada","字幕版","Originalfassung mit Untertiteln"],
