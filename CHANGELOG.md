@@ -9,6 +9,24 @@ Un titre de niveau deux par version, puis des rubriques `### Ajouts`,
 changement, écrite pour quelqu'un qui utilise l'app, pas pour quelqu'un qui lit
 le code.
 
+## 0.13.7 — 6 novembre 2026
+
+### Ajouts
+
+- La fiche dit « À jour » à côté de l’anneau de progression quand tous les épisodes sortis d’une série en cours sont cochés ; au survol, la pastille dit quand arrive le suivant
+- Si Anime-Sama change son site au point que l’app ne s’y retrouve plus, une notification le dit, au lieu d’ouvrir le navigateur sans explication à chaque épisode. Le panneau caché (code Konami) a aussi sa pastille Anime-Sama
+- La fenêtre de lecture vérifie que la saison ouverte est la bonne : quand leur page compte bien plus ou bien moins d’épisodes qu’AniList n’en annonce, un bandeau le signale, la vidéo ne passe pas en plein écran, et l’app cherche de nouveau la prochaine fois
+
+### Modifications
+
+- Les saisons d’Anime-Sama sont désormais reliées à toute la franchise d’un coup, plutôt que devinées une par une d’après le titre : l’arc du Train de l’infini de Demon Slayer, les deux parties de la saison 2 de Mushoku Tensei ou les suites sans numéro dans leur titre tombent sur la bonne page. Une saison que le site range avec la précédente ouvre le bon épisode (le second cour de Mushoku Tensei commence à leur épisode 12)
+- L’anneau de progression d’une série en cours compte sur les épisodes prévus quand AniList n’annonce pas encore de total : « 4 / 12 » au lieu de 0 % et « 4 / ? »
+
+### Corrections
+
+- Dragon Ball Super: Beerus ouvre le remake de 2026, et non le Dragon Ball Super de 2015, y compris quand la série n’est pas dans ta bibliothèque
+- Un film dont la série n’a jamais été ouverte dans l’app est de nouveau trouvé sur Anime-Sama (le premier film de Naruto restait sur une recherche)
+
 ## 0.13.6 — 1er novembre 2026
 
 ### Ajouts
