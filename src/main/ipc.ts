@@ -263,7 +263,9 @@ export function registerIpc(): void {
   ipcMain.handle('anime:returning', () => anilist.returningSoon(getPrefs().showAdult))
   ipcMain.handle('anime:films', (_e, title: string) => anilist.franchiseFilms(title, getPrefs().showAdult))
   ipcMain.handle('anime:studio', (_e, name: string, page: number) => anilist.studioWorks(name, page))
-  ipcMain.handle('watch:anime-sama', (_e, animeId: number, titles: string[]) => resolveAnimeSama(animeId, titles))
+  ipcMain.handle('watch:anime-sama', (_e, animeId: number, titles: string[], year?: number | null) =>
+    resolveAnimeSama(animeId, titles, typeof year === 'number' ? year : null)
+  )
   // La langue choisie chez Anime-Sama. Écrite dans la bibliothèque : la fiche
   // n'a donc rien à redemander au site au chargement suivant.
   ipcMain.handle('watch:set-language', (_e, animeId: number, lang: string | null) => {

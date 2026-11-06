@@ -47,8 +47,9 @@ function useKeyed<T>(key: string, empty: T, run: () => Promise<T>): T {
 export function useAnimeSama(media: Media | null): AnimeSamaTarget | null {
   const id = media?.id ?? null
   const titles = media ? searchTitles(media).join('|') : ''
+  const year = media?.startDate?.year ?? null
   return useKeyed<AnimeSamaTarget | null>(id === null || !titles ? '' : `${id}|${titles}`, null, () =>
-    window.api.watch.animeSama(id as number, titles.split('|'))
+    window.api.watch.animeSama(id as number, titles.split('|'), year)
   )
 }
 

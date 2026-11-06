@@ -85,7 +85,9 @@ interface Row extends WatchTarget {
 //      résolue depuis tombait sur sa fiche, sans menu ni épisode à viser.
 // 11 : un remake ouvre sa variante datée (« Saison 1 Remake 2026 »), pas
 //      l'original.
-const RULE_VERSION = 11
+// 12 : la même chose pour une série hors de la bibliothèque, dont la 11
+//      ignorait l'année.
+const RULE_VERSION = 12
 
 let cache = new Map<number, Row>()
 let file = ''
@@ -376,7 +378,12 @@ async function sideTarget(
   }
 }
 
-export async function resolve(animeId: number, titles: string[]): Promise<WatchTarget> {
+/**
+ * `year` vient de la fiche ouverte : une série qu'on consulte sans l'avoir
+ * ajoutée n'est pas dans la bibliothèque, et sans son année un remake
+ * retombait sur l'original. Voir `seasonBases`.
+ */
+export async function resolve(animeId: number, titles: string[], year?: number | null): Promise<WatchTarget> {
   // A hand-checked answer always wins, and costs no request.
   const override = overrideFor(animeId)
   if (override && 'animeSama' in override) {
@@ -475,8 +482,8 @@ export async function resolve(animeId: number, titles: string[]): Promise<WatchT
    * les annonce toutes, VF comprise — longtemps introuvable dès que la VO
    * existait.
    */
-  const year = getMedia(animeId)?.startDate?.year
-  for (const base of seasons.flatMap((n) => seasonBases(declared, n, year))) {
+  const released = year ?? getMedia(animeId)?.startDate?.year
+  for (const base of seasons.flatMap((n) => seasonBases(declared, n, released))) {
     const page = await sectionPage(slug, base)
     if (!page) continue
 

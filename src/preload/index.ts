@@ -163,7 +163,9 @@ const api = {
   watch: {
     animeSama: (
       animeId: number,
-      titles: string[]
+      titles: string[],
+      /** L'année de sortie, pour distinguer un remake de l'original. */
+      year?: number | null
     ): Promise<{
       url: string
       direct: boolean
@@ -173,7 +175,7 @@ const api = {
       language?: Lang
       side?: boolean
       entry?: { index: number; name: string }
-    }> => ipcRenderer.invoke('watch:anime-sama', animeId, titles),
+    }> => ipcRenderer.invoke('watch:anime-sama', animeId, titles, year),
     /** Retient la langue choisie pour cette série, une fois pour toutes. */
     setLanguage: (animeId: number, lang: string | null): Promise<void> =>
       ipcRenderer.invoke('watch:set-language', animeId, lang),
